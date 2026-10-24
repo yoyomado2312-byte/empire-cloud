@@ -1,0 +1,935 @@
+#!/usr/bin/env python3
+"""
+الإمبراطورية السحابية المؤتمتة لـ 22 قناة (11 مجالاً × عربي وإنجليزي)
+مع محرك توليد أغاني الأطفال عبر Suno AI والتبديل التلقائي بين الحسابات
+====================================================================================================
+الميزات المضافة لقناتي CoComelon (عربي وإنجليزي):
+1. توليد كلمات أناشيد الأطفال التعليمية الساحرة عبر Gemini Pro.
+2. الاتصال بسيرفرات Suno AI لتوليد أغانٍ استوديو كاملة بأصوات أطفال كرتونية وألحان مبهجة.
+3. التبديل الذكي بين حسابات Suno (Suno Account Rotator) عند انتهاء الرصيد اليومي لتجنب الـ Daily Limit.
+4. مونتاج كرتوني بكلمات غنائية مضيئة ملونة (Karaoke Sing-Along Subtitles) بأسلوب CoComelon.
+5. رفع الشورتس والتجميعات الطويلة مع صور مصغرة كرتونية مبهجة تلقائياً دون تدخل بشري.
+"""
+
+import argparse
+import asyncio
+import json
+import os
+import subprocess
+import time
+import urllib.request
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional
+
+import edge_tts
+import requests
+from PIL import Image, ImageDraw, ImageEnhance, ImageFont
+
+# ==============================================================================
+# 1. الإعدادات السحابية العامة (Cloud Configuration)
+# ==============================================================================
+GLOBAL_CONFIG = {
+    "GEMINI_MODEL": os.getenv("GEMINI_MODEL", "gemini-2.5-pro"),
+    "GEMINI_API_KEY": os.getenv("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY"),
+    "PEXELS_API_KEY": os.getenv("PEXELS_API_KEY", "YOUR_PEXELS_API_KEY"),
+    "BASE_OUTPUT_DIR": "./autonomous_empire_output",
+    "TOKENS_DIR": "./auth_tokens",
+    "SHORT_CLIP_SWITCH_SEC": 2.2,
+    "LONG_CLIP_SWITCH_SEC": 4.5,
+    # توكنات حسابات Suno المجانية المتعددة مفصولة بفاصلة للتبديل التلقائي عند انتهاء الرصيد
+    "SUNO_TOKENS_POOL": [
+        t.strip() for t in os.getenv("SUNO_TOKENS_POOL", "").split(",") if t.strip()
+    ],
+}
+
+# ==============================================================================
+# 2. مصفوفة الـ 11 مجالاً = 22 قناة (11 عربي + 11 إنجليزي شاملة قناتي CoComelon)
+# ==============================================================================
+BASE_ELEVEN_NICHES: List[Dict] = [
+    {
+        "niche_num": 1,
+        "slug": "supercars",
+        "title_ar": "السيارات الخارقة والمحركات",
+        "title_en": "Supercars & Hypercar Engineering",
+        "topic_ar": "السيارات الخارقة، أسرار المحركات الفارهة، وأغلى وأسرع السيارات في العالم",
+        "topic_en": "Bizarre hypercars, secret engine engineering, and the fastest luxury cars on earth",
+        "yt_category": "2",
+        "is_kids": False,
+        "is_cocomelon_music": False,
+        "affiliate_url": "https://your-link.example.com/supercars",
+    },
+    {
+        "niche_num": 2,
+        "slug": "ai_tech",
+        "title_ar": "الذكاء الاصطناعي وتقنيات المستقبل",
+        "title_en": "AI Revolution & Future Tech",
+        "topic_ar": "أحدث أدوات الذكاء الاصطناعي، الاختراعات المستقبلية، والروبوتات المذهلة",
+        "topic_en": "Next-gen AI tools, futuristic robotics, and mind-blowing tech breakthroughs",
+        "yt_category": "28",
+        "is_kids": False,
+        "is_cocomelon_music": False,
+        "affiliate_url": "https://your-link.example.com/ai-tools",
+    },
+    {
+        "niche_num": 3,
+        "slug": "wealth_business",
+        "title_ar": "أسرار الثروة وإمبراطوريات المال",
+        "title_en": "Billionaire Empires & Wealth Secrets",
+        "topic_ar": "قصص صعود المليارديرات، الخدع التسويقية للشركات الكبرى، وأسرار صناعة الثروة",
+        "topic_en": "Untold billionaire stories, corporate plot twists, and dark marketing strategies",
+        "yt_category": "27",
+        "is_kids": False,
+        "is_cocomelon_music": False,
+        "affiliate_url": "https://your-link.example.com/wealth",
+    },
+    {
+        "niche_num": 4,
+        "slug": "psychology",
+        "title_ar": "أسرار النفس البشرية ولغة الجسد",
+        "title_en": "Applied Psychology & Human Behavior",
+        "topic_ar": "حقائق علم النفس التطبيقي، لغة الجسد، وكيف يفكر العقل البشري في المواقف الصعبة",
+        "topic_en": "Applied psychology tricks, body language secrets, and how the human brain reacts",
+        "yt_category": "27",
+        "is_kids": False,
+        "is_cocomelon_music": False,
+        "affiliate_url": "https://your-link.example.com/psychology",
+    },
+    {
+        "niche_num": 5,
+        "slug": "mystery_history",
+        "title_ar": "ألغاز التاريخ والحضارات المفقودة",
+        "title_en": "Ancient Mysteries & Forbidden History",
+        "topic_ar": "أغرب الاكتشافات الأثرية المحيرة، أسرار الفراعنة، والحضارات المفقودة",
+        "topic_en": "Unexplained archaeological discoveries, ancient civilizations, and historical enigmas",
+        "yt_category": "27",
+        "is_kids": False,
+        "is_cocomelon_music": False,
+        "affiliate_url": "https://your-link.example.com/history",
+    },
+    {
+        "niche_num": 6,
+        "slug": "space_cosmos",
+        "title_ar": "عجائب الفضاء والكون العميق",
+        "title_en": "Deep Cosmos & Space Phenomena",
+        "topic_ar": "الثقوب السوداء، الكواكب المكتشفة حديثاً، وأغرب الظواهر الكونية",
+        "topic_en": "Terrifying exoplanets, black hole paradoxes, and deep space discoveries",
+        "yt_category": "28",
+        "is_kids": False,
+        "is_cocomelon_music": False,
+        "affiliate_url": "https://your-link.example.com/space",
+    },
+    {
+        "niche_num": 7,
+        "slug": "health_body",
+        "title_ar": "معجزات الجسم البشري والصحة",
+        "title_en": "Human Body Marvels & Longevity",
+        "topic_ar": "ماذا يحدث داخل جسمك في المواقف الغريبة، أسرار المناعة، وعلم إطالة العمر",
+        "topic_en": "What happens inside the human body under extreme conditions and longevity science",
+        "yt_category": "28",
+        "is_kids": False,
+        "is_cocomelon_music": False,
+        "affiliate_url": "https://your-link.example.com/health",
+    },
+    {
+        "niche_num": 8,
+        "slug": "heists_mysteries",
+        "title_ar": "أذكى الخطط والقضايا الغامضة",
+        "title_en": "Mastermind Heists & Unsolved Cases",
+        "topic_ar": "أذكى عمليات الهروب والسرقات التاريخية، والألغاز البوليسية المحيرة",
+        "topic_en": "Ingenious historical heists, impossible prison escapes, and detective mysteries",
+        "yt_category": "24",
+        "is_kids": False,
+        "is_cocomelon_music": False,
+        "affiliate_url": "https://your-link.example.com/cases",
+    },
+    {
+        "niche_num": 9,
+        "slug": "megaprojects_gadgets",
+        "title_ar": "أضخم المشاريع والاختراعات الذكية",
+        "title_en": "Megaprojects & Insane Inventions",
+        "topic_ar": "المدن العملاقة، الجسور المستحيلة، والآلات الهندسية العملاقة",
+        "topic_en": "Billion-dollar megaprojects, giant heavy machinery, and impossible engineering",
+        "yt_category": "28",
+        "is_kids": False,
+        "is_cocomelon_music": False,
+        "affiliate_url": "https://your-link.example.com/gadgets",
+    },
+    {
+        "niche_num": 10,
+        "slug": "kids_fables",
+        "title_ar": "حكايات وعجائب الحيوانات للأطفال",
+        "title_en": "Kids Animal Kingdom & Wonder Tales",
+        "topic_ar": "قصص ممتعة ومبهجة للأطفال عن عالم الحيوانات الأليفة والغابة والحكم الذكية",
+        "topic_en": "Fun, colorful educational stories for kids about amazing animals and nature wonders",
+        "yt_category": "1",
+        "is_kids": True,
+        "is_cocomelon_music": False,
+        "affiliate_url": "https://your-link.example.com/kids-books",
+    },
+    # المجال الحادي عشر: قناتا CoComelon لأغاني وأناشيد الأطفال الكرتونية (عربي وإنجليزي)
+    {
+        "niche_num": 11,
+        "slug": "cocomelon_songs",
+        "title_ar": "أغاني بيبي كيدز الكرتونية (CoComelon عربي)",
+        "title_en": "Baby Joy Sing-Along (CoComelon English)",
+        "topic_ar": "أغاني وأناشيد أطفال كرتونية مرحة وتعليمية عن الألوان والأرقام والعادات الصحية والحيوانات",
+        "topic_en": "Super catchy animated 3D nursery rhymes, learning colors, numbers, bedtime songs and joyful toddler dances",
+        "yt_category": "1",
+        "is_kids": True,
+        "is_cocomelon_music": True,  # يشغّل مولد أغاني Suno والتبديل بين الحسابات
+        "affiliate_url": "https://your-link.example.com/cocomelon-merch",
+    },
+]
+
+
+def build_22_channels_matrix() -> List[Dict]:
+    channels: List[Dict] = []
+    for item in BASE_ELEVEN_NICHES:
+        n = item["niche_num"]
+        channels.append(
+            {
+                "id": f"ch{n:02d}_ar_{item['slug']}",
+                "niche_num": n,
+                "secret_suffix": f"CH{n:02d}_AR",
+                "name": f"{item['title_ar']} (AR)",
+                "niche": item["topic_ar"],
+                "language": "ar",
+                "voice": "ar-EG-SalmaNeural" if item["is_kids"] else "ar-EG-ShakirNeural",
+                "voice_rate": "+10%" if item["is_kids"] else "+14%",
+                "youtube_category_id": item["yt_category"],
+                "is_kids": item["is_kids"],
+                "is_cocomelon_music": item.get("is_cocomelon_music", False),
+                "affiliate_cta": "اكتشف أحدث قصص وألعاب الأطفال المصورة من هنا:",
+                "affiliate_url": item["affiliate_url"],
+                "default_hashtags": ["cocomelon", "أغاني_أطفال", "بيبي", "shorts", "kids"],
+            }
+        )
+        channels.append(
+            {
+                "id": f"ch{n:02d}_en_{item['slug']}",
+                "niche_num": n,
+                "secret_suffix": f"CH{n:02d}_EN",
+                "name": f"{item['title_en']} (EN)",
+                "niche": item["topic_en"],
+                "language": "en",
+                "voice": "en-US-AriaNeural" if item["is_kids"] else "en-US-ChristopherNeural",
+                "voice_rate": "+8%" if item["is_kids"] else "+12%",
+                "youtube_category_id": item["yt_category"],
+                "is_kids": item["is_kids"],
+                "is_cocomelon_music": item.get("is_cocomelon_music", False),
+                "affiliate_cta": "Explore our cute sing-along storybooks and toys:",
+                "affiliate_url": item["affiliate_url"],
+                "default_hashtags": ["cocomelon", "nurseryrhymes", "babysongs", "shorts", "kids"],
+            }
+        )
+    return channels
+
+
+CHANNELS_22_MATRIX = build_22_channels_matrix()
+
+
+# ==============================================================================
+# 3. محرك Suno الذكي مع التبديل التلقائي بين الحسابات عند انتهاء الرصيد
+# ==============================================================================
+class SunoAccountRotator:
+    """
+    يدير مجموعة من حسابات Suno المجانية (Tokens / Session Cookies).
+    عند انتهاء الرصيد اليومي (Daily Limit) في حساب، ينتقل تلقائياً للحساب التالي
+    لتوليد الأغاني دون توقف النظام.
+    """
+
+    def __init__(self, tokens: List[str]):
+        self.tokens = tokens
+        self.current_idx = 0
+
+    def get_active_token(self) -> Optional[str]:
+        if not self.tokens:
+            return None
+        return self.tokens[self.current_idx % len(self.tokens)]
+
+    def rotate_to_next(self) -> Optional[str]:
+        if not self.tokens:
+            return None
+        self.current_idx += 1
+        print(
+            f"🔄 [Suno Rotator] تم التبديل للحساب رقم {self.current_idx + 1} لتفادي حد الاستخدام..."
+        )
+        return self.get_active_token()
+
+    def generate_cocomelon_song(
+        self, lyrics: str, title: str, dest_audio_path: Path, language: str = "en"
+    ) -> bool:
+        style_prompt = (
+            "Upbeat joyful nursery rhyme, CoComelon style, cheerful female toddler vocals, acoustic guitar, bouncy catchy melody, 4k audio"
+            if language == "en"
+            else "أنشودة أطفال كرتونية مرحة، أسلوب كوكوميلون، صوت طفولي مبهج، ألحان سعيدة وواضحة جداً للأطفال"
+        )
+
+        attempts = max(1, len(self.tokens))
+        for _ in range(attempts):
+            token = self.get_active_token()
+            if not token:
+                break
+
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            }
+            payload = {
+                "prompt": lyrics[:800],
+                "tags": style_prompt,
+                "title": title[:70],
+                "make_instrumental": False,
+                "mv": "chirp-v3-5",
+            }
+
+            try:
+                # محاولة الاتصال بنقطة توليد الأغاني في Suno
+                resp = requests.post(
+                    "https://studio-api.prod.suno.com/api/generate/v2-web/",
+                    headers=headers,
+                    json=payload,
+                    timeout=30,
+                )
+                if resp.status_code in (401, 402, 429):
+                    print(f"⚠️ [Suno Limit] الحساب الحالي وصل للحد الأقصى أو منتهي الصلاحية.")
+                    self.rotate_to_next()
+                    continue
+
+                resp.raise_for_status()
+                clips = resp.json().get("clips", [])
+                if not clips:
+                    self.rotate_to_next()
+                    continue
+
+                clip_id = clips[0]["id"]
+                print(f"   🎵 جاري تلحين وغناء الأنشودة عبر Suno (معرف: {clip_id})...")
+
+                # الاستعلام المتكرر حتى اكتمال الأغنية
+                for _ in range(25):
+                    time.sleep(6)
+                    feed_resp = requests.get(
+                        f"https://studio-api.prod.suno.com/api/feed/?ids={clip_id}",
+                        headers=headers,
+                        timeout=20,
+                    )
+                    if feed_resp.ok:
+                        data = feed_resp.json()
+                        item = data[0] if isinstance(data, list) and data else None
+                        if item and item.get("audio_url"):
+                            audio_url = item["audio_url"]
+                            urllib.request.urlretrieve(audio_url, dest_audio_path)
+                            print(f"   ✅ تم استخراج الأغنية بنجاح من Suno وحفظها في {dest_audio_path.name}")
+                            return True
+
+            except Exception as exc:
+                print(f"   [تنبيه Suno]: {exc}")
+                self.rotate_to_next()
+
+        print("ℹ️ لم يتم الاتصال بحساب Suno؛ سيتم استخدام المحرك الصوتي الغنائي البديل تلقائياً.")
+        return False
+
+
+SUNO_ROTATOR = SunoAccountRotator(GLOBAL_CONFIG["SUNO_TOKENS_POOL"])
+
+
+# ==============================================================================
+# 4. توليد سكريبتات الأغاني الكرتونية والوثائقيات عبر Gemini Pro
+# ==============================================================================
+def call_gemini_json(prompt: str) -> Dict:
+    api_key = GLOBAL_CONFIG["GEMINI_API_KEY"]
+    model = GLOBAL_CONFIG["GEMINI_MODEL"]
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"responseMimeType": "application/json", "temperature": 0.88},
+    }
+    resp = requests.post(url, json=payload, timeout=90)
+    resp.raise_for_status()
+    return json.loads(resp.json()["candidates"][0]["content"]["parts"][0]["text"])
+
+
+def generate_cocomelon_song_script(channel: Dict) -> Dict:
+    lang_label = "Arabic" if channel["language"] == "ar" else "English"
+    seed = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    prompt = f"""
+    You are a Lead Songwriter for CoComelon and Disney Junior nursery rhymes.
+    Channel: {channel['name']}
+    Language: {lang_label}
+    Seed: {seed}
+
+    Write a super fun, catchy, and repetitive educational toddler song/rhyme (duration 35-45 seconds, ~75 words):
+    - Topic: Choose between (Eating colorful veggies, Brushing teeth happy, Baby animals sound, Wheels on the toy car, Tidying up toys).
+    - Structure: 2 short catchy rhyming verses + super joyful repetitive chorus (words that toddlers love to repeat).
+    - Visual queries: 8 specific English visual keywords to find 3D cute cartoon baby/animal animations on Pexels (e.g., "cute 3d cartoon baby", "animated baby animal playing", "colorful 3d kindergarten toys").
+
+    Return strict JSON:
+    {{
+      "title": "Joyful Song Title #shorts",
+      "thumbnail_hook": "3-word cute cover hook in {lang_label}",
+      "lyrics": "The full rhyming song lyrics to sing in {lang_label}",
+      "script": "The spoken/singing lyrics in {lang_label}",
+      "engagement_question": "Do your little ones love this song? Sing along!",
+      "search_queries": [
+        "cute 3d cartoon baby playing", "colorful 3d toys animated", "baby dancing cartoon 3d",
+        "cute happy animal 3d cartoon", "kindergarten animation 3d", "smiling toddler cartoon",
+        "rainbow colors 3d animated", "fun nursery rhymes 3d"
+      ],
+      "tags": ["cocomelon", "nurseryrhymes", "babysongs", "kids", "shorts"]
+    }}
+    """
+    return call_gemini_json(prompt)
+
+
+def generate_short_script(channel: Dict) -> Dict:
+    if channel.get("is_cocomelon_music"):
+        return generate_cocomelon_song_script(channel)
+
+    lang_label = "Arabic" if channel["language"] == "ar" else "English"
+    seed = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    prompt = f"""
+    Viral YouTube Shorts Retention Engineer.
+    Channel: {channel['name']} | Niche: {channel['niche']} | Language: {lang_label} | Seed: {seed}
+    Create a 32s Short script (90-100 words):
+    1. First 1.5s Anti-Swipe Hook.
+    2. Seamless Infinite Loop (last 4 words connect grammatically to the first word).
+    3. 3-4 word thumbnail hook.
+    4. Polarizing debate question for comments.
+    5. 8 specific English visual search queries for Pexels stock video.
+
+    Return strict JSON:
+    {{
+      "title": "Viral title #shorts",
+      "thumbnail_hook": "3-word hook",
+      "script": "Voiceover script in {lang_label}",
+      "engagement_question": "Debate question in {lang_label}",
+      "search_queries": ["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8"],
+      "tags": {json.dumps(channel['default_hashtags'], ensure_ascii=False)}
+    }}
+    """
+    return call_gemini_json(prompt)
+
+
+def generate_long_form_script(channel: Dict) -> Dict:
+    lang_label = "Arabic" if channel["language"] == "ar" else "English"
+    seed = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # إذا كانت قناة CoComelon، ينتج تجميعة أغاني أطفال طويلة (Compilations)
+    if channel.get("is_cocomelon_music"):
+        prompt = f"""
+        CoComelon Compilation Producer.
+        Channel: {channel['name']} | Language: {lang_label} | Seed: {seed}
+        Write a complete 8-minute Kids Sing-Along Compilation consisting of 5 cheerful nursery rhymes connected by joyful transitions (~1,000 words total).
+        Return strict JSON:
+        {{
+          "title": "CoComelon Sing-Along Nursery Rhymes Compilation (8 Mins)",
+          "thumbnail_hook": "3-word cute hook in {lang_label}",
+          "chapters": [
+            "Verse & Chorus of Song 1...",
+            "Transition & Song 2...",
+            "Transition & Song 3...",
+            "Transition & Song 4...",
+            "Transition & Song 5 and Goodbye Chorus..."
+          ],
+          "engagement_question": "Which song was your child's favorite?",
+          "search_queries": [
+            "cute 3d cartoon baby", "kindergarten animation 3d", "3d cartoon animal singing",
+            "colorful nursery rhyme 3d", "happy kids cartoon dancing", "3d toys background",
+            "baby dancing 3d animation", "bright colors cartoon playground", "cute cartoon family 3d",
+            "little baby smile 3d cartoon", "cheerful cartoon classroom", "rainbow animation 3d",
+            "toddler playing cartoon 3d", "cute cartoon bear dancing", "animated 3d bus toys",
+            "happy cartoon characters 3d"
+          ],
+          "tags": ["cocomelon", "nurseryrhymes", "compilation", "kids"]
+        }}
+        """
+        data = call_gemini_json(prompt)
+        data["script"] = "\n\n".join(data.get("chapters", []))
+        return data
+
+    prompt = f"""
+    Documentary Showrunner.
+    Channel: {channel['name']} | Niche: {channel['niche']} | Language: {lang_label} | Seed: {seed}
+    Write an 8-minute 5-chapter documentary (~1,100 words total across 5 chapters).
+    Return strict JSON:
+    {{
+      "title": "Documentary title",
+      "thumbnail_hook": "3-word thumbnail hook",
+      "chapters": ["Ch1 text...", "Ch2 text...", "Ch3 text...", "Ch4 text...", "Ch5 text..."],
+      "engagement_question": "Discussion question",
+      "search_queries": ["q1","q2","q3","q4","q5","q6","q7","q8","q9","q10","q11","q12","q13","q14","q15","q16"],
+      "tags": ["documentary", "viral"]
+    }}
+    """
+    data = call_gemini_json(prompt)
+    data["script"] = "\n\n".join(data.get("chapters", []))
+    return data
+
+
+# ==============================================================================
+# 5. الصوت والمونتاج (مع نصوص Sing-Along الكرتونية المضيئة لقناتي CoComelon)
+# ==============================================================================
+async def create_voice_track_and_subtitles(
+    metadata: Dict, channel: Dict, audio_path: Path, srt_path: Path
+) -> None:
+    # لقناتي CoComelon: نحاول أولاً استخدام سيرفرات Suno مع التبديل التلقائي بين الحسابات
+    if channel.get("is_cocomelon_music"):
+        lyrics_text = metadata.get("lyrics", metadata["script"])
+        success = SUNO_ROTATOR.generate_cocomelon_song(
+            lyrics=lyrics_text,
+            title=metadata["title"],
+            dest_audio_path=audio_path,
+            language=channel["language"],
+        )
+        if success:
+            # توليد ملف الترجمة المتزامن للأغنية
+            await generate_srt_from_text(lyrics_text, channel, srt_path)
+            return
+
+    # المحرك الصوتي الأساسي (أو البديل في حال عدم توفر Suno)
+    communicate = edge_tts.Communicate(
+        text=metadata["script"],
+        voice=channel["voice"],
+        rate=channel["voice_rate"],
+    )
+    submaker = edge_tts.SubMaker()
+    with open(audio_path, "wb") as af:
+        async for chunk in communicate.stream():
+            if chunk["type"] == "audio":
+                af.write(chunk["data"])
+            elif chunk["type"] == "WordBoundary":
+                submaker.feed(chunk)
+    with open(srt_path, "w", encoding="utf-8") as sf:
+        sf.write(submaker.get_srt())
+
+
+async def generate_srt_from_text(text: str, channel: Dict, srt_path: Path) -> None:
+    dummy_audio = srt_path.parent / "temp_dummy.mp3"
+    comm = edge_tts.Communicate(text=text, voice=channel["voice"], rate=channel["voice_rate"])
+    submaker = edge_tts.SubMaker()
+    with open(dummy_audio, "wb") as af:
+        async for chunk in comm.stream():
+            if chunk["type"] == "audio":
+                af.write(chunk["data"])
+            elif chunk["type"] == "WordBoundary":
+                submaker.feed(chunk)
+    with open(srt_path, "w", encoding="utf-8") as sf:
+        sf.write(submaker.get_srt())
+    if dummy_audio.exists():
+        dummy_audio.unlink()
+
+
+def create_scroll_stopping_thumbnail(
+    video_clip_path: Path,
+    hook_text: str,
+    output_thumb_path: Path,
+    is_vertical: bool = False,
+    is_kids: bool = False,
+) -> Path:
+    w, h = (1080, 1920) if is_vertical else (1280, 720)
+    raw_frame_path = output_thumb_path.parent / "raw_frame.jpg"
+
+    subprocess.run(
+        [
+            "ffmpeg", "-y",
+            "-ss", "00:00:01.00",
+            "-i", str(video_clip_path),
+            "-frames:v", "1",
+            "-vf", f"scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h}",
+            str(raw_frame_path),
+        ],
+        check=True,
+    )
+
+    img = Image.open(raw_frame_path).convert("RGB")
+    img = ImageEnhance.Contrast(img).enhance(1.28)
+    img = ImageEnhance.Color(img).enhance(1.35)
+
+    draw = ImageDraw.Draw(img, "RGBA")
+    b_top = int(h * 0.62) if is_vertical else int(h * 0.58)
+    b_bottom = int(h * 0.82) if is_vertical else int(h * 0.88)
+
+    # إطار كرتوني باللون الوردي المبهج للأطفال أو الذهبي للمجالات الأخرى
+    border_color = (255, 105, 180, 255) if is_kids else (255, 215, 0, 255)
+    draw.rectangle([(0, 0), (w - 1, h - 1)], outline=border_color, width=14)
+
+    draw.rectangle([(40, b_top), (w - 40, b_bottom)], fill=(15, 15, 25, 225))
+    draw.rectangle([(40, b_top), (w - 40, b_top + 16)], fill=(255, 69, 0, 255))
+
+    font_sz = 68 if is_vertical else 64
+    font = None
+    for candidate in [
+        "/usr/share/fonts/truetype/noto/NotoSansArabic-Bold.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+    ]:
+        if Path(candidate).exists():
+            font = ImageFont.truetype(candidate, font_sz)
+            break
+    if font is None:
+        font = ImageFont.load_default()
+
+    tbox = draw.textbbox((0, 0), hook_text, font=font)
+    tw, th = tbox[2] - tbox[0], tbox[3] - tbox[1]
+    tx = max(60, (w - tw) // 2)
+    ty = b_top + ((b_bottom - b_top - th) // 2)
+
+    draw.text((tx + 4, ty + 4), hook_text, font=font, fill=(0, 0, 0, 255))
+    text_color = (255, 255, 0, 255) if not is_kids else (0, 255, 255, 255)
+    draw.text((tx, ty), hook_text, font=font, fill=text_color)
+
+    img.save(output_thumb_path, "JPEG", quality=92)
+    return output_thumb_path
+
+
+def render_complete_video(
+    clips: List[Path],
+    audio_path: Path,
+    srt_path: Path,
+    final_path: Path,
+    work_dir: Path,
+    is_vertical: bool = True,
+    is_cocomelon: bool = False,
+    poster_thumb_path: Optional[Path] = None,
+) -> Path:
+    total_dur = float(
+        subprocess.run(
+            [
+                "ffprobe", "-v", "error", "-show_entries", "format=duration",
+                "-of", "default=noprint_wrappers=1:nokey=1", str(audio_path),
+            ],
+            capture_output=True, text=True, check=True,
+        ).stdout.strip()
+    )
+
+    cut_sec = (
+        GLOBAL_CONFIG["SHORT_CLIP_SWITCH_SEC"]
+        if is_vertical
+        else GLOBAL_CONFIG["LONG_CLIP_SWITCH_SEC"]
+    )
+    w, h = (1080, 1920) if is_vertical else (1920, 1080)
+    needed = max(1, int(total_dur // cut_sec) + 1)
+
+    segments: List[Path] = []
+    if is_vertical and poster_thumb_path and poster_thumb_path.exists():
+        intro_seg = work_dir / "seg_intro_poster.mp4"
+        subprocess.run(
+            [
+                "ffmpeg", "-y", "-loop", "1", "-i", str(poster_thumb_path),
+                "-t", "0.40", "-vf", f"scale={w}:{h},fps=30,format=yuv420p",
+                "-c:v", "libx264", "-preset", "fast", str(intro_seg),
+            ],
+            check=True,
+        )
+        segments.append(intro_seg)
+
+    for i in range(needed):
+        src = clips[i % len(clips)]
+        seg_out = work_dir / f"seg_{i}.mp4"
+        vf = (
+            f"scale={int(w*1.05)}:{int(h*1.05)}:force_original_aspect_ratio=increase,"
+            f"crop={w}:{h},fps=30,eq=contrast=1.06:saturation=1.14,format=yuv420p"
+        )
+        subprocess.run(
+            [
+                "ffmpeg", "-y", "-stream_loop", "-1", "-i", str(src),
+                "-t", f"{cut_sec:.2f}", "-vf", vf, "-an",
+                "-c:v", "libx264", "-preset", "fast", str(seg_out),
+            ],
+            check=True,
+        )
+        segments.append(seg_out)
+
+    concat_txt = work_dir / "concat.txt"
+    with open(concat_txt, "w", encoding="utf-8") as f:
+        for s in segments:
+            f.write(f"file '{s.resolve()}'\n")
+
+    merged_v = work_dir / "merged_v.mp4"
+    subprocess.run(
+        ["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(concat_txt), "-c", "copy", str(merged_v)],
+        check=True,
+    )
+
+    escaped_srt = str(srt_path.resolve()).replace("\\", "/").replace(":", "\\:")
+    # ستايل الكلمات الغنائية الكرتونية المضيئة CoComelon Sing-Along
+    if is_cocomelon:
+        style = (
+            "FontName=Arial,FontSize=24,Bold=1,PrimaryColour=&H0000FFFF,"
+            "OutlineColour=&H00FF00FF,BorderStyle=3,Outline=4,Shadow=1,Alignment=2,MarginV=80"
+        )
+    else:
+        margin_v = 75 if is_vertical else 40
+        font_sz = 20 if is_vertical else 18
+        style = (
+            f"FontName=Arial,FontSize={font_sz},Bold=1,PrimaryColour=&H0000FFFF,"
+            f"OutlineColour=&H00000000,BorderStyle=3,Outline=2,Shadow=1,Alignment=2,MarginV={margin_v}"
+        )
+
+    subprocess.run(
+        [
+            "ffmpeg", "-y",
+            "-i", str(merged_v),
+            "-i", str(audio_path),
+            "-t", f"{total_dur:.2f}",
+            "-vf", f"subtitles='{escaped_srt}':force_style='{style}'",
+            "-map", "0:v:0", "-map", "1:a:0",
+            "-c:v", "libx264", "-preset", "fast",
+            "-c:a", "aac", "-b:a", "192k",
+            str(final_path),
+        ],
+        check=True,
+    )
+    return final_path
+
+
+# ==============================================================================
+# 6. النشر التلقائي ورفع الصور المصغرة والربط بالقنوات الـ 22
+# ==============================================================================
+YOUTUBE_SCOPES = [
+    "https://www.googleapis.com/auth/youtube.upload",
+    "https://www.googleapis.com/auth/youtube.force-ssl",
+]
+
+
+def load_yt_credentials(channel: Dict, tokens_dir: Path):
+    from google.auth.transport.requests import Request
+    from google.oauth2.credentials import Credentials
+    from google_auth_oauthlib.flow import InstalledAppFlow
+
+    secret_val = os.getenv(f"YT_TOKEN_{channel['secret_suffix']}", "").strip()
+    token_file = tokens_dir / f"yt_token_{channel['id']}.json"
+    secrets_file = tokens_dir / "client_secrets.json"
+
+    creds = None
+    if secret_val:
+        # يدعم لصق الـ Refresh Token الخام مباشرة من متصفح Google OAuth Playground أو ملف JSON
+        if secret_val.startswith("{"):
+            creds = Credentials.from_authorized_user_info(json.loads(secret_val), YOUTUBE_SCOPES)
+        else:
+            creds = Credentials(
+                token=None,
+                refresh_token=secret_val,
+                token_uri="https://oauth2.googleapis.com/token",
+                client_id=os.getenv("YT_CLIENT_ID", "").strip(),
+                client_secret=os.getenv("YT_CLIENT_SECRET", "").strip(),
+                scopes=YOUTUBE_SCOPES,
+            )
+    elif token_file.exists():
+        creds = Credentials.from_authorized_user_file(str(token_file), YOUTUBE_SCOPES)
+
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+            if not secret_val:
+                token_file.write_text(creds.to_json(), encoding="utf-8")
+        elif secrets_file.exists() and not os.getenv("GITHUB_ACTIONS"):
+            flow = InstalledAppFlow.from_client_secrets_file(str(secrets_file), YOUTUBE_SCOPES)
+            creds = flow.run_local_server(port=0)
+            token_file.write_text(creds.to_json(), encoding="utf-8")
+        else:
+            return None
+    return creds
+
+
+def upload_to_youtube_with_thumbnail(
+    video_path: Path, thumb_path: Path, metadata: Dict, channel: Dict, tokens_dir: Path
+) -> Optional[str]:
+    from googleapiclient.discovery import build
+    from googleapiclient.http import MediaFileUpload
+
+    creds = load_yt_credentials(channel, tokens_dir)
+    if not creds:
+        print(f"   [YouTube - {channel['id']}] بانتظار توكن القناة YT_TOKEN_{channel['secret_suffix']}.")
+        return None
+
+    youtube = build("youtube", "v3", credentials=creds)
+    desc = (
+        f"{metadata['title']}\n\n"
+        f"🔥 {channel['affiliate_cta']}\n{channel['affiliate_url']}\n\n"
+        + " ".join(f"#{t}" for t in metadata.get("tags", ["viral"]))
+    )
+
+    body = {
+        "snippet": {
+            "title": metadata["title"][:100],
+            "description": desc[:4900],
+            "tags": metadata.get("tags", ["viral"]),
+            "categoryId": channel["youtube_category_id"],
+        },
+        "status": {"privacyStatus": "public", "selfDeclaredMadeForKids": channel["is_kids"]},
+    }
+
+    media = MediaFileUpload(str(video_path), chunksize=512 * 1024, resumable=True)
+    req = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
+    resp = None
+    while resp is None:
+        _, resp = req.next_chunk()
+
+    vid_id = resp.get("id")
+    print(f"   ✅ [YouTube - {channel['name']}] تم نشر الفيديو: https://youtu.be/{vid_id}")
+
+    if vid_id and thumb_path.exists():
+        try:
+            youtube.thumbnails().set(
+                videoId=vid_id, media_body=MediaFileUpload(str(thumb_path), mimetype="image/jpeg")
+            ).execute()
+            print(f"   🖼️ تم تركيب الصورة المصغرة الخاطفة تلقائياً على {vid_id}")
+        except Exception as exc:
+            print(f"   [ملاحظة الصورة المصغرة]: {exc}")
+
+    if vid_id and not channel["is_kids"]:
+        try:
+            c_text = (
+                f"💬 {metadata.get('engagement_question', '')}\n\n"
+                f"🔗 {channel['affiliate_cta']}\n{channel['affiliate_url']}"
+            )
+            youtube.commentThreads().insert(
+                part="snippet",
+                body={"snippet": {"videoId": vid_id, "topLevelComment": {"snippet": {"textOriginal": c_text}}}},
+            ).execute()
+        except Exception as exc:
+            print(f"   [ملاحظة التعليق]: {exc}")
+
+    return vid_id
+
+
+def publish_to_tiktok(video_path: Path, metadata: Dict, channel: Dict, tokens_dir: Path) -> bool:
+    suffix = channel["secret_suffix"]
+    cookie_file = tokens_dir / f"tiktok_cookies_{channel['id']}.txt"
+    secret_cookies = os.getenv(f"TIKTOK_COOKIES_{suffix}", "").strip()
+    if secret_cookies and not cookie_file.exists():
+        cookie_file.write_text(secret_cookies, encoding="utf-8")
+
+    if cookie_file.exists():
+        from tiktok_uploader.upload import upload_video
+
+        caption = f"{metadata['title']} " + " ".join(f"#{t}" for t in metadata.get("tags", ["fyp"]))
+        upload_video(
+            filename=str(video_path), description=caption[:150], cookies=str(cookie_file), headless=True
+        )
+        print(f"   ✅ [TikTok - {channel['name']}] تم النشر بنجاح!")
+        return True
+    return False
+
+
+# ==============================================================================
+# 7. مشغل الإنتاج للـ 22 قناة (Shorts + Long-Form)
+# ==============================================================================
+async def run_channel_job(channel: Dict, mode: str) -> None:
+    tokens_dir = Path(GLOBAL_CONFIG["TOKENS_DIR"])
+    tokens_dir.mkdir(parents=True, exist_ok=True)
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    work_dir = Path(GLOBAL_CONFIG["BASE_OUTPUT_DIR"]) / channel["id"] / f"{mode}_{ts}"
+    work_dir.mkdir(parents=True, exist_ok=True)
+
+    is_vertical = mode == "shorts"
+    print(f"\n🚀 [{mode.upper()}] إنتاج فيديو لقناة: {channel['name']} ({channel['id']})")
+
+    metadata = generate_short_script(channel) if is_vertical else generate_long_form_script(channel)
+    print(f"   📝 العنوان: {metadata['title']}")
+
+    audio_path = work_dir / "voice.mp3"
+    srt_path = work_dir / "captions.srt"
+    await create_voice_track_and_subtitles(metadata, channel, audio_path, srt_path)
+
+    orientation = "portrait" if is_vertical else "landscape"
+    clips: List[Path] = []
+    headers = {"Authorization": GLOBAL_CONFIG["PEXELS_API_KEY"]}
+    target_h = 1920 if orientation == "portrait" else 1080
+    for idx, q in enumerate(metadata["search_queries"]):
+        try:
+            r = requests.get(
+                "https://api.pexels.com/videos/search",
+                headers=headers,
+                params={"query": q, "orientation": orientation, "size": "medium", "per_page": 3},
+                timeout=20,
+            )
+            vids = r.json().get("videos", [])
+            if vids:
+                vfiles = [f for f in vids[0].get("video_files", []) if f.get("file_type") == "video/mp4"]
+                if vfiles:
+                    vfiles.sort(key=lambda x: abs((x.get("height") or 0) - target_h))
+                    cp = work_dir / f"clip_{idx}.mp4"
+                    urllib.request.urlretrieve(vfiles[0]["link"], cp)
+                    clips.append(cp)
+        except Exception:
+            pass
+
+    if not clips:
+        raise RuntimeError("تعذر جلب المشاهد من Pexels.")
+
+    thumb_path = work_dir / "custom_thumbnail.jpg"
+    create_scroll_stopping_thumbnail(
+        clips[0],
+        metadata.get("thumbnail_hook", metadata["title"][:25]),
+        thumb_path,
+        is_vertical=is_vertical,
+        is_kids=channel["is_kids"],
+    )
+
+    final_video = work_dir / f"{channel['id']}_{mode}.mp4"
+    render_complete_video(
+        clips,
+        audio_path,
+        srt_path,
+        final_video,
+        work_dir,
+        is_vertical=is_vertical,
+        is_cocomelon=channel.get("is_cocomelon_music", False),
+        poster_thumb_path=thumb_path,
+    )
+
+    upload_to_youtube_with_thumbnail(final_video, thumb_path, metadata, channel, tokens_dir)
+    if is_vertical:
+        publish_to_tiktok(final_video, metadata, channel, tokens_dir)
+
+
+async def execute_filtered_channels(niche_num: Optional[int], mode: str) -> None:
+    targets = [
+        ch for ch in CHANNELS_22_MATRIX if (niche_num is None or ch["niche_num"] == niche_num)
+    ]
+    for ch in targets:
+        try:
+            await run_channel_job(ch, mode=mode)
+        except Exception as exc:
+            print(f"⚠️ خطأ في {ch['id']} ({mode}): {exc}")
+
+
+def authenticate_all_22_channels_once() -> None:
+    tokens_dir = Path(GLOBAL_CONFIG["TOKENS_DIR"])
+    tokens_dir.mkdir(parents=True, exist_ok=True)
+    secrets_file = tokens_dir / "client_secrets.json"
+    if not secrets_file.exists():
+        print(f"يرجى وضع ملف {secrets_file} أولاً.")
+        return
+
+    from google_auth_oauthlib.flow import InstalledAppFlow
+
+    for ch in CHANNELS_22_MATRIX:
+        tfile = tokens_dir / f"yt_token_{ch['id']}.json"
+        if tfile.exists():
+            print(f"✔️ القناة {ch['name']} جاهزة ({tfile.name}).")
+            continue
+        input(f"اضغط Enter لتسجيل الدخول إلى قناة [{ch['name']}]...")
+        flow = InstalledAppFlow.from_client_secrets_file(str(secrets_file), YOUTUBE_SCOPES)
+        creds = flow.run_local_server(port=0)
+        tfile.write_text(creds.to_json(), encoding="utf-8")
+        print(f"✅ تم الحفظ! انسخ محتوى {tfile.name} إلى GitHub Secret باسم YT_TOKEN_{ch['secret_suffix']}")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="محرك الـ 22 قناة السحابي (شامل أغاني Suno CoComelon)")
+    parser.add_argument("--auth-once", action="store_true", help="توليد توكنات الـ 22 قناة لمرة واحدة")
+    parser.add_argument("--mode", choices=["shorts", "long", "both"], default="both")
+    parser.add_argument("--niche-num", type=int, default=None, help="رقم المجال (1 إلى 11) للتشغيل المتوازي")
+    args = parser.parse_args()
+
+    if args.auth_once:
+        authenticate_all_22_channels_once()
+    else:
+        if args.mode in ("shorts", "both"):
+            asyncio.run(execute_filtered_channels(args.niche_num, "shorts"))
+        if args.mode in ("long", "both"):
+            asyncio.run(execute_filtered_channels(args.niche_num, "long"))
