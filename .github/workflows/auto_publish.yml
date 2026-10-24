@@ -1,0 +1,90 @@
+# احفظ هذا الملف داخل مستودع GitHub العام (Public Repo) في المسار:
+# .github/workflows/auto_publish.yml
+# ملاحظة ذهبية: استخدام Public Repo يجعل دقائق التشغيل السحابية على GitHub مجانية وغير محدودة (100% Free)،
+# بينما تظل جميع مفاتيحك وتوكنات قنواتك الـ 22 مشفرة ومخفية تماماً داخل GitHub Secrets!
+
+name: Autonomous 22-Channel Video Empire (Shorts + Long-Form + Suno Kids Music)
+
+on:
+  schedule:
+    # 4 دورات يومياً للشورتس (9:00, 13:00, 17:00, 20:00 UTC) + دورتان للفيديو الطويل (13:00, 20:00 UTC)
+    - cron: '0 9,13,17,20 * * *'
+  workflow_dispatch:
+    inputs:
+      run_mode:
+        description: 'نوع الإنتاج (shorts أو long أو both)'
+        required: false
+        default: 'both'
+
+jobs:
+  parallel-11-niches-22-channels:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        # 11 سيرفر سحابي متوازي في نفس اللحظة (السيرفر 11 مخصص لقناتي CoComelon وأغاني Suno)
+        niche_num: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+
+    steps:
+      - name: 1. سحب الكود المصدري
+        uses: actions/checkout@v4
+
+      - name: 2. تثبيت FFmpeg والخطوط العربية والإنجليزية العريضة للصور المصغرة
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fonts-noto-core fonts-noto-extra fonts-dejavu-core
+
+      - name: 3. إعداد Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 4. تثبيت المكتبات المجانية
+        run: |
+          pip install --upgrade pip
+          pip install edge-tts requests pillow google-api-python-client google-auth-oauthlib tiktok-uploader playwright
+          playwright install chromium
+
+      - name: 5. تشغيل المحرك السحابي للقناتين (العربية والإنجليزية)
+        env:
+          GEMINI_MODEL: "gemini-2.5-pro"
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          # قائمة توكنات حسابات Suno المجانية المتعددة للتبديل التلقائي
+          SUNO_TOKENS_POOL: ${{ secrets.SUNO_TOKENS_POOL }}
+          YT_TOKEN_CH01_AR: ${{ secrets.YT_TOKEN_CH01_AR }}
+          YT_TOKEN_CH01_EN: ${{ secrets.YT_TOKEN_CH01_EN }}
+          YT_TOKEN_CH02_AR: ${{ secrets.YT_TOKEN_CH02_AR }}
+          YT_TOKEN_CH02_EN: ${{ secrets.YT_TOKEN_CH02_EN }}
+          YT_TOKEN_CH03_AR: ${{ secrets.YT_TOKEN_CH03_AR }}
+          YT_TOKEN_CH03_EN: ${{ secrets.YT_TOKEN_CH03_EN }}
+          YT_TOKEN_CH04_AR: ${{ secrets.YT_TOKEN_CH04_AR }}
+          YT_TOKEN_CH04_EN: ${{ secrets.YT_TOKEN_CH04_EN }}
+          YT_TOKEN_CH05_AR: ${{ secrets.YT_TOKEN_CH05_AR }}
+          YT_TOKEN_CH05_EN: ${{ secrets.YT_TOKEN_CH05_EN }}
+          YT_TOKEN_CH06_AR: ${{ secrets.YT_TOKEN_CH06_AR }}
+          YT_TOKEN_CH06_EN: ${{ secrets.YT_TOKEN_CH06_EN }}
+          YT_TOKEN_CH07_AR: ${{ secrets.YT_TOKEN_CH07_AR }}
+          YT_TOKEN_CH07_EN: ${{ secrets.YT_TOKEN_CH07_EN }}
+          YT_TOKEN_CH08_AR: ${{ secrets.YT_TOKEN_CH08_AR }}
+          YT_TOKEN_CH08_EN: ${{ secrets.YT_TOKEN_CH08_EN }}
+          YT_TOKEN_CH09_AR: ${{ secrets.YT_TOKEN_CH09_AR }}
+          YT_TOKEN_CH09_EN: ${{ secrets.YT_TOKEN_CH09_EN }}
+          YT_TOKEN_CH10_AR: ${{ secrets.YT_TOKEN_CH10_AR }}
+          YT_TOKEN_CH10_EN: ${{ secrets.YT_TOKEN_CH10_EN }}
+          YT_TOKEN_CH11_AR: ${{ secrets.YT_TOKEN_CH11_AR }}
+          YT_TOKEN_CH11_EN: ${{ secrets.YT_TOKEN_CH11_EN }}
+        run: |
+          CURRENT_HOUR=$(date -u +%H)
+          MODE="${{ github.event.inputs.run_mode }}"
+          if [ -z "$MODE" ]; then
+            if [ "$CURRENT_HOUR" = "13" ] || [ "$CURRENT_HOUR" = "20" ]; then
+              MODE="both"
+            else
+              MODE="shorts"
+            fi
+          fi
+          python auto_video_pipeline.py --niche-num ${{ matrix.niche_num }} --mode $MODE
