@@ -87,4 +87,5 @@ jobs:
               MODE="shorts"
             fi
           fi
-          python "$GITHUB_WORKSPACE/auto_video_pipeline.py" --niche-num ${{ matrix.niche_num }} --mode $MODE
+      # استخدام المسار المباشر للملف من مساحة العمل الحالية
+          python ./auto_video_pipeline.py --niche-num ${{ matrix.niche_num }} --mode $MODE
