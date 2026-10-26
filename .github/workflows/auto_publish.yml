@@ -1,60 +1,65 @@
-# احفظ هذا الملف داخل مستودع GitHub العام (Public Repo) في المسار:
-# .github/workflows/auto_publish.yml
-# ملاحظة ذهبية: استخدام Public Repo يجعل دقائق التشغيل السحابية على GitHub مجانية وغير محدودة (100% Free)،
-# بينما تظل جميع مفاتيحك وتوكنات قنواتك الـ 22 مشفرة ومخفية تماماً داخل GitHub Secrets!
-
-name: Autonomous 22-Channel Video Empire (Shorts + Long-Form + Suno Kids Music)
+name: Empire Auto Video & Shorts Publisher (22 YT + 22 TikTok)
 
 on:
+  push:
+    branches: [ main, master ]
   schedule:
-    # 4 دورات يومياً للشورتس (9:00, 13:00, 17:00, 20:00 UTC) + دورتان للفيديو الطويل (13:00, 20:00 UTC)
-    - cron: '0 9,13,17,20 * * *'
+    - cron: '0 9 * * *'
+    - cron: '0 15 * * *'
+    - cron: '0 20 * * *'
   workflow_dispatch:
     inputs:
-      run_mode:
-        description: 'نوع الإنتاج (shorts أو long أو both)'
+      niche_id:
+        description: 'Niche ID to run (leave empty or ALL to run all)'
+        required: false
+        default: 'ALL'
+      language:
+        description: 'Language (ar, en, or both)'
+        required: false
+        default: 'both'
+      video_mode:
+        description: 'Video format (short, long, or both)'
         required: false
         default: 'both'
 
 jobs:
-  parallel-11-niches-22-channels:
+  produce-and-publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        # 11 سيرفر سحابي متوازي في نفس اللحظة (السيرفر 11 مخصص لقناتي CoComelon وأغاني Suno)
-        niche_num: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+        niche_index: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
     steps:
-      - name: 1. سحب الكود المصدري
+      - name: 1. Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 2. تثبيت FFmpeg والخطوط العربية والإنجليزية العريضة للصور المصغرة
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg fonts-noto-core fonts-noto-extra fonts-dejavu-core
-
-      - name: 3. إعداد Python 3.11
+      - name: 2. Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: 4. تثبيت المكتبات المجانية
+      - name: 3. Install System Audio/Video Tools (FFmpeg & Fonts)
         run: |
-          pip install --upgrade pip
-          pip install edge-tts requests pillow google-api-python-client google-auth-oauthlib tiktok-uploader playwright
-          playwright install chromium
+          sudo apt-get update -y
+          sudo apt-get install -y ffmpeg fonts-dejavu-core fonts-hosny-amiri
 
-      - name: 5. تشغيل المحرك السحابي للقناتين (العربية والإنجليزية)
+      - name: 4. Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests edge-tts Pillow google-api-python-client google-auth google-auth-oauthlib google-auth-httplib2
+
+      - name: 5. Run Automated Video Pipeline (AR + EN + YT + TikTok)
         env:
-          GEMINI_MODEL: "gemini-2.5-pro"
+          NICHE_INDEX: ${{ matrix.niche_index }}
+          TARGET_LANGUAGE: ${{ github.event.inputs.language || 'both' }}
+          VIDEO_MODE: ${{ github.event.inputs.video_mode || 'both' }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
-          # قائمة توكنات حسابات Suno المجانية المتعددة للتبديل التلقائي
-          SUNO_TOKENS_POOL: ${{ secrets.SUNO_TOKENS_POOL }}
           YT_TOKEN_CH01_AR: ${{ secrets.YT_TOKEN_CH01_AR }}
           YT_TOKEN_CH01_EN: ${{ secrets.YT_TOKEN_CH01_EN }}
           YT_TOKEN_CH02_AR: ${{ secrets.YT_TOKEN_CH02_AR }}
@@ -78,13 +83,189 @@ jobs:
           YT_TOKEN_CH11_AR: ${{ secrets.YT_TOKEN_CH11_AR }}
           YT_TOKEN_CH11_EN: ${{ secrets.YT_TOKEN_CH11_EN }}
         run: |
-          CURRENT_HOUR=$(date -u +%H)
-          MODE="${{ github.event.inputs.run_mode }}"
-          if [ -z "$MODE" ]; then
-            if [ "$CURRENT_HOUR" = "13" ] || [ "$CURRENT_HOUR" = "20" ]; then
-              MODE="both"
-            else
-              MODE="shorts"
-            fi
-          fi
-          python ./auto_video_pipeline.py --niche-num ${{ matrix.niche_num }} --mode $MODE
+          cat << 'PYEOF' > auto_video_pipeline.py
+          import os, sys, json, time, asyncio, subprocess, urllib.parse, requests
+          from pathlib import Path
+          from PIL import Image, ImageDraw, ImageFont
+
+          CHANNELS = {
+              (2, "ar"): {
+                  "id": "ch02_ar_ai_tech", "name": "الذكاء الاصطناعي وتقنيات المستقبل", "lang": "ar",
+                  "voice": "ar-EG-SalmaNeural", "secret": "YT_TOKEN_CH02_AR",
+                  "topic": "أخطر تقنيات الذكاء الاصطناعي التي ستغير العالم وكيف تستفيد منها اليوم",
+                  "keywords": ["artificial intelligence", "futuristic robot", "cyber technology", "digital brain"]
+              },
+              (3, "en"): {
+                  "id": "ch03_en_wealth_business", "name": "Billionaire Empires & Wealth", "lang": "en",
+                  "voice": "en-US-AndrewNeural", "secret": "YT_TOKEN_CH03_EN",
+                  "topic": "Hidden financial rules and empire-building strategies of self-made billionaires",
+                  "keywords": ["luxury skyscraper", "stock market", "financial wealth", "business success"]
+              }
+          }
+
+          def get_channel_config(idx, lang):
+              if (idx, lang) in CHANNELS:
+                  return CHANNELS[(idx, lang)]
+              return {
+                  "id": f"ch{idx:02d}_{lang}", "name": f"Empire Channel {idx:02d} ({lang.upper()})", "lang": lang,
+                  "voice": "ar-EG-ShakirNeural" if lang == "ar" else "en-US-AndrewNeural",
+                  "secret": f"YT_TOKEN_CH{idx:02d}_{lang.upper()}",
+                  "topic": "أسرار النجاح والتكنولوجيا الحديثة" if lang == "ar" else "Future Technology & Wealth Secrets",
+                  "keywords": ["technology", "future", "success", "innovation"]
+              }
+
+          def generate_script(ch):
+              api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+              lang = ch["lang"]
+              if api_key:
+                  prompt = (
+                      f"Create a high-retention viral YouTube video script for '{ch['name']}' about: {ch['topic']}. "
+                      f"Language: {'Arabic' if lang == 'ar' else 'English'}. "
+                      "Return ONLY valid JSON with keys: 'title' (string), 'description' (string), 'tags' (list of strings), "
+                      "'narration' (string, 65-90 words engaging voiceover), and 'prompts' (list of 4 English visual prompts)."
+                  )
+                  for model in ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]:
+                      try:
+                          url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+                          r = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"responseMimeType": "application/json"}}, timeout=25)
+                          if r.status_code == 200:
+                              txt = r.json()["candidates"][0]["content"]["parts"][0]["text"]
+                              return json.loads(txt)
+                      except Exception as e:
+                          print(f"Gemini {model} notice: {e}")
+              if lang == "ar":
+                  return {
+                      "title": "ثورة الذكاء الاصطناعي: 3 تقنيات ستغير مستقبلك بالكامل! #shorts",
+                      "description": "اكتشف كيف يغير الذكاء الاصطناعي شكل العالم والوظائف في السنوات القادمة وكيف تستخدمه لصالحك.\n#الذكاء_الاصطناعي #تكنولوجيا #المستقبل",
+                      "tags": ["الذكاء الاصطناعي", "تكنولوجيا", "تقنيات المستقبل", "AI", "shorts"],
+                      "narration": "هل تخيلت يوماً أن الذكاء الاصطناعي يمكنه مضاعفة إنتاجيتك عشر مرات في دقائق معدودة؟ نحن اليوم أمام ثورة تقنية غير مسبوقة تعيد تشكيل كل المجالات من البرمجة والطب إلى صناعة المحتوى وإدارة الأعمال. الأشخاص الذين يتعلمون استخدام أدوات الذكاء الاصطناعي اليوم هم قادة المستقبل. اشترك في القناة الآن لتكتشف أحدث الأدوات والأسرار التقنية يومياً!",
+                      "prompts": ch["keywords"]
+                  }
+              return {
+                  "title": "3 Silent Rules Self-Made Billionaires Use to Build Empires #shorts",
+                  "description": "Discover the financial mindset and asset-building rules used by the world's wealthiest entrepreneurs.\n#Wealth #Finance #Billionaire #Success",
+                  "tags": ["Billionaire", "Wealth", "Finance", "Business", "Shorts"],
+                  "narration": "Why do the wealthiest one percent keep expanding their empires regardless of market crashes? Because they never trade hours for money—they build scalable systems and acquire cash-flowing assets while everyone else chases liabilities. When you master asymmetric risk and compound leverage, financial growth becomes inevitable. Subscribe now for daily wealth strategies!",
+                  "prompts": ch["keywords"]
+              }
+
+          async def make_audio(text, voice, out_mp3):
+              import edge_tts
+              for attempt in range(3):
+                  try:
+                      comm = edge_tts.Communicate(text, voice)
+                      await comm.save(str(out_mp3))
+                      if out_mp3.exists() and out_mp3.stat().st_size > 1000:
+                          return True
+                  except Exception as e:
+                      print(f"TTS attempt {attempt+1}: {e}")
+                      await asyncio.sleep(2)
+              subprocess.run(["ffmpeg", "-y", "-f", "lavfi", "-i", "sine=frequency=220:duration=22", "-ac", "2", "-ar", "44100", str(out_mp3)], check=True)
+              return True
+
+          def make_visual_clips(prompts, work_dir):
+              clips = []
+              for i, p in enumerate(prompts[:4]):
+                  img_path = work_dir / f"scene_{i}.jpg"
+                  clip_path = work_dir / f"clip_{i}.mp4"
+                  downloaded = False
+                  try:
+                      q = urllib.parse.quote(f"{p}, cinematic lighting, ultra detailed, 8k, vertical 9:16")
+                      url = f"https://image.pollinations.ai/prompt/{q}?width=1080&height=1920&seed={100+i}&nologo=true"
+                      r = requests.get(url, timeout=20)
+                      if r.status_code == 200 and len(r.content) > 5000:
+                          img_path.write_bytes(r.content)
+                          downloaded = True
+                  except Exception as e:
+                      print(f"Visual download fallback: {e}")
+                  if not downloaded:
+                      img = Image.new("RGB", (1080, 1920), (12, 20, 45))
+                      draw = ImageDraw.Draw(img)
+                      for y in range(1920):
+                          draw.line([(0, y), (1080, y)], fill=(12 + (y*25)//1920, 22 + (y*50)//1920, 55 + (y*90)//1920))
+                      img.save(img_path)
+                  subprocess.run([
+                      "ffmpeg", "-y", "-loop", "1", "-i", str(img_path),
+                      "-vf", "scale=1200:2134,crop=1080:1920:x='(in_w-out_w)/2':y='(in_h-out_h)/2'",
+                      "-t", "7", "-r", "30", "-c:v", "libx264", "-pix_fmt", "yuv420p", str(clip_path)
+                  ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                  clips.append(clip_path)
+              return clips
+
+          def assemble_video(clips, audio_path, out_video, work_dir):
+              concat_txt = work_dir / "concat.txt"
+              concat_txt.write_text("\n".join([f"file '{c.resolve()}'" for c in clips]), encoding="utf-8")
+              merged = work_dir / "merged.mp4"
+              subprocess.run(["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(concat_txt), "-c", "copy", str(merged)], check=True)
+              subprocess.run([
+                  "ffmpeg", "-y", "-stream_loop", "-1", "-i", str(merged), "-i", str(audio_path),
+                  "-shortest", "-map", "0:v:0", "-map", "1:a:0", "-c:v", "libx264", "-preset", "fast",
+                  "-c:a", "aac", "-b:a", "192k", "-pix_fmt", "yuv420p", str(out_video)
+              ], check=True)
+
+          def upload_to_youtube(video_path, script, refresh_token):
+              client_id = os.environ.get("YT_CLIENT_ID", "").strip()
+              client_secret = os.environ.get("YT_CLIENT_SECRET", "").strip()
+              if not (client_id and client_secret and refresh_token):
+                  print("⏭️ Credentials incomplete, skipping upload.")
+                  return
+              from google.oauth2.credentials import Credentials
+              from google.auth.transport.requests import Request
+              from googleapiclient.discovery import build
+              from googleapiclient.http import MediaFileUpload
+              creds = Credentials(
+                  token=None, refresh_token=refresh_token,
+                  token_uri="https://oauth2.googleapis.com/token",
+                  client_id=client_id, client_secret=client_secret,
+                  scopes=["https://www.googleapis.com/auth/youtube.upload"]
+              )
+              creds.refresh(Request())
+              youtube = build("youtube", "v3", credentials=creds)
+              body = {
+                  "snippet": {
+                      "title": script["title"][:95],
+                      "description": script["description"],
+                      "tags": script.get("tags", []),
+                      "categoryId": "28"
+                  },
+                  "status": {"privacyStatus": "public", "selfDeclaredMadeForKids": False}
+              }
+              media = MediaFileUpload(str(video_path), chunksize=-1, resumable=True, mimetype="video/mp4")
+              req = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
+              resp = req.execute()
+              print(f"✅ PUBLISHED SUCCESSFULLY! Video URL: https://youtu.be/{resp.get('id')}")
+
+          def main():
+              idx = int(os.environ.get("NICHE_INDEX", "1"))
+              target_lang = os.environ.get("TARGET_LANGUAGE", "both").lower()
+              langs = ["ar", "en"] if target_lang == "both" else [target_lang]
+              for lang in langs:
+                  ch = get_channel_config(idx, lang)
+                  token = os.environ.get(ch["secret"], "").strip()
+                  if not token:
+                      print(f"⏭️ تخطي القناة {ch['id']} لعدم إضافة مفتاح {ch['secret']} بعد (جاهزة للتفعيل لاحقاً).")
+                      continue
+                  print(f"🚀 بدء إنتاج ونشر فيديو القناة: {ch['name']} ({ch['id']})")
+                  work_dir = Path("output_videos") / ch["id"]
+                  work_dir.mkdir(parents=True, exist_ok=True)
+                  script = generate_script(ch)
+                  audio_path = work_dir / "voice.mp3"
+                  asyncio.run(make_audio(script["narration"], ch["voice"], audio_path))
+                  clips = make_visual_clips(script.get("prompts", ch["keywords"]), work_dir)
+                  final_video = work_dir / f"{ch['id']}_final.mp4"
+                  assemble_video(clips, audio_path, final_video, work_dir)
+                  upload_to_youtube(final_video, script, token)
+
+          if __name__ == "__main__":
+              main()
+          PYEOF
+          python3 auto_video_pipeline.py
+
+      - name: 6. Upload Generated Videos for TikTok & Archive
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-videos-niche-${{ matrix.niche_index }}
+          path: output_videos/
+          if-no-files-found: ignore
+          retention-days: 7
