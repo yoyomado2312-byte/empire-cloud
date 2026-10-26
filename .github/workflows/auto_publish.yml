@@ -87,4 +87,4 @@ jobs:
               MODE="shorts"
             fi
           fi
-          python auto_video_pipeline.py --niche-num ${{ matrix.niche_num }} --mode $MODE
+          python "$GITHUB_WORKSPACE/auto_video_pipeline.py" --niche-num ${{ matrix.niche_num }} --mode $MODE
