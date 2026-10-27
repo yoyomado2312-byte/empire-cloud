@@ -25,7 +25,7 @@ on:
 jobs:
   produce-and-publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 55
     strategy:
       fail-fast: false
       matrix:
@@ -40,22 +40,23 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: 3. Install System Audio/Video, Cairo & Broadcast Fonts
+      - name: 3. Install System Audio/Video & Fonts
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y ffmpeg libcairo2-dev pkg-config python3-dev fonts-dejavu-core fonts-noto-core fonts-noto-extra fonts-hosny-amiri
+          sudo apt-get install -y ffmpeg fonts-dejavu-core fonts-noto-core fonts-noto-extra fonts-hosny-amiri
 
-      - name: 4. Install Python Caricature Animation & Lip-Sync Dependencies
+      - name: 4. Install Neural AI Video & Gradio ZeroGPU Client Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests edge-tts Pillow numpy pycairo google-api-python-client google-auth google-auth-oauthlib google-auth-httplib2
+          pip install requests edge-tts Pillow numpy gradio_client google-api-python-client google-auth google-auth-oauthlib google-auth-httplib2
 
-      - name: 5. Run 30-FPS Caricature Character Lip-Sync & Mobile Explainer Pipeline
+      - name: 5. Run 100% Neural AI Reel & Talking Avatar Pipeline
         env:
           NICHE_INDEX: ${{ matrix.niche_index }}
           TARGET_LANGUAGE: ${{ github.event.inputs.language || 'both' }}
           VIDEO_MODE: ${{ github.event.inputs.video_mode || 'both' }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
@@ -84,17 +85,36 @@ jobs:
           YT_TOKEN_CH11_EN: ${{ secrets.YT_TOKEN_CH11_EN }}
         run: |
           cat << 'PYEOF' > auto_video_pipeline.py
-          import os, sys, math, json, time, wave, asyncio, subprocess, urllib.parse
+          import os, sys, math, json, time, wave, shutil, base64, asyncio, subprocess, urllib.parse
           from pathlib import Path
           import requests
           import numpy as np
-          import cairo
-          from PIL import Image, ImageDraw, ImageFont, ImageEnhance
+          from PIL import Image, ImageDraw, ImageFont, ImageEnhance, ImageFilter
 
           HTTP_HEADERS = {
               "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-              "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
           }
+
+          # Verified Hugging Face ZeroGPU Spaces for Neural AI Image, Talking Avatar Lip-Sync & AI Video
+          FLUX_IMAGE_SPACES = [
+              "black-forest-labs/FLUX.1-schnell",
+              "multimodalart/FLUX.1-merged",
+              "ByteDance/Hyper-SDXL-1Step-T2I",
+          ]
+          TALKING_AVATAR_SPACES = [
+              "victor/LongCat-Video-Avatar-1.5",
+              "meituan-longcat/LongCat-Video-Avatar-1.5-Demo",
+              "fffiloni/FantasyTalking",
+              "fffiloni/KDTalker",
+              "multimodalart/MoDA-fast-talking-head",
+              "multimodalart/ltx2-audio-to-video",
+              "fffiloni/LatentSync",
+          ]
+          AI_VIDEO_SPACES = [
+              "Lightricks/ltx-video-distilled",
+              "zerogpu-aoti/wan2-2-fp8da-aoti-faster",
+              "mediasynthesismuseum/stable-video-diffusion",
+          ]
 
           CHANNELS = {
               (2, "ar"): {
@@ -104,6 +124,7 @@ jobs:
                   "voice": "ar-EG-ShakirNeural",
                   "rate": "+12%",
                   "secret": "YT_TOKEN_CH02_AR",
+                  "avatar_prompt": "3D Pixar Disney style expressive charismatic Arab male tech creator character in a glowing neon futuristic studio with a broadcast podcast microphone, medium close-up front-facing portrait, looking directly at camera, ultra-detailed 3D render, Octane Render, Unreal Engine 5, volumetric lighting, 8k",
                   "topic": "ثورة الوكلاء الأذكياء والذكاء الاصطناعي التوليدي وكيف تعيد تشكيل الاقتصاد العالمي والوظائف",
               },
               (3, "en"): {
@@ -113,6 +134,7 @@ jobs:
                   "voice": "en-US-AndrewNeural",
                   "rate": "+10%",
                   "secret": "YT_TOKEN_CH03_EN",
+                  "avatar_prompt": "3D Pixar Disney style charismatic billionaire financial host character wearing a tailored dark suit in a luxury Manhattan penthouse studio with a podcast microphone, medium close-up front-facing portrait, looking directly at camera, ultra-detailed 3D render, Octane Render, Unreal Engine 5, dramatic cinematic lighting, 8k",
                   "topic": "How self-made billionaires engineer tax-free holding empires, asymmetric cashflow systems, and economic moats",
               },
           }
@@ -122,11 +144,12 @@ jobs:
                   return CHANNELS[(idx, lang)]
               return {
                   "id": f"ch{idx:02d}_{lang}",
-                  "name": f"Empire Show {idx:02d} ({lang.upper()})",
+                  "name": f"Empire AI Reel {idx:02d} ({lang.upper()})",
                   "lang": lang,
                   "voice": "ar-EG-ShakirNeural" if lang == "ar" else "en-US-AndrewNeural",
                   "rate": "+12%" if lang == "ar" else "+10%",
                   "secret": f"YT_TOKEN_CH{idx:02d}_{lang.upper()}",
+                  "avatar_prompt": "3D Pixar Disney style charismatic host character in a glowing studio with a podcast microphone, medium close-up front-facing portrait, looking directly at camera, 8k octane render",
                   "topic": "أسرار التكنولوجيا المتقدمة وبناء الإمبراطوريات المالية" if lang == "ar" else "Future Technology & Billionaire Empire Strategies",
               }
 
@@ -142,24 +165,26 @@ jobs:
                           pass
               return ImageFont.load_default()
 
-          def generate_documentary_script(ch: dict) -> dict:
+          def generate_ai_reel_script(ch: dict) -> dict:
               api_key = os.environ.get("GEMINI_API_KEY", "").strip()
               lang = ch["lang"]
               seed = int(time.time())
               if api_key:
                   prompt = (
-                      f"You are the lead writer of a hit animated explainer show for adults ('{ch['name']}'). Topic: {ch['topic']}. Seed: {seed}. "
+                      f"You are a viral Instagram Reels & YouTube Shorts AI director for '{ch['name']}'. Topic: {ch['topic']}. Seed: {seed}. "
                       f"Language: {'Arabic' if lang == 'ar' else 'English'}. "
-                      "Write a gripping, fast-paced 8-scene script. "
+                      "Write a punchy, high-retention 6-scene script (each scene ~5 seconds, 12-16 words per scene). "
+                      "Scenes 0, 2, 4, 5 are the 3D AI Character speaking directly to camera ('avatar'). "
+                      "Scenes 1, 3 are cinematic 3D AI B-roll action scenes ('broll'). "
                       "Return ONLY valid JSON with keys: "
                       "'title' (string, viral title with #shorts), "
                       "'description' (string), "
                       "'tags' (list of 8 strings), "
-                      "'scenes' (list of 8 objects, each with: "
-                      "'narration' (16-22 words spoken in target language), "
-                      "'headline' (short 4-word banner in target language), "
-                      "'stat_badge' (short stat like '+340% AI Growth' or '$14.2 Trillion' in target language), "
-                      "'visual_prompt' (detailed English 3D stylized illustration prompt))."
+                      "'scenes' (list of 6 objects, each with: "
+                      "'type' ('avatar' or 'broll'), "
+                      "'narration' (12-16 words in target language), "
+                      "'visual_prompt' (detailed English 3D Pixar / Unreal Engine 5 cinematic visual prompt), "
+                      "'motion_prompt' (English camera/character motion prompt for AI video model))."
                   )
                   for model in ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]:
                       try:
@@ -171,768 +196,413 @@ jobs:
                           )
                           if r.status_code == 200:
                               data = json.loads(r.json()["candidates"][0]["content"]["parts"][0]["text"])
-                              if isinstance(data.get("scenes"), list) and len(data["scenes"]) >= 5:
+                              if isinstance(data.get("scenes"), list) and len(data["scenes"]) >= 4:
                                   return data
                       except Exception as e:
                           print(f"Gemini {model} notice: {e}")
 
               if lang == "ar":
                   return {
-                      "title": "خلف الكواليس: كيف يسيطر الذكاء الاصطناعي المستقل على اقتصاد العالم؟ #shorts",
-                      "description": "حلقة أنيميشن تحليلية حول ثورة الوكلاء الأذكياء والتحول الجذري في الشركات العالمية وكيف تستثمر هذه الموجة لصالحك.\n#الذكاء_الاصطناعي #تكنولوجيا #اقتصاد #أنيميشن",
-                      "tags": ["الذكاء الاصطناعي", "تقنيات المستقبل", "أنيميشن", "اقتصاد", "تكنولوجيا", "AI", "تحليل", "أعمال"],
+                      "title": "الحقيقة الصادمة: كيف يدير الذكاء الاصطناعي أموال العالم في الخفاء؟ #shorts",
+                      "description": "فيديو بالذكاء الاصطناعي يكشف كيف تعمل منظومات الوكلاء المستقلين في إدارة الثروات والشركات العملاقة.\n#الذكاء_الاصطناعي #تكنولوجيا #ثروة #مستقبل",
+                      "tags": ["الذكاء الاصطناعي", "تقنيات المستقبل", "ثروة", "اقتصاد", "تكنولوجيا", "AI", "ريادة_أعمال", "shorts"],
                       "scenes": [
-                          {"narration": "في اللحظة التي تشاهد فيها هذا الفيديو، هناك أنظمة ذكاء اصطناعي تدير مليارات الدولارات في الأسواق العالمية دون تدخل بشري واحد.", "headline": "استوديو التحليل التقني", "stat_badge": "تداول آلي بقيمة 14 تريليون دولار", "visual_prompt": "3d stylized isometric illustration of algorithmic trading center with glowing holographic screens vibrant colors"},
-                          {"narration": "الشركات العملاقة لم تعد تكتفي ببرامج الدردشة، بل انتقلت إلى ما يسمى بالوكلاء المستقلين القادرين على التخطيط والتنفيذ الذاتي.", "headline": "ثورة الوكلاء المستقلين", "stat_badge": "نمو الاعتماد المؤسسي +340%", "visual_prompt": "3d stylized cartoon AI robot executive analyzing glowing city hologram in modern office"},
-                          {"narration": "التقارير الاقتصادية الحديثة تكشف أن خمسة وثمانين بالمئة من المهام التحليلية المعقدة ستنتقل بالكامل إلى الأنظمة الذكية خلال سنوات قليلة.", "headline": "تحول سوق العمل العالمي", "stat_badge": "85% أتمتة للعمليات التحليلية", "visual_prompt": "3d stylized futuristic data center with glowing blue fiber optics and digital brain"},
-                          {"narration": "لكن المفاجأة الحقيقية ليست في اختفاء الوظائف التقليدية، بل في ظهور طبقة جديدة من رواد الأعمال الذين يديرون شركات كاملة بمفردهم.", "headline": "إمبراطوريات الرجل الواحد", "stat_badge": "مضاعفة الإنتاجية 10 أضعاف", "visual_prompt": "3d stylized illustration of entrepreneur controlling multiple automated business dashboards"},
-                          {"narration": "باستخدام محركات التوليد المرئي والبرمجة الآلية، أصبح بإمكان شخص واحد إنجاز ما كان يتطلب فريقاً من خمسين موظفاً في السابق.", "headline": "الرافعة التقنية الذكية", "stat_badge": "خفض تكاليف التشغيل 78%", "visual_prompt": "3d stylized glowing microchip processor with golden neural network connections"},
-                          {"narration": "الفارق اليوم لم يعد في حجم رأس المال الذي تملكه، بل في قدرتك على ربط هذه الأدوات الذكية في منظومة تعمل على مدار الساعة.", "headline": "قواعد اللعبة الجديدة", "stat_badge": "أنظمة تعمل 24/7 بلا توقف", "visual_prompt": "3d stylized planet earth surrounded by glowing digital automation satellites"},
-                          {"narration": "المستثمرون الذين أدركوا هذه المعادلة مبكراً قاموا ببناء أصول رقمية تدر عوائد مستمرة بينما ينشغل الآخرون بالخوف من التغيير.", "headline": "بناء الأصول الرقمية", "stat_badge": "عوائد أصول رقمية متنامية", "visual_prompt": "3d stylized futuristic financial skyline with glowing golden growth arrows"},
-                          {"narration": "اشترك الآن في القناة وشاركنا رأيك في التعليقات: هل ترى الذكاء الاصطناعي فرصة تاريخية أم تهديداً للمستقبل؟", "headline": "اشترك لمواكبة المستقبل", "stat_badge": "حلقات تحليلية يومية", "visual_prompt": "3d stylized modern animation broadcast studio with neon lights"},
+                          {"type": "avatar", "narration": "هل تعلم أن هناك أنظمة ذكاء اصطناعي تدير تريليونات الدولارات الآن دون أن يلمسها إنسان واحد؟", "visual_prompt": ch["avatar_prompt"], "motion_prompt": "3D Pixar character speaking expressively to camera with natural head movement and hand gesture, studio lighting"},
+                          {"type": "broll", "narration": "الشركات الكبرى استبدلت غرف التداول التقليدية بوكلاء أذكياء يتخذون آلاف القرارات في الجزء من الثانية.", "visual_prompt": "3D Pixar Unreal Engine 5 cinematic render of a futuristic glowing AI core controlling global holographic financial markets, dramatic neon lighting, 8k", "motion_prompt": "cinematic camera dolly zoom into glowing 3D AI holographic core with floating data particles"},
+                          {"type": "avatar", "narration": "الأمر لم يعد يقتصر على البرمجة، بل وصل إلى بناء شركات رقمية كاملة تدار ذاتياً بالكامل.", "visual_prompt": ch["avatar_prompt"], "motion_prompt": "3D Pixar character talking passionately into podcast microphone, expressive eyebrows and lip sync"},
+                          {"type": "broll", "narration": "رائد أعمال واحد يمتلك هذه الأدوات اليوم يتفوق في الإنتاجية على شركة تضم خمسين موظفاً تقليدياً.", "visual_prompt": "3D Pixar style cinematic render of a visionary creator standing in a futuristic glass penthouse overlooking a glowing cyber city at night, 8k octane render", "motion_prompt": "sweeping cinematic orbital camera movement around futuristic penthouse and glowing city"},
+                          {"type": "avatar", "narration": "الفرصة التاريخية أمامك الآن ليست في الخوف من هذه التقنيات، بل في تسخيرها لبناء أصولك الرقمية.", "visual_prompt": ch["avatar_prompt"], "motion_prompt": "3D Pixar character leaning forward speaking with confident smile and expressive gestures"},
+                          {"type": "avatar", "narration": "اشترك في القناة الآن واكتب لنا في التعليقات: هل بدأت فعلاً في استخدام الذكاء الاصطناعي؟", "visual_prompt": ch["avatar_prompt"], "motion_prompt": "3D Pixar character smiling and pointing toward viewer, dynamic studio lighting"},
                       ],
                   }
               return {
-                  "title": "The Silent Formula Billionaires Use to Build Invincible Empires #shorts",
-                  "description": "An animated investigative breakdown of how self-made billionaires use asymmetric leverage, holding structures, and AI automation to scale wealth.\n#Wealth #Billionaire #Finance #Business #Animation",
-                  "tags": ["Billionaire", "Wealth", "Finance", "Economics", "Business", "Investing", "Animation", "Shorts"],
+                  "title": "The Hidden AI Rule Billionaires Use to Build Autonomous Empires #shorts",
+                  "description": "Discover how the new generation of billionaires combines holding structures with autonomous AI agents to scale wealth.\n#Wealth #Billionaire #AI #Finance #Shorts",
+                  "tags": ["Billionaire", "Wealth", "Finance", "AI", "Business", "Investing", "Tech", "Shorts"],
                   "scenes": [
-                      {"narration": "While ninety-nine percent of people trade their limited hours for a paycheck, the ultra-wealthy play an entirely different financial game.", "headline": "THE WEALTH PARADOX", "stat_badge": "Top 1% Control 45% of Global Assets", "visual_prompt": "3d stylized illustration of billionaire skyscraper towering over city skyline"},
-                      {"narration": "Self-made billionaires never hold their core wealth in personal cash; instead, they engineer multi-layered holding companies and cash-flowing equity.", "headline": "THE HOLDING STRUCTURE", "stat_badge": "Compound Equity Leverage", "visual_prompt": "3d stylized isometric diagram of holding company vault and cashflow streams"},
-                      {"narration": "When an asset appreciates, they do not sell it and trigger massive taxes—they borrow against the asset at institutional interest rates.", "headline": "BUY BORROW DIE STRATEGY", "stat_badge": "0% Capital Gains Liquidation", "visual_prompt": "3d stylized luxury private jet and golden bank vault illustration"},
-                      {"narration": "Every dollar of cheap institutional liquidity is then deployed into high-margin digital infrastructure, automation, and monopolistic cash cows.", "headline": "ASYMMETRIC CAPITAL FLOW", "stat_badge": "+28% Annualized Return on Equity", "visual_prompt": "3d stylized gold bullion and digital stock market breakout chart"},
-                      {"narration": "Notice how the fastest-growing fortunes today are built on scalable software, artificial intelligence, and automated global distribution.", "headline": "INFINITE SCALABILITY", "stat_badge": "Zero Marginal Cost Reproduction", "visual_prompt": "3d stylized silicon valley AI server matrix generating glowing coins"},
-                      {"narration": "Once a system is built once, it can serve ten million customers simultaneously without adding a single hour of manual labor.", "headline": "SYSTEMS OVER SWEAT", "stat_badge": "24/7 Autonomous Revenue", "visual_prompt": "3d stylized global network of automated digital commerce nodes"},
-                      {"narration": "During market downturns, while retail investors panic-sell, cash-rich holding empires quietly acquire distressed assets at pennies on the dollar.", "headline": "COUNTER-CYCLICAL ACQUISITION", "stat_badge": "3.8x Post-Crisis Asset Multiplier", "visual_prompt": "3d stylized wall street bull glowing in neon cyber financial district"},
-                      {"narration": "Subscribe now for daily animated briefings on wealth and strategy, and tell us below: which asset class are you building this year?", "headline": "JOIN THE BRIEFING", "stat_badge": "Daily Animated Analysis", "visual_prompt": "3d stylized modern financial broadcast studio with neon graphs"},
+                      {"type": "avatar", "narration": "While ninety-nine percent of people trade their hours for money, billionaires use a completely different rulebook.", "visual_prompt": ch["avatar_prompt"], "motion_prompt": "3D Pixar executive host speaking expressively into studio microphone, natural head nod and lip sync"},
+                      {"type": "broll", "narration": "They never hold wealth in personal cash; they build automated holding empires that compound twenty-four seven.", "visual_prompt": "3D Pixar Unreal Engine 5 cinematic render of a towering golden glass billionaire fortress in Manhattan at night with glowing cashflow streams, 8k", "motion_prompt": "cinematic aerial drone camera flying toward glowing billionaire skyscraper at night"},
+                      {"type": "avatar", "narration": "Instead of selling assets and paying massive taxes, they borrow against appreciating equity at rock-bottom rates.", "visual_prompt": ch["avatar_prompt"], "motion_prompt": "3D Pixar host explaining with confident facial expressions and subtle head movement"},
+                      {"type": "broll", "narration": "And today, they deploy that capital into autonomous AI systems that scale without adding human overhead.", "visual_prompt": "3D Pixar style cinematic render of a luxury private jet next to a glowing futuristic AI supercomputer vault, dramatic lighting, 8k", "motion_prompt": "smooth cinematic camera pan across luxury jet and glowing AI vault"},
+                      {"type": "avatar", "narration": "One automated digital asset built once can serve millions of customers while you sleep.", "visual_prompt": ch["avatar_prompt"], "motion_prompt": "3D Pixar character speaking earnestly to camera with expressive eyes and lip sync"},
+                      {"type": "avatar", "narration": "Subscribe now for daily wealth briefings, and comment below: which asset are you building this year?", "visual_prompt": ch["avatar_prompt"], "motion_prompt": "3D Pixar host smiling confidently at camera in glowing broadcast studio"},
                   ],
               }
 
-          async def synthesize_narration(scenes: list, voice: str, rate: str, out_mp3: Path):
+          async def synthesize_scene_audio(text: str, voice: str, rate: str, out_mp3: Path):
               import edge_tts
-              full_text = " ... ".join([s["narration"] for s in scenes])
               for attempt in range(3):
                   try:
-                      comm = edge_tts.Communicate(text=full_text, voice=voice, rate=rate)
+                      comm = edge_tts.Communicate(text=text, voice=voice, rate=rate)
                       await comm.save(str(out_mp3))
-                      if out_mp3.exists() and out_mp3.stat().st_size > 2000:
+                      if out_mp3.exists() and out_mp3.stat().st_size > 1000:
                           return True
                   except Exception as e:
                       print(f"TTS attempt {attempt+1}: {e}")
-                      await asyncio.sleep(2)
+                      await asyncio.sleep(1.5)
               subprocess.run(
-                  ["ffmpeg", "-y", "-f", "lavfi", "-i", "sine=frequency=180:duration=28", "-ac", "2", "-ar", "44100", str(out_mp3)],
-                  check=True,
+                  ["ffmpeg", "-y", "-f", "lavfi", "-i", "sine=frequency=190:duration=4.8", "-ac", "2", "-ar", "44100", str(out_mp3)],
+                  check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
               )
               return True
 
-          def mix_documentary_soundtrack(voice_mp3: Path, mixed_aac: Path) -> float:
+          def extract_media_path(res) -> str:
+              if isinstance(res, str) and os.path.exists(res):
+                  return res
+              if isinstance(res, dict):
+                  for k in ("video", "path", "url", "image", "value"):
+                      v = res.get(k)
+                      if isinstance(v, str) and os.path.exists(v):
+                          return v
+                      if isinstance(v, dict) and isinstance(v.get("path"), str) and os.path.exists(v["path"]):
+                          return v["path"]
+              if isinstance(res, (list, tuple)):
+                  for item in res:
+                      found = extract_media_path(item)
+                      if found:
+                          return found
+              return ""
+
+          def invoke_gradio_space_smart(
+              space_id: str, dest_path: Path, prompt: str = "", image_path: Path = None, audio_path: Path = None,
+              target_return: str = "video", width: int = 768, height: int = 1344
+          ) -> bool:
+              """
+              Connects to a Hugging Face ZeroGPU Space via gradio_client, inspects its live API schema,
+              maps image/audio/prompt parameters automatically, and saves the generated AI video or image.
+              """
+              try:
+                  from gradio_client import Client, handle_file
+                  hf_token = os.environ.get("HF_TOKEN", "").strip() or None
+                  client = Client(space_id, hf_token=hf_token, verbose=False)
+                  api_info = client.view_api(return_format="dict")
+                  endpoints = {}
+                  endpoints.update(api_info.get("named_endpoints", {}))
+                  for k, v in api_info.get("unnamed_endpoints", {}).items():
+                      endpoints[k] = v
+
+                  chosen_ep = None
+                  chosen_meta = None
+                  for ep_name, ep_meta in endpoints.items():
+                      rets = [str(r.get("component", "")).lower() for r in ep_meta.get("returns", [])]
+                      params = ep_meta.get("parameters", [])
+                      if not any(target_return in rt for rt in rets):
+                          continue
+                      if audio_path and not any("audio" in str(p.get("component", "")).lower() or "audio" in str(p.get("parameter_name", "")).lower() for p in params):
+                          continue
+                      chosen_ep = ep_name
+                      chosen_meta = ep_meta
+                      break
+
+                  if not chosen_meta:
+                      return False
+
+                  args = []
+                  used_img = False
+                  used_aud = False
+                  for p in chosen_meta.get("parameters", []):
+                      pname = (p.get("parameter_name") or p.get("label") or "").lower()
+                      comp = (p.get("component") or "").lower()
+                      ptype = (p.get("python_type", {}).get("type") if isinstance(p.get("python_type"), dict) else str(p.get("python_type") or "")).lower()
+                      has_def = p.get("parameter_has_default", False)
+                      def_val = p.get("parameter_default")
+
+                      if image_path is not None and not used_img and ("image" in comp or "image" in pname or "img" in pname or "source" in pname):
+                          args.append(handle_file(str(image_path)))
+                          used_img = True
+                      elif audio_path is not None and not used_aud and ("audio" in comp or "audio" in pname or "voice" in pname or "sound" in pname or "driven" in pname):
+                          args.append(handle_file(str(audio_path)))
+                          used_aud = True
+                      elif "prompt" in pname and "neg" not in pname:
+                          args.append(prompt or def_val or "3D Pixar style expressive animation, smooth motion, 8k")
+                      elif "width" in pname and isinstance(def_val, (int, float)):
+                          args.append(width)
+                      elif "height" in pname and isinstance(def_val, (int, float)):
+                          args.append(height)
+                      elif has_def:
+                          args.append(def_val)
+                      elif "bool" in ptype or "checkbox" in comp:
+                          args.append(False)
+                      elif "int" in ptype or "float" in ptype or "slider" in comp or "number" in comp:
+                          args.append(4)
+                      elif "str" in ptype or "textbox" in comp:
+                          args.append(prompt or "")
+                      else:
+                          args.append(None)
+
+                  if isinstance(chosen_ep, str) and chosen_ep.startswith("/"):
+                      res = client.predict(*args, api_name=chosen_ep)
+                  else:
+                      res = client.predict(*args, fn_index=int(chosen_ep))
+
+                  out_file = extract_media_path(res)
+                  if out_file and os.path.exists(out_file) and os.path.getsize(out_file) > 4000:
+                      shutil.copyfile(out_file, dest_path)
+                      print(f"   ✨ [AI ZeroGPU: {space_id}] Generated {dest_path.name} successfully!")
+                      return True
+              except Exception as e:
+                  print(f"   [ZeroGPU {space_id} notice]: {str(e)[:120]}")
+              return False
+
+          def generate_ai_image_multi_engine(prompt: str, dest_img: Path, w: int = 768, h: int = 1344, seed: int = 42) -> bool:
+              """
+              Generates a 3D Pixar / Unreal Engine 5 AI image using:
+              1. Google Gemini Native Image Generation (via GEMINI_API_KEY)
+              2. Hugging Face ZeroGPU FLUX.1-schnell Spaces (via gradio_client)
+              """
+              api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+              if api_key:
+                  for m_name in ["gemini-2.0-flash-exp-image-generation", "gemini-2.5-flash-image-preview"]:
+                      try:
+                          url = f"https://generativelanguage.googleapis.com/v1beta/models/{m_name}:generateContent?key={api_key}"
+                          payload = {
+                              "contents": [{"parts": [{"text": f"Generate a vertical 9:16 3D Pixar Unreal Engine 5 render: {prompt}"}]}],
+                              "generationConfig": {"responseModalities": ["TEXT", "IMAGE"]},
+                          }
+                          r = requests.post(url, json=payload, timeout=30)
+                          if r.status_code == 200:
+                              parts = r.json().get("candidates", [{}])[0].get("content", {}).get("parts", [])
+                              for pt in parts:
+                                  b64 = pt.get("inlineData", {}).get("data")
+                                  if b64:
+                                      raw_bytes = base64.b64decode(b64)
+                                      if len(raw_bytes) > 5000:
+                                          dest_img.write_bytes(raw_bytes)
+                                          im = Image.open(dest_img).convert("RGB").resize((1080, 1920), Image.Resampling.LANCZOS)
+                                          im.save(dest_img, "JPEG", quality=95)
+                                          print(f"   🎨 [Gemini AI Image] Generated {dest_img.name}!")
+                                          return True
+                      except Exception:
+                          pass
+
+                  try:
+                      url = f"https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key={api_key}"
+                      payload = {"instances": [{"prompt": prompt}], "parameters": {"sampleCount": 1, "aspectRatio": "9:16"}}
+                      r = requests.post(url, json=payload, timeout=30)
+                      if r.status_code == 200:
+                          preds = r.json().get("predictions", [])
+                          if preds and preds[0].get("bytesBase64Encoded"):
+                              raw_bytes = base64.b64decode(preds[0]["bytesBase64Encoded"])
+                              dest_img.write_bytes(raw_bytes)
+                              im = Image.open(dest_img).convert("RGB").resize((1080, 1920), Image.Resampling.LANCZOS)
+                              im.save(dest_img, "JPEG", quality=95)
+                              print(f"   🎨 [Imagen 3 AI] Generated {dest_img.name}!")
+                              return True
+                  except Exception:
+                      pass
+
+              for sp in FLUX_IMAGE_SPACES:
+                  if invoke_gradio_space_smart(sp, dest_img, prompt=prompt, target_return="image", width=w, height=h):
+                      try:
+                          im = Image.open(dest_img).convert("RGB").resize((1080, 1920), Image.Resampling.LANCZOS)
+                          im.save(dest_img, "JPEG", quality=95)
+                          return True
+                      except Exception:
+                          pass
+              return False
+
+          def animate_talking_avatar_zero_gpu(avatar_img: Path, audio_mp3: Path, motion_prompt: str, dest_mp4: Path) -> bool:
+              for sp in TALKING_AVATAR_SPACES:
+                  if invoke_gradio_space_smart(
+                      sp, dest_mp4, prompt=motion_prompt, image_path=avatar_img, audio_path=audio_mp3, target_return="video"
+                  ):
+                      return True
+              return False
+
+          def animate_broll_scene_zero_gpu(scene_img: Path, motion_prompt: str, dest_mp4: Path) -> bool:
+              for sp in AI_VIDEO_SPACES:
+                  if invoke_gradio_space_smart(
+                      sp, dest_mp4, prompt=motion_prompt, image_path=scene_img, target_return="video"
+                  ):
+                      return True
+              return False
+
+          def render_smooth_3d_parallax_clip(img_path: Path, audio_mp3: Path, out_mp4: Path, is_avatar: bool = False):
               dur_str = subprocess.run(
-                  ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", str(voice_mp3)],
+                  ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", str(audio_mp3)],
                   capture_output=True, text=True, check=True,
               ).stdout.strip()
-              duration = max(1.0, float(dur_str))
-              bgm_wav = voice_mp3.parent / "bgm_ambient.wav"
+              dur = max(2.0, float(dur_str))
+              if not img_path.exists():
+                  im = Image.new("RGB", (1080, 1920), (14, 20, 38))
+                  im.save(img_path, "JPEG", quality=92)
+
+              total_f = max(30, int(dur * 30))
+              vf = (
+                  f"scale=1280:2276,zoompan=z='min(zoom+0.0012,1.18)':"
+                  f"x='iw/2-(iw/zoom/2)+sin(on/18)*14':y='ih/2-(ih/zoom/2)+cos(on/22)*10':"
+                  f"d={total_f}:s=1080x1920:fps=30,format=yuv420p"
+              )
+              subprocess.run(
+                  [
+                      "ffmpeg", "-y", "-i", str(img_path), "-i", str(audio_mp3),
+                      "-vf", vf, "-t", f"{dur:.2f}",
+                      "-map", "0:v:0", "-map", "1:a:0",
+                      "-c:v", "libx264", "-preset", "fast", "-crf", "20",
+                      "-c:a", "aac", "-b:a", "192k", str(out_mp4),
+                  ],
+                  check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+              )
+
+          def normalize_ai_clip_with_audio(raw_mp4: Path, audio_mp3: Path, norm_mp4: Path):
+              dur_str = subprocess.run(
+                  ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", str(audio_mp3)],
+                  capture_output=True, text=True, check=True,
+              ).stdout.strip()
+              dur = max(2.0, float(dur_str))
+              vf = "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,fps=30,format=yuv420p"
+              subprocess.run(
+                  [
+                      "ffmpeg", "-y", "-stream_loop", "-1", "-i", str(raw_mp4), "-i", str(audio_mp3),
+                      "-t", f"{dur:.2f}", "-vf", vf,
+                      "-map", "0:v:0", "-map", "1:a:0",
+                      "-c:v", "libx264", "-preset", "fast", "-crf", "20",
+                      "-c:a", "aac", "-b:a", "192k", str(norm_mp4),
+                  ],
+                  check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+              )
+
+          def burn_viral_reels_captions_and_bgm(scene_clips: list, scenes: list, is_ar: bool, final_mp4: Path, thumb_jpg: Path):
+              work_dir = final_mp4.parent
+              concat_txt = work_dir / "concat_clips.txt"
+              concat_txt.write_text("\n".join([f"file '{c.resolve()}'" for c in scene_clips]), encoding="utf-8")
+              stitched_mp4 = work_dir / "stitched_raw.mp4"
+              subprocess.run(
+                  ["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(concat_txt), "-c", "copy", str(stitched_mp4)],
+                  check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+              )
+
+              subprocess.run(
+                  ["ffmpeg", "-y", "-ss", "00:00:00.80", "-i", str(stitched_mp4), "-frames:v", "1", str(thumb_jpg)],
+                  check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+              )
+
+              f_cap = get_font(44)
+              txt_dir = "rtl" if is_ar else "ltr"
+              durations = []
+              for c in scene_clips:
+                  ds = subprocess.run(
+                      ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", str(c)],
+                      capture_output=True, text=True, check=True,
+                  ).stdout.strip()
+                  durations.append(max(1.0, float(ds)))
+
+              total_dur = sum(durations)
+              chunk_overlays = {}
+              for s_idx, sc in enumerate(scenes):
+                  words = sc["narration"].split()
+                  chunks = [" ".join(words[i : i + 4]) for i in range(0, len(words), 4)] or [sc["narration"]]
+                  for c_idx, ch_txt in enumerate(chunks):
+                      ov = Image.new("RGBA", (1080, 320), (0, 0, 0, 0))
+                      d = ImageDraw.Draw(ov, "RGBA")
+                      d.rounded_rectangle([(64, 40), (1016, 230)], radius=32, fill=(8, 10, 18, 205), outline=(255, 215, 0, 220), width=3)
+                      for dx, dy in [(-3, -3), (3, -3), (-3, 3), (3, 3), (0, 4)]:
+                          d.text((540 + dx, 135 + dy), ch_txt, font=f_cap, fill=(0, 0, 0, 255), anchor="mm", direction=txt_dir)
+                      col = (255, 230, 0, 255) if (c_idx % 2 == 0) else (0, 245, 212, 255)
+                      d.text((540, 135), ch_txt, font=f_cap, fill=col, anchor="mm", direction=txt_dir)
+                      chunk_overlays[(s_idx, c_idx)] = (np.array(ov), len(chunks))
+
+              dec_cmd = ["ffmpeg", "-y", "-i", str(stitched_mp4), "-f", "rawvideo", "-pix_fmt", "rgb24", "-"]
+              captioned_v = work_dir / "captioned_v.mp4"
+              enc_cmd = [
+                  "ffmpeg", "-y", "-f", "rawvideo", "-vcodec", "rawvideo",
+                  "-s", "1080x1920", "-pix_fmt", "rgb24", "-r", "30", "-i", "-",
+                  "-c:v", "libx264", "-preset", "fast", "-crf", "19", "-pix_fmt", "yuv420p",
+                  str(captioned_v),
+              ]
+              dec_p = subprocess.Popen(dec_cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+              enc_p = subprocess.Popen(enc_cmd, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+              frame_bytes = 1080 * 1920 * 3
+              f_num = 0
+              cum_starts = np.cumsum([0.0] + durations)
+              while True:
+                  raw = dec_p.stdout.read(frame_bytes)
+                  if len(raw) < frame_bytes:
+                      break
+                  t = f_num / 30.0
+                  s_idx = 0
+                  for idx_d in range(len(durations)):
+                      if t >= cum_starts[idx_d]:
+                          s_idx = idx_d
+                  s_dur = durations[s_idx]
+                  local_prog = max(0.0, min(0.999, (t - cum_starts[s_idx]) / max(0.1, s_dur)))
+                  _, n_chunks = chunk_overlays[(s_idx, 0)]
+                  c_idx = min(n_chunks - 1, int(local_prog * n_chunks))
+                  ov_arr, _ = chunk_overlays[(s_idx, c_idx)]
+
+                  frame = np.frombuffer(raw, dtype=np.uint8).reshape((1920, 1080, 3)).copy()
+                  alpha = ov_arr[:, :, 3:4].astype(np.float32) / 255.0
+                  roi = frame[1480:1800, :, :].astype(np.float32)
+                  frame[1480:1800, :, :] = (roi * (1.0 - alpha) + ov_arr[:, :, :3].astype(np.float32) * alpha).astype(np.uint8)
+                  enc_p.stdin.write(frame.tobytes())
+                  f_num += 1
+
+              dec_p.stdout.close()
+              enc_p.stdin.close()
+              dec_p.wait()
+              enc_p.wait()
+
+              bgm_wav = work_dir / "reel_bgm.wav"
               subprocess.run(
                   [
                       "ffmpeg", "-y", "-f", "lavfi",
-                      "-i", f"aevalsrc='0.032*sin(2*PI*65*t)+0.022*sin(2*PI*130*t)*(0.6+0.4*sin(2*PI*1.6*t))+0.014*sin(2*PI*195*t)':s=44100:d={duration:.2f}",
-                      "-af", "lowpass=f=380",
-                      str(bgm_wav),
+                      "-i", f"aevalsrc='0.03*sin(2*PI*60*t)+0.02*sin(2*PI*120*t)*(0.6+0.4*sin(2*PI*1.8*t))':s=44100:d={total_dur:.2f}",
+                      "-af", "lowpass=f=340", str(bgm_wav),
                   ],
                   check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
               )
               subprocess.run(
                   [
-                      "ffmpeg", "-y", "-i", str(voice_mp3), "-i", str(bgm_wav),
-                      "-filter_complex", "[0:a]volume=1.28[v];[1:a]volume=0.32[b];[v][b]amix=inputs=2:duration=first:dropout_transition=2",
-                      "-c:a", "aac", "-b:a", "192k", str(mixed_aac),
+                      "ffmpeg", "-y", "-i", str(captioned_v), "-i", str(stitched_mp4), "-i", str(bgm_wav),
+                      "-filter_complex", "[1:a]volume=1.3[v];[2:a]volume=0.30[b];[v][b]amix=inputs=2:duration=first[aout]",
+                      "-map", "0:v:0", "-map", "[aout]",
+                      "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", str(final_mp4),
                   ],
                   check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
               )
-              return duration
 
-          def extract_audio_envelope_and_visemes(audio_path: Path, fps: int = 30) -> tuple:
-              wav_path = audio_path.parent / "pcm_env.wav"
-              subprocess.run(
-                  ["ffmpeg", "-y", "-i", str(audio_path), "-ac", "1", "-ar", "16000", "-vn", str(wav_path)],
-                  check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-              )
-              with wave.open(str(wav_path), "rb") as wf:
-                  raw = wf.readframes(wf.getnframes())
-                  samples = np.frombuffer(raw, dtype=np.int16).astype(np.float32) / 32768.0
-              duration = len(samples) / 16000.0
-              total_frames = max(1, int(duration * fps))
-              spf = max(1, len(samples) // total_frames)
-              env = []
-              visemes = []
-              prev_amp = 0.0
-              vowel_cycle = [2, 4, 3, 2, 6, 4, 3]
-              cons_cycle = [1, 6, 7, 5, 1, 6]
-              for i in range(total_frames):
-                  chunk = samples[i * spf : (i + 1) * spf]
-                  rms = float(np.sqrt(np.mean(chunk ** 2))) if len(chunk) > 0 else 0.0
-                  amp = min(1.0, rms * 4.6)
-                  if len(chunk) > 1:
-                      zcr = float(np.mean(np.abs(np.diff(np.sign(chunk))))) * 0.5
-                  else:
-                      zcr = 0.0
-                  env.append(amp)
-
-                  if amp < 0.045:
-                      visemes.append(0)
-                  elif (amp - prev_amp) > 0.075:
-                      visemes.append(cons_cycle[i % len(cons_cycle)])
-                  elif zcr > 0.28:
-                      visemes.append(7 if (i % 2 == 0) else 5)
-                  else:
-                      syl_idx = int((i / float(fps)) * 8.2)
-                      visemes.append(vowel_cycle[syl_idx % len(vowel_cycle)])
-                  prev_amp = amp
-
-              return duration, np.array(env, dtype=np.float32), visemes
-
-          def fetch_scene_illustrations(scenes: list, work_dir: Path, bw: int, bh: int) -> list:
-              illustrations = []
-              for idx, sc in enumerate(scenes):
-                  img_path = work_dir / f"stage_art_{idx}.jpg"
-                  q = urllib.parse.quote(f"{sc.get('visual_prompt', '3d stylized illustration')}, vibrant colors, clean vector 3d style, no text")
-                  url = f"https://image.pollinations.ai/prompt/{q}?width={bw}&height={bh}&seed={300 + idx * 19}&model=flux&nologo=true"
-                  loaded = None
-                  try:
-                      r = requests.get(url, headers=HTTP_HEADERS, timeout=22)
-                      if r.status_code == 200 and len(r.content) > 8000:
-                          img_path.write_bytes(r.content)
-                          pil_im = Image.open(img_path).convert("RGB").resize((bw, bh), Image.Resampling.LANCZOS)
-                          pil_im = ImageEnhance.Brightness(pil_im).enhance(0.48)
-                          pil_im = ImageEnhance.Contrast(pil_im).enhance(1.18)
-                          loaded = np.array(pil_im)
-                  except Exception:
-                      pass
-                  illustrations.append(loaded)
-              return illustrations
-
-          def draw_rounded_rect(ctx, x, y, w, h, r):
-              ctx.new_sub_path()
-              ctx.arc(x + w - r, y + r, r, -math.pi / 2, 0)
-              ctx.arc(x + w - r, y + h - r, r, 0, math.pi / 2)
-              ctx.arc(x + r, y + h - r, r, math.pi / 2, math.pi)
-              ctx.arc(x + r, y + r, r, math.pi, 3 * math.pi / 2)
-              ctx.close_path()
-
-          def draw_viseme_mouth(ctx, cx, cy, sc, viseme: int, open_amt: float):
-              ctx.save()
-              ctx.translate(cx, cy)
-              ctx.scale(sc, sc)
-
-              if viseme == 0 or open_amt < 0.045:
-                  ctx.set_source_rgb(0.22, 0.08, 0.10)
-                  ctx.set_line_width(4.8)
-                  ctx.set_line_cap(cairo.LINE_CAP_ROUND)
-                  ctx.move_to(-32, -2)
-                  ctx.curve_to(-12, 13, 12, 13, 32, -2)
-                  ctx.stroke()
-                  ctx.restore()
-                  return
-
-              if viseme == 1:
-                  ctx.set_source_rgb(0.52, 0.20, 0.22)
-                  ctx.set_line_width(6.5)
-                  ctx.set_line_cap(cairo.LINE_CAP_ROUND)
-                  ctx.move_to(-29, 2)
-                  ctx.curve_to(-10, -4, 10, -4, 29, 2)
-                  ctx.stroke()
-                  ctx.restore()
-                  return
-
-              if viseme == 3:
-                  rx = 18 + open_amt * 9
-                  ry = 15 + open_amt * 15
-                  ctx.save()
-                  ctx.scale(rx, ry)
-                  ctx.arc(0, 0.2, 1.0, 0, 2 * math.pi)
-                  ctx.restore()
-                  ctx.save()
-                  ctx.clip_preserve()
-                  ctx.set_source_rgb(0.20, 0.04, 0.07)
-                  ctx.fill_preserve()
-                  ctx.set_source_rgb(0.90, 0.35, 0.43)
-                  ctx.arc(0, ry * 0.65, rx * 0.75, 0, math.pi * 2)
-                  ctx.fill()
-                  ctx.set_source_rgb(0.98, 0.99, 1.0)
-                  ctx.rectangle(-rx, -ry, rx * 2, ry * 0.45)
-                  ctx.fill()
-                  ctx.restore()
-                  ctx.set_source_rgb(0.36, 0.11, 0.14)
-                  ctx.set_line_width(4.5)
-                  ctx.stroke()
-                  ctx.restore()
-                  return
-
-              mw = 35 + (9 if viseme in (4, 7) else 5) * open_amt
-              mh = (22 + 24 * open_amt) if viseme == 2 else ((12 + 12 * open_amt) if viseme in (4, 7) else (16 + 18 * open_amt))
-
-              ctx.new_path()
-              ctx.move_to(-mw, -4)
-              ctx.curve_to(-mw * 0.4, -8, mw * 0.4, -8, mw, -4)
-              ctx.curve_to(mw * 0.85, mh * 1.15, -mw * 0.85, mh * 1.15, -mw, -4)
-              ctx.close_path()
-
-              ctx.save()
-              ctx.clip_preserve()
-              ctx.set_source_rgb(0.22, 0.05, 0.08)
-              ctx.fill_preserve()
-
-              ctx.set_source_rgb(0.90, 0.36, 0.44)
-              if viseme == 6:
-                  ctx.arc(0, mh * 0.25, mw * 0.55, 0, 2 * math.pi)
-              else:
-                  ctx.arc(0, mh * 0.78, mw * 0.68, 0, 2 * math.pi)
-              ctx.fill()
-
-              ctx.set_source_rgb(0.98, 0.99, 1.0)
-              teeth_h = mh * 0.38 if viseme in (4, 5, 7) else mh * 0.28
-              ctx.rectangle(-mw, -10, mw * 2, teeth_h + 6)
-              ctx.fill()
-
-              if viseme in (4, 7):
-                  ctx.rectangle(-mw, mh * 0.64, mw * 2, mh * 0.45)
-                  ctx.fill()
-
-              ctx.restore()
-              ctx.set_source_rgb(0.32, 0.10, 0.12)
-              ctx.set_line_width(4.5)
-              ctx.stroke()
-              ctx.restore()
-
-          def draw_holographic_scene_graphics(ctx, s_idx: int, local_t: float, global_t: float, bx: float, by: float, bw: float, bh: float):
-              prog = min(1.0, local_t / 2.0)
-              mode = s_idx % 4
-              cx, cy = bx + bw * 0.5, by + bh * 0.54
-
-              if mode == 0:
-                  nodes = []
-                  for i in range(8):
-                      ang = i * (2 * math.pi / 8) + global_t * 0.5
-                      rad = 170 + math.sin(global_t * 2.2 + i) * 26
-                      nx = cx + math.cos(ang) * rad * 1.25
-                      ny = cy + math.sin(ang) * rad * 0.78
-                      nodes.append((nx, ny))
-                  nodes.append((cx, cy))
-                  ctx.set_line_width(3.5)
-                  for i in range(len(nodes)):
-                      for j in range(i + 1, len(nodes)):
-                          if (i + j) % 2 == 0 or j == len(nodes) - 1:
-                              x1, y1 = nodes[i]
-                              x2, y2 = nodes[j]
-                              ctx.set_source_rgba(0.0, 0.88, 1.0, 0.36)
-                              ctx.move_to(x1, y1)
-                              ctx.line_to(x2, y2)
-                              ctx.stroke()
-                              p_pos = (global_t * 1.5 + (i * 0.17)) % 1.0
-                              px = x1 + (x2 - x1) * p_pos
-                              py = y1 + (y2 - y1) * p_pos
-                              ctx.set_source_rgba(1.0, 0.92, 0.2, 0.96)
-                              ctx.arc(px, py, 7.0, 0, 2 * math.pi)
-                              ctx.fill()
-                  for idx_n, (nx, ny) in enumerate(nodes):
-                      r_n = 36 if idx_n == len(nodes) - 1 else 20
-                      ctx.set_source_rgba(0.0, 0.92, 1.0, 0.95) if idx_n < len(nodes) - 1 else ctx.set_source_rgba(1.0, 0.78, 0.15, 0.98)
-                      ctx.arc(nx, ny, r_n, 0, 2 * math.pi)
-                      ctx.fill_preserve()
-                      ctx.set_source_rgb(1, 1, 1)
-                      ctx.set_line_width(3.0)
-                      ctx.stroke()
-
-              elif mode == 1:
-                  bar_colors = [(0.0, 0.85, 1.0), (0.15, 0.95, 0.65), (1.0, 0.78, 0.15), (1.0, 0.35, 0.55), (0.58, 0.45, 1.0)]
-                  base_by = by + bh - 55
-                  pts = []
-                  for bi in range(5):
-                      bar_x = bx + 105 + bi * 165
-                      bh_val = (105 + bi * 68 + math.sin(global_t * 3.2 + bi) * 20) * min(1.0, 0.25 + prog * 0.85)
-                      rc, gc, bc = bar_colors[bi]
-                      draw_rounded_rect(ctx, bar_x, base_by - bh_val, 92, bh_val, 15)
-                      bgrad = cairo.LinearGradient(bar_x, base_by - bh_val, bar_x, base_by)
-                      bgrad.add_color_stop_rgba(0.0, rc, gc, bc, 0.92)
-                      bgrad.add_color_stop_rgba(1.0, rc * 0.3, g_c := gc * 0.3, bc * 0.3, 0.75)
-                      ctx.set_source(bgrad)
-                      ctx.fill_preserve()
-                      ctx.set_source_rgba(1, 1, 1, 0.55)
-                      ctx.set_line_width(2.5)
-                      ctx.stroke()
-                      pts.append((bar_x + 46, base_by - bh_val - 26))
-                  ctx.set_source_rgba(1.0, 0.92, 0.2, 0.95)
-                  ctx.set_line_width(7.0)
-                  ctx.move_to(pts[0][0], pts[0][1])
-                  for px, py in pts[1:]:
-                      ctx.line_to(px, py)
-                  ctx.stroke()
-                  for px, py in pts:
-                      ctx.set_source_rgb(1, 1, 1)
-                      ctx.arc(px, py, 10, 0, 2 * math.pi)
-                      ctx.fill()
-
-              elif mode == 2:
-                  for r_ring in (205, 145, 85):
-                      ctx.set_source_rgba(0.0, 0.85, 1.0, 0.26)
-                      ctx.set_line_width(3.0)
-                      ctx.arc(cx, cy, r_ring, 0, 2 * math.pi)
-                      ctx.stroke()
-                  end_ang = -math.pi / 2 + (2 * math.pi * 0.85 * min(1.0, 0.3 + prog * 0.7))
-                  ctx.set_source_rgba(0.15, 0.98, 0.65, 0.95)
-                  ctx.set_line_width(28.0)
-                  ctx.set_line_cap(cairo.LINE_CAP_ROUND)
-                  ctx.arc(cx, cy, 160, -math.pi / 2, end_ang)
-                  ctx.stroke()
-                  sweep_ang = global_t * 2.4
-                  ctx.set_source_rgba(1.0, 0.85, 0.2, 0.92)
-                  ctx.set_line_width(5.0)
-                  ctx.move_to(cx, cy)
-                  ctx.line_to(cx + math.cos(sweep_ang) * 200, cy + math.sin(sweep_ang) * 200)
-                  ctx.stroke()
-
-              else:
-                  base_by = by + bh - 60
-                  for ci in range(9):
-                      cx_c = bx + 95 + ci * 96
-                      wave_off = math.sin(global_t * 2.6 + ci * 0.7) * 22
-                      c_top = base_by - (115 + ci * 35 * min(1.0, 0.3 + prog * 0.7) + wave_off)
-                      c_bot = c_top + 62 + (ci % 3) * 18
-                      is_bull = (ci % 3 != 1)
-                      ctx.set_source_rgba(0.1, 0.95, 0.6, 0.95) if is_bull else ctx.set_source_rgba(1.0, 0.3, 0.45, 0.95)
-                      ctx.set_line_width(4.0)
-                      ctx.move_to(cx_c + 24, c_top - 24)
-                      ctx.line_to(cx_c + 24, c_bot + 24)
-                      ctx.stroke()
-                      draw_rounded_rect(ctx, cx_c, c_top, 48, max(24, c_bot - c_top), 8)
-                      ctx.fill()
-
-          def wrap_lines(text: str, words_per_line: int = 5) -> list:
-              words = text.split()
-              return [" ".join(words[i : i + words_per_line]) for i in range(0, len(words), words_per_line)][:3]
-
-          def prerender_scene_text_overlays(ch: dict, scenes: list, w: int = 1080, h: int = 1920) -> dict:
-              is_ar = ch["lang"] == "ar"
-              txt_dir = "rtl" if is_ar else "ltr"
-              accent = (0, 215, 255) if is_ar else (255, 195, 35)
-              f_header = get_font(30)
-              f_badge = get_font(34)
-              f_sub = get_font(38)
-              f_live = get_font(24)
-
-              overlays = {}
-              for s_idx, sc in enumerate(scenes):
-                  lines = wrap_lines(sc["narration"], words_per_line=5 if is_ar else 6)
-                  n_lines = max(1, len(lines))
-                  for active_idx in range(n_lines):
-                      ov = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-                      d = ImageDraw.Draw(ov, "RGBA")
-                      d.rectangle([(0, 0), (w, 94)], fill=(8, 12, 22, 235))
-                      d.rounded_rectangle([(32, 18), (220, 74)], radius=12, fill=(220, 28, 38, 245))
-                      d.text((126, 46), "ANIMATION STUDIO" if not is_ar else "استوديو الأنيميشن", font=f_live, fill=(255, 255, 255, 255), anchor="mm", direction=txt_dir)
-                      d.text((w - 36 if is_ar else 245, 46), sc.get("headline", ch["name"]), font=f_header, fill=(255, 255, 255, 255), anchor="rm" if is_ar else "lm", direction=txt_dir)
-
-                      stat_txt = sc.get("stat_badge", "")
-                      if stat_txt:
-                          d.rounded_rectangle([(84, 136), (w - 84, 212)], radius=18, fill=(10, 18, 36, 232), outline=(accent[0], accent[1], accent[2], 225), width=3)
-                          d.text((w // 2, 174), stat_txt, font=f_badge, fill=(accent[0], accent[1], accent[2], 255), anchor="mm", direction=txt_dir)
-
-                      sub_h = 66 * len(lines) + 46
-                      sub_y0 = 1525
-                      d.rounded_rectangle([(36, sub_y0), (w - 36, sub_y0 + sub_h)], radius=28, fill=(8, 12, 24, 242), outline=(255, 215, 0, 240), width=4)
-                      for l_idx, ln in enumerate(lines):
-                          ly = sub_y0 + 50 + l_idx * 64
-                          d.text((w // 2 + 2, ly + 2), ln, font=f_sub, fill=(0, 0, 0, 255), anchor="mm", direction=txt_dir)
-                          col = (255, 230, 0, 255) if (l_idx == active_idx) else (255, 255, 255, 255)
-                          d.text((w // 2, ly), ln, font=f_sub, fill=col, anchor="mm", direction=txt_dir)
-
-                      overlays[(s_idx, active_idx)] = (ov, n_lines)
-              return overlays
-
-          def produce_caricature_mobile_video(
-              ch: dict, script: dict, audio_aac: Path, duration: float, env: np.ndarray, visemes: list,
-              illustrations: list, out_mp4: Path, thumb_jpg: Path
-          ):
-              w, h, fps = 1080, 1920, 30
-              total_frames = len(env)
+          def produce_true_ai_reel(ch: dict, script: dict, work_dir: Path, final_mp4: Path, thumb_jpg: Path):
               scenes = script["scenes"]
-              n_scenes = len(scenes)
-              is_ar = ch["lang"] == "ar"
-              overlays = prerender_scene_text_overlays(ch, scenes, w, h)
+              avatar_img = work_dir / "master_avatar_3d.jpg"
+              print("   🎨 Generating 3D Pixar AI Character Portrait (Gemini Imagen / FLUX.1 ZeroGPU)...")
+              generate_ai_image_multi_engine(ch["avatar_prompt"], avatar_img, seed=707)
 
-              raw_v = out_mp4.parent / "temp_caricature_v.mp4"
-              cmd = [
-                  "ffmpeg", "-y",
-                  "-f", "rawvideo", "-vcodec", "rawvideo",
-                  "-s", f"{w}x{h}", "-pix_fmt", "rgb24", "-r", str(fps),
-                  "-i", "-",
-                  "-c:v", "libx264", "-preset", "fast", "-crf", "20", "-pix_fmt", "yuv420p",
-                  str(raw_v),
-              ]
-              proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+              scene_clips = []
+              for s_idx, sc in enumerate(scenes):
+                  print(f"   🎬 Producing AI Scene {s_idx + 1}/{len(scenes)} ({sc.get('type', 'avatar')})...")
+                  aud_mp3 = work_dir / f"aud_{s_idx}.mp3"
+                  asyncio.run(synthesize_scene_audio(sc["narration"], ch["voice"], ch["rate"], aud_mp3))
 
-              surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, w, h)
-              ctx = cairo.Context(surface)
-              bx, by, bw, bh = 48, 118, w - 96, 700
-              thumb_saved = False
+                  raw_ai_mp4 = work_dir / f"raw_ai_{s_idx}.mp4"
+                  norm_mp4 = work_dir / f"norm_scene_{s_idx}.mp4"
 
-              for f_idx in range(total_frames):
-                  t = f_idx / float(fps)
-                  amp = float(env[f_idx])
-                  viseme = int(visemes[f_idx])
-                  prog = f_idx / float(max(1, total_frames))
-                  s_idx = min(n_scenes - 1, int(prog * n_scenes))
-                  scene_prog = max(0.0, min(0.999, (prog * n_scenes) - s_idx))
-                  scene_dur = max(0.5, duration / float(n_scenes))
-                  local_t = scene_prog * scene_dur
-
-                  # 1. Studio Background
-                  bg_grad = cairo.LinearGradient(0, 0, 0, h)
-                  bg_grad.add_color_stop_rgb(0.0, 0.04, 0.07, 0.14)
-                  bg_grad.add_color_stop_rgb(0.55, 0.07, 0.12, 0.24)
-                  bg_grad.add_color_stop_rgb(1.0, 0.03, 0.05, 0.10)
-                  ctx.set_source(bg_grad)
-                  ctx.rectangle(0, 0, w, h)
-                  ctx.fill()
-
-                  spot = cairo.RadialGradient(w * 0.5, 1180, 40, w * 0.5, 1180, 520)
-                  if is_ar:
-                      spot.add_color_stop_rgba(0.0, 0.0, 0.80, 1.0, 0.22 + 0.08 * amp)
+                  if sc.get("type") == "avatar" and avatar_img.exists():
+                      ok = animate_talking_avatar_zero_gpu(
+                          avatar_img, aud_mp3, sc.get("motion_prompt", "3D character speaking expressively"), raw_ai_mp4
+                      )
+                      if ok and raw_ai_mp4.exists():
+                          normalize_ai_clip_with_audio(raw_ai_mp4, aud_mp3, norm_mp4)
+                          scene_clips.append(norm_mp4)
+                          continue
+                      render_smooth_3d_parallax_clip(avatar_img, aud_mp3, norm_mp4, is_avatar=True)
+                      scene_clips.append(norm_mp4)
                   else:
-                      spot.add_color_stop_rgba(0.0, 1.0, 0.72, 0.12, 0.22 + 0.08 * amp)
-                  spot.add_color_stop_rgba(1.0, 0.0, 0.0, 0.0, 0.0)
-                  ctx.set_source(spot)
-                  ctx.rectangle(0, 0, w, h)
-                  ctx.fill()
+                      broll_img = work_dir / f"broll_3d_{s_idx}.jpg"
+                      generate_ai_image_multi_engine(sc.get("visual_prompt", ch["avatar_prompt"]), broll_img, seed=800 + s_idx * 23)
+                      ok = False
+                      if broll_img.exists():
+                          ok = animate_broll_scene_zero_gpu(
+                              broll_img, sc.get("motion_prompt", "cinematic 3d camera movement"), raw_ai_mp4
+                          )
+                      if ok and raw_ai_mp4.exists():
+                          normalize_ai_clip_with_audio(raw_ai_mp4, aud_mp3, norm_mp4)
+                          scene_clips.append(norm_mp4)
+                          continue
+                      render_smooth_3d_parallax_clip(broll_img if broll_img.exists() else avatar_img, aud_mp3, norm_mp4, is_avatar=False)
+                      scene_clips.append(norm_mp4)
 
-                  # 2. Top Holographic Explainer Stage Board
-                  draw_rounded_rect(ctx, bx, by, bw, bh, 34)
-                  bgrad = cairo.LinearGradient(bx, by, bx + bw, by + bh)
-                  bgrad.add_color_stop_rgba(0.0, 0.05, 0.11, 0.23, 0.96)
-                  bgrad.add_color_stop_rgba(1.0, 0.03, 0.07, 0.16, 0.96)
-                  ctx.set_source(bgrad)
-                  ctx.fill_preserve()
-                  ctx.set_source_rgba(0.0, 0.85, 1.0, 0.88) if is_ar else ctx.set_source_rgba(1.0, 0.78, 0.15, 0.88)
-                  ctx.set_line_width(4.5)
-                  ctx.stroke()
-
-                  draw_holographic_scene_graphics(ctx, s_idx, local_t, t, bx, by + 65, bw, bh - 65)
-
-                  # 3. Full-Rigged Caricature Presenter Character (with 8-Viseme Lip-Sync & Pointing Hand)
-                  cx = w * 0.50
-                  cy = 1215
-                  breath = math.sin(t * 2.8) * 6.0
-                  body_sway = math.sin(t * 1.8) * 11.0
-                  head_tilt = math.sin(t * 2.2) * 0.06 + math.sin(t * 6.5) * 0.03 * amp
-
-                  ctx.save()
-                  ctx.translate(cx + body_sway, cy + breath)
-
-                  # Left Arm
-                  ctx.save()
-                  ctx.translate(-140, 80)
-                  l_wave = math.sin(t * 3.6) * (0.25 + 0.55 * amp)
-                  le_x, le_y = -95 - l_wave * 18, 75
-                  lh_x, lh_y = -65 + l_wave * 28, 145 - abs(l_wave) * 25
-                  ctx.set_source_rgb(0.11, 0.16, 0.29)
-                  ctx.set_line_width(50)
-                  ctx.set_line_cap(cairo.LINE_CAP_ROUND)
-                  ctx.move_to(0, 0)
-                  ctx.line_to(le_x, le_y)
-                  ctx.line_to(lh_x, lh_y)
-                  ctx.stroke()
-                  ctx.set_source_rgb(0.92, 0.72, 0.57)
-                  ctx.arc(lh_x, lh_y, 24, 0, 2 * math.pi)
-                  ctx.fill()
-                  ctx.restore()
-
-                  # Right Arm (Pointing at Holographic Stage)
-                  ctx.save()
-                  ctx.translate(140, 75)
-                  p_wave = math.sin(t * 4.4) * (0.35 + 0.65 * amp)
-                  re_x, re_y = 110 + p_wave * 16, -20 - abs(p_wave) * 20
-                  rh_x, rh_y = 148 + p_wave * 30, -180 - abs(p_wave) * 40
-                  ctx.set_source_rgb(0.11, 0.16, 0.29)
-                  ctx.set_line_width(50)
-                  ctx.set_line_cap(cairo.LINE_CAP_ROUND)
-                  ctx.move_to(0, 0)
-                  ctx.line_to(re_x, re_y)
-                  ctx.stroke()
-                  ctx.set_line_width(44)
-                  ctx.move_to(re_x, re_y)
-                  ctx.line_to(rh_x, rh_y)
-                  ctx.stroke()
-                  ctx.set_source_rgb(0.96, 0.98, 1.0)
-                  ctx.set_line_width(34)
-                  ctx.move_to(rh_x - 6, rh_y + 16)
-                  ctx.line_to(rh_x, rh_y)
-                  ctx.stroke()
-                  ctx.save()
-                  ctx.translate(rh_x, rh_y)
-                  ctx.set_source_rgb(0.92, 0.72, 0.57)
-                  ctx.arc(0, 0, 25, 0, 2 * math.pi)
-                  ctx.fill_preserve()
-                  ctx.set_source_rgb(0.65, 0.45, 0.34)
-                  ctx.set_line_width(3.0)
-                  ctx.stroke()
-                  ctx.set_source_rgb(0.92, 0.72, 0.57)
-                  ctx.set_line_width(13)
-                  ctx.set_line_cap(cairo.LINE_CAP_ROUND)
-                  ctx.move_to(4, -12)
-                  ctx.line_to(12, -50)
-                  ctx.stroke()
-                  ctx.restore()
-                  ctx.restore()
-
-                  # Torso Blazer
-                  draw_rounded_rect(ctx, -165, 42, 330, 240, 72)
-                  tgrad = cairo.LinearGradient(-165, 42, 165, 282)
-                  tgrad.add_color_stop_rgb(0.0, 0.14, 0.20, 0.35)
-                  tgrad.add_color_stop_rgb(1.0, 0.08, 0.12, 0.22)
-                  ctx.set_source(tgrad)
-                  ctx.fill_preserve()
-                  ctx.set_source_rgb(0.25, 0.36, 0.56)
-                  ctx.set_line_width(4.0)
-                  ctx.stroke()
-
-                  ctx.move_to(-62, 45)
-                  ctx.line_to(62, 45)
-                  ctx.line_to(0, 195)
-                  ctx.close_path()
-                  ctx.set_source_rgb(0.96, 0.98, 1.0)
-                  ctx.fill()
-
-                  ctx.move_to(-17, 52)
-                  ctx.line_to(17, 52)
-                  ctx.line_to(22, 175)
-                  ctx.line_to(0, 202)
-                  ctx.line_to(-22, 175)
-                  ctx.close_path()
-                  ctx.set_source_rgb(0.0, 0.80, 1.0) if is_ar else ctx.set_source_rgb(0.95, 0.72, 0.15)
-                  ctx.fill()
-
-                  # Neck
-                  draw_rounded_rect(ctx, -36, -12, 72, 74, 20)
-                  ctx.set_source_rgb(0.84, 0.63, 0.49)
-                  ctx.fill()
-
-                  # Head
-                  ctx.save()
-                  ctx.translate(0, -112)
-                  ctx.rotate(head_tilt)
-
-                  for side in (-1, 1):
-                      ctx.save()
-                      ctx.translate(side * 132, 8)
-                      ctx.set_source_rgb(0.88, 0.67, 0.52)
-                      ctx.arc(0, 0, 25, 0, 2 * math.pi)
-                      ctx.fill_preserve()
-                      ctx.set_source_rgb(0.62, 0.42, 0.30)
-                      ctx.set_line_width(3.8)
-                      ctx.stroke()
-                      ctx.restore()
-
-                  jaw_ext = amp * 14.0
-                  ctx.new_path()
-                  ctx.move_to(0, -144)
-                  ctx.curve_to(112, -144, 138, -72, 133, 12)
-                  ctx.curve_to(126, 92 + jaw_ext, 66, 142 + jaw_ext, 0, 145 + jaw_ext)
-                  ctx.curve_to(-66, 142 + jaw_ext, -126, 92 + jaw_ext, -133, 12)
-                  ctx.curve_to(-138, -72, -112, -144, 0, -144)
-                  ctx.close_path()
-
-                  sgrad = cairo.RadialGradient(-24, -34, 18, 0, 0, 170)
-                  sgrad.add_color_stop_rgb(0.0, 0.96, 0.78, 0.64)
-                  sgrad.add_color_stop_rgb(1.0, 0.85, 0.64, 0.49)
-                  ctx.set_source(sgrad)
-                  ctx.fill_preserve()
-                  ctx.set_source_rgb(0.58, 0.39, 0.28)
-                  ctx.set_line_width(4.2)
-                  ctx.stroke()
-
-                  # Groomed Beard
-                  ctx.new_path()
-                  ctx.move_to(-128, 15)
-                  ctx.curve_to(-118, 98 + jaw_ext, -60, 143 + jaw_ext, 0, 145 + jaw_ext)
-                  ctx.curve_to(60, 143 + jaw_ext, 118, 98 + jaw_ext, 128, 15)
-                  ctx.curve_to(112, 52, 70, 40, 44, 40)
-                  ctx.curve_to(18, 30, -18, 30, -44, 40)
-                  ctx.curve_to(-70, 40, -112, 52, -128, 15)
-                  ctx.close_path()
-                  ctx.set_source_rgba(0.14, 0.15, 0.20, 0.88)
-                  ctx.fill()
-
-                  ctx.save()
-                  ctx.scale(1.15, 1.0)
-                  ctx.arc(0, 72 + jaw_ext * 0.55, 50, 0, 2 * math.pi)
-                  ctx.restore()
-                  ctx.set_source_rgb(0.89, 0.69, 0.55)
-                  ctx.fill()
-
-                  # Wavy Hair
-                  ctx.new_path()
-                  ctx.move_to(-133, -20)
-                  ctx.curve_to(-148, -102, -102, -174, -24, -170)
-                  ctx.curve_to(24, -188, 112, -178, 138, -122)
-                  ctx.curve_to(154, -82, 142, -32, 133, -16)
-                  ctx.curve_to(112, -72, 52, -98, -14, -95)
-                  ctx.curve_to(-72, -92, -115, -68, -133, -20)
-                  ctx.close_path()
-                  ctx.set_source_rgb(0.12, 0.14, 0.20)
-                  ctx.fill_preserve()
-                  ctx.set_source_rgb(0.05, 0.05, 0.08)
-                  ctx.set_line_width(3.8)
-                  ctx.stroke()
-
-                  # Eyes + Glasses + Eyebrows
-                  blink = ((t * 0.95) % 3.4) > 3.22
-                  look_x = math.sin(t * 1.5) * 7.0
-                  look_y = -4.0 + math.cos(t * 1.9) * 3.0
-                  for side in (-1, 1):
-                      ex, ey = side * 52, -22
-                      if blink:
-                          ctx.set_source_rgb(0.12, 0.10, 0.12)
-                          ctx.set_line_width(6.0)
-                          ctx.move_to(ex - 28, ey)
-                          ctx.curve_to(ex - 10, ey + 8, ex + 10, ey + 8, ex + 28, ey)
-                          ctx.stroke()
-                      else:
-                          ctx.save()
-                          ctx.translate(ex, ey)
-                          ctx.scale(30, 24)
-                          ctx.arc(0, 0, 1.0, 0, 2 * math.pi)
-                          ctx.restore()
-                          ctx.set_source_rgb(0.99, 0.99, 1.0)
-                          ctx.fill_preserve()
-                          ctx.set_source_rgb(0.15, 0.12, 0.14)
-                          ctx.set_line_width(3.8)
-                          ctx.stroke()
-
-                          ix, iy = ex + look_x, ey + look_y
-                          ctx.set_source_rgb(0.28, 0.18, 0.11)
-                          ctx.arc(ix, iy, 14.0, 0, 2 * math.pi)
-                          ctx.fill()
-                          ctx.set_source_rgb(0.05, 0.05, 0.07)
-                          ctx.arc(ix, iy, 7.2, 0, 2 * math.pi)
-                          ctx.fill()
-                          ctx.set_source_rgba(1.0, 1.0, 1.0, 0.95)
-                          ctx.arc(ix + 4.5, iy - 4.5, 4.2, 0, 2 * math.pi)
-                          ctx.fill()
-
-                      draw_rounded_rect(ctx, ex - 38, ey - 30, 76, 60, 15)
-                      ctx.set_source_rgba(0.12, 0.16, 0.24, 0.92)
-                      ctx.set_line_width(5.2)
-                      ctx.stroke()
-
-                      brow_lift = amp * 11.5
-                      ctx.set_source_rgb(0.10, 0.11, 0.16)
-                      ctx.set_line_width(10.0)
-                      ctx.set_line_cap(cairo.LINE_CAP_ROUND)
-                      ctx.move_to(ex - 30, ey - 40 - brow_lift * (0.6 if side == -1 else 1.0))
-                      ctx.curve_to(ex, ey - 52 - brow_lift, ex + 16, ey - 48 - brow_lift, ex + 30, ey - 38 - brow_lift * (1.0 if side == -1 else 0.6))
-                      ctx.stroke()
-
-                  ctx.set_source_rgba(0.12, 0.16, 0.24, 0.92)
-                  ctx.set_line_width(5.2)
-                  ctx.move_to(-14, -25)
-                  ctx.line_to(14, -25)
-                  ctx.stroke()
-
-                  ctx.set_source_rgb(0.64, 0.44, 0.32)
-                  ctx.set_line_width(4.2)
-                  ctx.move_to(0, -14)
-                  ctx.curve_to(-11, 16, -13, 26, 4, 28)
-                  ctx.stroke()
-
-                  ctx.set_source_rgb(0.12, 0.13, 0.18)
-                  ctx.set_line_width(10.5)
-                  ctx.move_to(-42, 50 + jaw_ext * 0.35)
-                  ctx.curve_to(-14, 40 + jaw_ext * 0.35, 14, 40 + jaw_ext * 0.35, 42, 50 + jaw_ext * 0.35)
-                  ctx.stroke()
-
-                  # 8-Viseme Phonetic Lip-Sync Mouth
-                  draw_viseme_mouth(ctx, 0, 72 + jaw_ext * 0.55, 1.15, viseme=viseme, open_amt=amp)
-                  ctx.restore()  # End Head
-                  ctx.restore()  # End Character
-
-                  # 4. Studio Broadcast Desk + Mic + Live Equalizer
-                  desk_y = 1405
-                  draw_rounded_rect(ctx, 36, desk_y, w - 72, 100, 24)
-                  dgrad = cairo.LinearGradient(36, desk_y, w - 36, desk_y + 100)
-                  dgrad.add_color_stop_rgb(0.0, 0.08, 0.12, 0.22)
-                  dgrad.add_color_stop_rgb(0.5, 0.13, 0.19, 0.34)
-                  dgrad.add_color_stop_rgb(1.0, 0.08, 0.12, 0.22)
-                  ctx.set_source(dgrad)
-                  ctx.fill_preserve()
-                  ctx.set_source_rgba(0.0, 0.85, 1.0, 0.85) if is_ar else ctx.set_source_rgba(1.0, 0.78, 0.15, 0.85)
-                  ctx.set_line_width(4.0)
-                  ctx.stroke()
-
-                  ctx.save()
-                  ctx.translate(350, desk_y - 45)
-                  ctx.set_source_rgb(0.25, 0.30, 0.40)
-                  ctx.set_line_width(10)
-                  ctx.move_to(0, 50)
-                  ctx.line_to(0, 10)
-                  ctx.stroke()
-                  draw_rounded_rect(ctx, -22, -38, 44, 68, 20)
-                  ctx.set_source_rgb(0.14, 0.16, 0.22)
-                  ctx.fill_preserve()
-                  ctx.set_source_rgb(0.7, 0.78, 0.88)
-                  ctx.set_line_width(3.5)
-                  ctx.stroke()
-                  ctx.set_source_rgb(0.0, 0.95, 0.55) if amp > 0.06 else ctx.set_source_rgb(0.0, 0.7, 1.0)
-                  ctx.set_line_width(5.0)
-                  ctx.move_to(-20, -4)
-                  ctx.line_to(20, -4)
-                  ctx.stroke()
-                  ctx.restore()
-
-                  for bi in range(28):
-                      bx_eq = 78 + bi * ((w - 156) // 28)
-                      bh_eq = 8 + (math.sin(t * 11.0 + bi * 0.65) * 0.5 + 0.5) * amp * 48
-                      draw_rounded_rect(ctx, bx_eq, desk_y + 78 - bh_eq, 16, bh_eq, 5)
-                      ctx.set_source_rgba(0.0, 0.90, 1.0, 0.88) if is_ar else ctx.set_source_rgba(1.0, 0.80, 0.15, 0.88)
-                      ctx.fill()
-
-                  ctx.set_source_rgb(0.0, 0.85, 1.0) if is_ar else ctx.set_source_rgb(1.0, 0.78, 0.15)
-                  ctx.rectangle(0, 90, int(w * prog), 6)
-                  ctx.fill()
-
-                  buf = surface.get_data()
-                  arr_bgra = np.ndarray(shape=(h, w, 4), dtype=np.uint8, buffer=buf)
-                  frame_rgb = arr_bgra[:, :, [2, 1, 0]].copy()
-
-                  if illustrations[s_idx] is not None:
-                      art = illustrations[s_idx]
-                      roi = frame_rgb[by + 8 : by + bh - 8, bx + 8 : bx + bw - 8]
-                      frame_rgb[by + 8 : by + bh - 8, bx + 8 : bx + bw - 8] = (roi * 0.72 + art * 0.28).astype(np.uint8)
-
-                  pil_frame = Image.fromarray(frame_rgb).convert("RGBA")
-                  _, n_lines = overlays[(s_idx, 0)]
-                  active_line = min(n_lines - 1, int(scene_prog * n_lines))
-                  ov_img, _ = overlays[(s_idx, active_line)]
-                  pil_frame.alpha_composite(ov_img)
-                  out_rgb = pil_frame.convert("RGB")
-
-                  if not thumb_saved and f_idx == min(total_frames - 1, 20):
-                      out_rgb.save(thumb_jpg, "JPEG", quality=92)
-                      thumb_saved = True
-
-                  proc.stdin.write(np.array(out_rgb).tobytes())
-
-              proc.stdin.close()
-              proc.wait()
-
-              subprocess.run(
-                  [
-                      "ffmpeg", "-y", "-i", str(raw_v), "-i", str(audio_aac),
-                      "-shortest", "-map", "0:v:0", "-map", "1:a:0",
-                      "-c:v", "copy", "-c:a", "copy", str(out_mp4),
-                  ],
-                  check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-              )
+              burn_viral_reels_captions_and_bgm(scene_clips, scenes, ch["lang"] == "ar", final_mp4, thumb_jpg)
 
           def upload_to_youtube(video_path: Path, thumb_path: Path, script: dict, refresh_token: str):
               client_id = os.environ.get("YT_CLIENT_ID", "").strip()
@@ -965,7 +635,7 @@ jobs:
               media = MediaFileUpload(str(video_path), chunksize=-1, resumable=True, mimetype="video/mp4")
               resp = youtube.videos().insert(part="snippet,status", body=body, media_body=media).execute()
               vid_id = resp.get("id")
-              print(f"✅ PUBLISHED CARICATURE ANIMATION VIDEO! URL: https://youtu.be/{vid_id}")
+              print(f"✅ PUBLISHED 100% AI REEL! URL: https://youtu.be/{vid_id}")
               if vid_id and thumb_path.exists():
                   try:
                       youtube.thumbnails().set(videoId=vid_id, media_body=MediaFileUpload(str(thumb_path), mimetype="image/jpeg")).execute()
@@ -982,19 +652,13 @@ jobs:
                   if not token:
                       print(f"⏭️ تخطي القناة {ch['id']} لعدم إضافة مفتاح {ch['secret']} بعد.")
                       continue
-                  print(f"🎬 بدء إنتاج فيديو الأنيميشن والشخصية الكاريكاتيرية المتحدثة لقناة: {ch['name']} ({ch['id']})")
+                  print(f"🚀 بدء إنتاج فيديو الذكاء الاصطناعي الكامل (3D Pixar Avatar + ZeroGPU LipSync) لقناة: {ch['name']}")
                   work_dir = Path("output_videos") / ch["id"]
                   work_dir.mkdir(parents=True, exist_ok=True)
-                  script = generate_documentary_script(ch)
-                  voice_mp3 = work_dir / "voice.mp3"
-                  mixed_aac = work_dir / "mixed_audio.m4a"
-                  asyncio.run(synthesize_narration(script["scenes"], ch["voice"], ch["rate"], voice_mp3))
-                  duration = mix_documentary_soundtrack(voice_mp3, mixed_aac)
-                  _, env, visemes = extract_audio_envelope_and_visemes(voice_mp3, fps=30)
-                  illustrations = fetch_scene_illustrations(script["scenes"], work_dir, 1080 - 96 - 16, 700 - 16)
-                  final_video = work_dir / f"{ch['id']}_animated.mp4"
+                  script = generate_ai_reel_script(ch)
+                  final_video = work_dir / f"{ch['id']}_ai_reel.mp4"
                   thumb_jpg = work_dir / "thumbnail.jpg"
-                  produce_caricature_mobile_video(ch, script, mixed_aac, duration, env, visemes, illustrations, final_video, thumb_jpg)
+                  produce_true_ai_reel(ch, script, work_dir, final_video, thumb_jpg)
                   upload_to_youtube(final_video, thumb_jpg, script, token)
 
           if __name__ == "__main__":
