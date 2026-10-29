@@ -2153,6 +2153,47 @@ def upload_to_youtube(video_path: Path, script_data: dict, cfg: dict) -> str | N
         import traceback
         traceback.print_exc()
         return None
+        # Force refresh to verify validity and obtain active access_token
+        print("  [YouTube Upload] Requesting refreshed access token from Google OAuth2...")
+        creds.refresh(Request())
+        print(f"  [YouTube Upload] Access token refreshed successfully! Valid: {creds.valid}")
+
+        youtube = build("youtube", "v3", credentials=creds)
+        title = script_data.get("title", f"{cfg['name']} #Shorts")[:98]
+        narration_full = "\n\n".join([s.get("narration", "") for s in script_data.get("segments", [])])
+        desc = f"{title}\n\n{narration_full}\n\n#Shorts #AI #Wealth #Documentary"
+
+        body = {
+            "snippet": {
+                "title": title,
+                "description": desc,
+                "tags": ["Shorts", "AI", "Technology", "Wealth", "Business", "Documentary"],
+                "categoryId": "28" if cfg["lang"] == "ar" else "27",
+            },
+            "status": {
+                "privacyStatus": "public",
+                "selfDeclaredMadeForKids": False,
+            },
+        }
+
+        print(f"  [YouTube Upload] Uploading '{title}' ({video_path.stat().st_size / (1024*1024):.2f} MB)...")
+        media = MediaFileUpload(str(video_path), chunksize=1024 * 1024, resumable=True, mimetype="video/mp4")
+        req = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
+
+        resp = None
+        while resp is None:
+            status, resp = req.next_chunk()
+            if status:
+                print(f"  [YouTube Upload] Upload progress: {int(status.progress() * 100)}%")
+
+        vid_id = resp.get("id")
+        print(f"  [YouTube Upload] SUCCESS! Video published! URL: https://youtu.be/{vid_id}")
+        return vid_id
+    except Exception as e:
+        print(f"  [YouTube Upload] ERROR during YouTube upload: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
 
 
 # ==============================================================================
