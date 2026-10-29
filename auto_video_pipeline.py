@@ -2088,33 +2088,42 @@ def upload_to_youtube(video_path: Path, script_data: dict, cfg: dict) -> str | N
         from googleapiclient.discovery import build
         from googleapiclient.http import MediaFileUpload
 
-        YOUTUBE_SCOPES = [
-            "https://www.googleapis.com/auth/youtube.upload",
-            "https://www.googleapis.com/auth/youtube",
-        ]
-
         creds = None
         # Support both JSON authorized_user_info and raw OAuth Refresh Token from OAuth Playground
         if token_raw.startswith("{"):
             print("  [YouTube Upload] Format: JSON authorized_user_info")
             token_info = json.loads(token_raw)
-            creds = Credentials.from_authorized_user_info(token_info, YOUTUBE_SCOPES)
+            creds = Credentials.from_authorized_user_info(token_info)
         else:
             print("  [YouTube Upload] Format: Raw OAuth Refresh Token string")
             if not client_id or not client_secret:
                 print("  [YouTube Upload] WARNING: YT_CLIENT_ID or YT_CLIENT_SECRET not found in environment!")
+            # scopes=None tells Google OAuth endpoint to grant the original scopes authorized for this refresh token,
+            # completely eliminating any 'invalid_scope' error!
             creds = Credentials(
                 token=None,
                 refresh_token=token_raw,
                 token_uri="https://oauth2.googleapis.com/token",
                 client_id=client_id,
                 client_secret=client_secret,
-                scopes=YOUTUBE_SCOPES,
+                scopes=None,
             )
 
         # Force refresh to verify validity and obtain active access_token
         print("  [YouTube Upload] Requesting refreshed access token from Google OAuth2...")
-        creds.refresh(Request())
+        try:
+            creds.refresh(Request())
+        except Exception as ref_err:
+            print(f"  [YouTube Upload] Unscoped refresh notice ({ref_err}); trying fallback youtube.upload scope...")
+            creds = Credentials(
+                token=None,
+                refresh_token=token_raw,
+                token_uri="https://oauth2.googleapis.com/token",
+                client_id=client_id,
+                client_secret=client_secret,
+                scopes=["https://www.googleapis.com/auth/youtube.upload", "https://www.googleapis.com/auth/youtube.force-ssl"],
+            )
+            creds.refresh(Request())
         print(f"  [YouTube Upload] Access token refreshed successfully! Valid: {creds.valid}")
 
         youtube = build("youtube", "v3", credentials=creds)
