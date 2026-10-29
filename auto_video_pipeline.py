@@ -909,35 +909,67 @@ EPISODE_BANK_EN = [
 # ==============================================================================
 
 def shape_text(text: str, lang: str = "ar") -> str:
+    """Shapes Arabic text with full presentation forms and RTL bidirectional ordering."""
     if not text:
         return ""
     if lang == "ar" and HAS_ARABIC_SHAPER:
         try:
-            reshaped = arabic_reshaper.reshape(text)
-            return get_display(reshaped)
+            config = {
+                'delete_harakat': False,
+                'support_ligatures': True,
+                'RIAL SIGN': True,
+            }
+            reshaper = arabic_reshaper.ArabicReshaper(configuration=config)
+            reshaped = reshaper.reshape(text)
+            # base_dir='R' prevents numbers and Latin words from reversing Arabic sentences backwards
+            return get_display(reshaped, base_dir='R')
         except Exception:
             return text
     return text
 
 
 def get_font(size: int = 40, bold: bool = True) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
-    font_paths = [
-        # Linux (Ubuntu / GitHub Actions runner)
-        "/usr/share/fonts/truetype/noto/NotoSansArabic-Bold.ttf" if bold else "/usr/share/fonts/truetype/noto/NotoSansArabic-Regular.ttf",
-        "/usr/share/fonts/truetype/noto/NotoKufiArabic-Bold.ttf",
-        "/usr/share/fonts/truetype/kacst/KacstOne.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        # Windows system fonts
-        "C:\\Windows\\Fonts\\seguisb.ttf" if bold else "C:\\Windows\\Fonts\\segoeui.ttf",
-        "C:\\Windows\\Fonts\\arialbd.ttf" if bold else "C:\\Windows\\Fonts\\arial.ttf",
-        "C:\\Windows\\Fonts\\tahomabd.ttf" if bold else "C:\\Windows\\Fonts\\tahoma.ttf",
+    """Loads high-definition typography with guaranteed Arabic glyphs (Cairo & Noto Sans Arabic)."""
+    repo_root = Path(__file__).resolve().parent
+    font_candidates = [
+        # 1. Bundled repo fonts (guaranteed presentation forms-B)
+        repo_root / "assets" / "fonts" / "Cairo.ttf",
+        repo_root / "assets" / "fonts" / "NotoSansArabic-Bold.ttf",
+        repo_root / "fonts" / "Cairo.ttf",
+        repo_root / "fonts" / "Cairo-Bold.ttf",
+        # 2. Linux system fonts
+        Path("/usr/share/fonts/truetype/amiri/amiri-bold.ttf"),
+        Path("/usr/share/fonts/truetype/amiri/Amiri-Bold.ttf"),
+        Path("/usr/share/fonts/truetype/noto/NotoSansArabic-Bold.ttf"),
+        Path("/usr/share/fonts/truetype/scheherazade/Scheherazade-Bold.ttf"),
+        Path("/usr/share/fonts/truetype/kacst/KacstOne.ttf"),
+        # 3. Windows system fonts
+        Path("C:/Windows/Fonts/seguisb.ttf"),
+        Path("C:/Windows/Fonts/segoeui.ttf"),
+        Path("C:/Windows/Fonts/arialbd.ttf"),
+        Path("C:/Windows/Fonts/tahomabd.ttf"),
     ]
-    for path in font_paths:
-        if os.path.exists(path):
+    for p in font_candidates:
+        if p.exists():
             try:
-                return ImageFont.truetype(path, size=size)
+                return ImageFont.truetype(str(p), size=size)
             except Exception:
                 continue
+
+    # Auto-download Cairo if missing
+    try:
+        f_dir = repo_root / "assets" / "fonts"
+        f_dir.mkdir(parents=True, exist_ok=True)
+        target_f = f_dir / "Cairo.ttf"
+        if not target_f.exists():
+            u = "https://github.com/google/fonts/raw/main/ofl/cairo/Cairo%5Bslnt%2Cwght%5D.ttf"
+            req = urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=12) as resp:
+                target_f.write_bytes(resp.read())
+            return ImageFont.truetype(str(target_f), size=size)
+    except Exception:
+        pass
+
     return ImageFont.load_default()
 
 
@@ -981,7 +1013,7 @@ def generate_dynamic_script(channel_key: str, cfg: dict) -> dict:
             f"'broll_prompt' [detailed English FLUX image generation prompt for the visual being explained], "
             f"'stat_badge' [short upper-case badge text like 'AI EMPIRE • PART {part_num}'])."
         )
-        for model_name in ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]:
+        for model_name in ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"]:
             try:
                 url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemini_key}"
                 payload = json.dumps({
@@ -1381,26 +1413,79 @@ def get_moving_presenter_base_frames(
     target_w: int = 900,
     target_h: int = 1100,
 ) -> list[np.ndarray]:
+    """Loads photorealistic AI presenter persona with natural 3D head sway, breathing, and eye-blinking."""
+    repo_root = Path(__file__).resolve().parent
+    lang = cfg.get("lang", "ar")
+
+    # Priority 1: High-Resolution AI Presenter Persona bundled in assets/presenters/
+    ai_portrait_path = repo_root / "assets" / "presenters" / ("ar_ai_presenter.jpg" if lang == "ar" else "en_ai_presenter.jpg")
+    if not ai_portrait_path.exists():
+        hosts = list((repo_root / "assets" / "presenters").glob("*.jpg"))
+        if hosts:
+            ai_portrait_path = hosts[0]
+
+    if ai_portrait_path.exists():
+        print(f"  [AI Presenter] Loaded realistic AI persona: {ai_portrait_path.name}")
+        base_pil = Image.open(ai_portrait_path).convert("RGB")
+        # Resize to fit portrait dimensions
+        base_pil = base_pil.resize((target_w, target_h), Image.Resampling.LANCZOS)
+        base_arr = np.array(base_pil)
+
+        # Detect face bbox on the AI persona
+        fbx1, fby1, fbx2, fby2 = detect_face_bbox(base_arr)
+        fh = fby2 - fby1
+        fw = fbx2 - fbx1
+        eye_y = int(fby1 + fh * 0.38)
+        eye_lx = int(fbx1 + fw * 0.30)
+        eye_rx = int(fbx1 + fw * 0.70)
+        blink_rad_w = int(fw * 0.12)
+        blink_rad_h = max(4, int(fh * 0.035))
+
+        frames = []
+        for i in range(num_frames):
+            t = i / 30.0
+            # Natural breathing and micro-head sway
+            dx = math.sin(t * 1.5) * 3.0 + math.sin(t * 0.8) * 1.5
+            dy = math.cos(t * 1.8) * 3.5
+            scale = 1.0 + math.sin(t * 1.2) * 0.005
+
+            # Smooth affine warp
+            warped = base_pil.transform(
+                (target_w, target_h),
+                Image.Transform.AFFINE,
+                (1.0 / scale, 0, -dx, 0, 1.0 / scale, -dy),
+                resample=Image.Resampling.BILINEAR
+            )
+            arr = np.array(warped)
+
+            # Natural eye-blinking every 3.2 seconds (frames 93-95)
+            blink_cycle = i % 96
+            if 93 <= blink_cycle <= 95:
+                # Eyelid closure
+                for ex in (eye_lx, eye_rx):
+                    ex0, ex1 = max(0, ex - blink_rad_w), min(target_w, ex + blink_rad_w)
+                    ey0, ey1 = max(0, eye_y - blink_rad_h), min(target_h, eye_y + blink_rad_h)
+                    if ey1 > ey0 and ex1 > ex0 and ey0 >= blink_rad_h * 2:
+                        arr[ey0:ey1, ex0:ex1] = arr[ey0 - blink_rad_h * 2 : ey1 - blink_rad_h * 2, ex0:ex1]
+
+            frames.append(arr)
+        return frames
+
+    # Fallback to driving videos if assets missing
     vid_path = work_dir / "presenter_base_video.mp4"
     ep_idx = get_episode_index("presenter")
-
-    if not vid_path.exists():
-        fetch_pexels_video("podcast host talking camera studio", vid_path, orientation="portrait")
-
-    if not vid_path.exists() or vid_path.stat().st_size < 25_000:
-        v_urls = cfg.get("presenter_video_urls", [])
-        for i in range(len(v_urls)):
-            u = v_urls[(ep_idx + i) % len(v_urls)]
-            try:
-                req = urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0"})
-                with urllib.request.urlopen(req, timeout=15) as resp:
-                    raw = resp.read()
-                if len(raw) > 25_000:
-                    vid_path.write_bytes(raw)
-                    print(f"  [Presenter Video] Downloaded real presenter video from HF CDN ({len(raw)//1024} KB)")
-                    break
-            except Exception as e:
-                print(f"  [Presenter Video] HF CDN notice ({u}): {e}")
+    v_urls = cfg.get("presenter_video_urls", [])
+    for i in range(len(v_urls)):
+        u = v_urls[(ep_idx + i) % len(v_urls)]
+        try:
+            req = urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                raw = resp.read()
+            if len(raw) > 25_000:
+                vid_path.write_bytes(raw)
+                break
+        except Exception:
+            continue
 
     if vid_path.exists() and vid_path.stat().st_size >= 25_000:
         frames_dir = work_dir / "pres_vid_frames"
@@ -1423,56 +1508,12 @@ def get_moving_presenter_base_frames(
                 while len(out) < num_frames:
                     out.extend(ping_pong)
                 return out[:num_frames]
-        except Exception as e:
-            print(f"  [Presenter Video] Decode notice: {e}")
+        except Exception:
+            pass
 
-    portrait_path = work_dir / "presenter_portrait.jpg"
-    if not portrait_path.exists() or portrait_path.stat().st_size < 12_000:
-        if not generate_flux_image_zerogpu(cfg["presenter_prompt"], portrait_path, width=768, height=1024):
-            urls = cfg.get("presenter_fallback_urls", [])
-            for i in range(len(urls)):
-                u = urls[(ep_idx + i) % len(urls)]
-                try:
-                    with urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0"}), timeout=12) as resp:
-                        raw = resp.read()
-                    if len(raw) > 12_000:
-                        portrait_path.write_bytes(raw)
-                        Image.open(portrait_path).convert("RGB").save(portrait_path, quality=95)
-                        break
-                except Exception:
-                    pass
-
-    if portrait_path.exists() and portrait_path.stat().st_size >= 12_000:
-        im = Image.open(portrait_path).convert("RGB")
-    else:
-        im = Image.new("RGB", (target_w, target_h), (20, 26, 44))
-        d = ImageDraw.Draw(im, "RGBA")
-        d.ellipse([60, 80, 340, 360], fill=(0, 180, 220, 75))
-        d.ellipse([580, 120, 860, 400], fill=(255, 160, 50, 75))
-        d.polygon([(140, 1100), (260, 720), (640, 720), (760, 1100)], fill=(32, 38, 52, 255))
-        d.rectangle([400, 590, 500, 745], fill=(210, 162, 130, 255))
-        d.ellipse([295, 230, 605, 650], fill=(224, 176, 142, 255))
-        d.pieslice([290, 210, 610, 480], start=180, end=360, fill=(28, 24, 22, 255))
-        for ex in (385, 515):
-            d.ellipse([ex - 28, 410, ex + 28, 438], fill=(250, 250, 252, 255))
-            d.ellipse([ex - 12, 412, ex + 12, 436], fill=(42, 28, 18, 255))
-        d.rounded_rectangle([405, 548, 495, 568], radius=9, fill=(175, 95, 92, 255))
-
-    over_w, over_h = int(target_w * 1.12), int(target_h * 1.12)
-    im_over = im.resize((over_w, over_h), Image.Resampling.LANCZOS)
-
-    frames = []
-    for f_idx in range(num_frames):
-        t = f_idx / 30.0
-        angle = 1.6 * math.sin(t * 2.1) + 0.7 * math.cos(t * 3.4)
-        rot_im = im_over.rotate(angle, resample=Image.Resampling.BILINEAR, expand=False)
-        dx = int((over_w - target_w) * 0.5 + 22 * math.sin(t * 1.8))
-        dy = int((over_h - target_h) * 0.5 + 14 * math.cos(t * 2.6))
-        dx = max(0, min(over_w - target_w, dx))
-        dy = max(0, min(over_h - target_h, dy))
-        cropped = np.array(rot_im)[dy : dy + target_h, dx : dx + target_w].copy()
-        frames.append(cropped)
-    return frames
+    arr = np.zeros((target_h, target_w, 3), dtype=np.uint8)
+    arr[:, :] = [18, 24, 40]
+    return [arr for _ in range(num_frames)]
 
 
 def animate_presenter_mouth_and_eyes_2d(
@@ -1744,7 +1785,7 @@ def synthesize_voiceover_segment(text: str, voice: str, out_mp3: Path, out_wav: 
         cmd = [
             sys.executable, "-m", "edge_tts",
             "--voice", voice,
-            "--rate=+8%",
+            "--rate=+14%",
             "--text", text,
             "--write-media", str(out_mp3),
         ]
@@ -1806,7 +1847,8 @@ def build_caption_overlay_rgba(
     if layout_mode == "split_screen":
         draw.rectangle([0, 954, W, 966], fill=(0, 215, 255, 245))
         draw.rounded_rectangle([W // 2 - 210, 932, W // 2 + 210, 988], radius=28, fill=(12, 18, 34, 245), outline=(255, 195, 45, 255), width=3)
-        draw.text((W // 2, 960), stat_badge, font=f_badge, fill=(255, 205, 55, 255), anchor="mm")
+        stat_badge_shaped = shape_text(stat_badge, lang)
+        draw.text((W // 2, 960), stat_badge_shaped, font=f_badge, fill=(255, 205, 55, 255), anchor="mm")
 
     cap_y0, cap_y1 = 1560, 1765
     draw.rounded_rectangle(
