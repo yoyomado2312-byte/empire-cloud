@@ -2070,9 +2070,17 @@ def produce_channel_episode(channel_key: str, cfg: dict, output_root: Path) -> t
 def upload_to_youtube(video_path: Path, script_data: dict, cfg: dict) -> str | None:
     secret_env = cfg["secret_env"]
     token_raw = os.environ.get(secret_env, "").strip()
+    client_id = os.environ.get("YT_CLIENT_ID", "").strip()
+    client_secret = os.environ.get("YT_CLIENT_SECRET", "").strip()
+
     if not token_raw:
         print(f"  [YouTube Upload] {secret_env} is empty or not set in environment; skipping upload.")
         return None
+
+    print("\n" + "=" * 70)
+    print(f"  [YouTube Upload] Initializing upload for: {cfg['name']} ({secret_env})")
+    print(f"  [YouTube Upload] Video file: {video_path} ({video_path.stat().st_size / (1024*1024):.2f} MB)")
+    print("=" * 70)
 
     try:
         from google.oauth2.credentials import Credentials
@@ -2080,10 +2088,34 @@ def upload_to_youtube(video_path: Path, script_data: dict, cfg: dict) -> str | N
         from googleapiclient.discovery import build
         from googleapiclient.http import MediaFileUpload
 
-        token_info = json.loads(token_raw)
-        creds = Credentials.from_authorized_user_info(token_info)
-        if creds.expired and creds.refresh_token:
-            creds.refresh(Request())
+        YOUTUBE_SCOPES = [
+            "https://www.googleapis.com/auth/youtube.upload",
+            "https://www.googleapis.com/auth/youtube",
+        ]
+
+        creds = None
+        # Support both JSON authorized_user_info and raw OAuth Refresh Token from OAuth Playground
+        if token_raw.startswith("{"):
+            print("  [YouTube Upload] Format: JSON authorized_user_info")
+            token_info = json.loads(token_raw)
+            creds = Credentials.from_authorized_user_info(token_info, YOUTUBE_SCOPES)
+        else:
+            print("  [YouTube Upload] Format: Raw OAuth Refresh Token string")
+            if not client_id or not client_secret:
+                print("  [YouTube Upload] WARNING: YT_CLIENT_ID or YT_CLIENT_SECRET not found in environment!")
+            creds = Credentials(
+                token=None,
+                refresh_token=token_raw,
+                token_uri="https://oauth2.googleapis.com/token",
+                client_id=client_id,
+                client_secret=client_secret,
+                scopes=YOUTUBE_SCOPES,
+            )
+
+        # Force refresh to verify validity and obtain active access_token
+        print("  [YouTube Upload] Requesting refreshed access token from Google OAuth2...")
+        creds.refresh(Request())
+        print(f"  [YouTube Upload] Access token refreshed successfully! Valid: {creds.valid}")
 
         youtube = build("youtube", "v3", credentials=creds)
         title = script_data.get("title", f"{cfg['name']} #Shorts")[:98]
@@ -2102,14 +2134,24 @@ def upload_to_youtube(video_path: Path, script_data: dict, cfg: dict) -> str | N
                 "selfDeclaredMadeForKids": False,
             },
         }
-        media = MediaFileUpload(str(video_path), chunksize=-1, resumable=True, mimetype="video/mp4")
+
+        print(f"  [YouTube Upload] Uploading '{title}' ({video_path.stat().st_size / (1024*1024):.2f} MB)...")
+        media = MediaFileUpload(str(video_path), chunksize=1024 * 1024, resumable=True, mimetype="video/mp4")
         req = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
-        resp = req.execute()
+
+        resp = None
+        while resp is None:
+            status, resp = req.next_chunk()
+            if status:
+                print(f"  [YouTube Upload] Upload progress: {int(status.progress() * 100)}%")
+
         vid_id = resp.get("id")
-        print(f"  [YouTube Upload] SUCCESS! Video ID: https://youtu.be/{vid_id}")
+        print(f"  [YouTube Upload] SUCCESS! Video published! URL: https://youtu.be/{vid_id}")
         return vid_id
     except Exception as e:
-        print(f"  [YouTube Upload] Error: {e}")
+        print(f"  [YouTube Upload] ERROR during YouTube upload: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 
