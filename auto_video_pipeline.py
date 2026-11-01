@@ -57,28 +57,24 @@ VOICE_PROFILES = {
         "mentor": {
             "name": "Lord Sterling (شاهين / الغراب الحكيم)",
             "voice": "ar-EG-ShakirNeural",
-            "pitch": "-6Hz",
-            "rate": "-2%",
+            "rate": "+0%",
         },
         "consumer": {
             "name": "Felix the Fox (فيلكس الثعلب المكافح)",
             "voice": "ar-SA-HamedNeural",
-            "pitch": "+8Hz",
-            "rate": "+6%",
+            "rate": "+4%",
         }
     },
     "en": {
         "mentor": {
             "name": "Lord Sterling (The Raven Mastermind)",
             "voice": "en-US-ChristopherNeural",
-            "pitch": "-5Hz",
-            "rate": "-2%",
+            "rate": "+0%",
         },
         "consumer": {
             "name": "Felix the Fox (The Ambitious Striver)",
             "voice": "en-US-BrianNeural",
-            "pitch": "+6Hz",
-            "rate": "+6%",
+            "rate": "+4%",
         }
     }
 }
@@ -208,7 +204,7 @@ EPISODE_BANK_AR = [
                 "speaker": "consumer",
                 "character_focus": "consumer",
                 "narration": "اشتريت كورس الذكاء الاصطناعي ده بألف دولار... الأسبوع الجاي هبدأ أحقق أول عشرة آلاف!",
-                "caption": "اشتريت كورس بـ 1000$... والأسبوع الجاي هبقى مليونير!",
+                "caption": "اشتريت كورس بـ 1000 دولار... والأسبوع الجاي هبقى مليونير!",
                 "sfx_cue": None,
                 "visual_prompt": "Felix the fox proudly holding his glowing smartphone showing a $997 course checkout screen, excited hopeful expression, newsboy cap, cafe background, 9:16 vertical",
                 "visual_style": "course_buyer"
@@ -381,37 +377,47 @@ EPISODE_BANK_EN = [
 ]
 
 # ==============================================================================
-# 3. TEXT SHAPING & KINETIC TYPOGRAPHY ENGINE (CAIRO BOLD GUARANTEED)
+# 3. TEXT SHAPING & KINETIC TYPOGRAPHY ENGINE (FLAWLESS ARABIC BOLD GUARANTEED)
 # ==============================================================================
 
 def shape_text(text: str, lang: str = "ar") -> str:
     if not text:
         return ""
-    if lang == "ar" and HAS_ARABIC_SHAPER:
-        try:
-            config = {'delete_harakat': False, 'support_ligatures': True, 'RIAL SIGN': True}
-            reshaper = arabic_reshaper.ArabicReshaper(configuration=config)
-            reshaped = reshaper.reshape(text)
-            return get_display(reshaped, base_dir='R')
-        except Exception:
-            return text
+    if lang == "ar":
+        text = text.replace("$", " دولار").replace("  ", " ")
+        if HAS_ARABIC_SHAPER:
+            try:
+                config = {'delete_harakat': True, 'support_ligatures': False}
+                reshaper = arabic_reshaper.ArabicReshaper(configuration=config)
+                reshaped = reshaper.reshape(text)
+                return get_display(reshaped)
+            except Exception:
+                return text
     return text
 
 
-def get_font(size: int = 52, bold: bool = True) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+def get_font(size: int = 52, lang: str = "ar", bold: bool = True) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
     repo_root = Path(__file__).resolve().parent
-    font_candidates = [
-        repo_root / "assets" / "fonts" / "Cairo.ttf",
-        repo_root / "assets" / "fonts" / "NotoSansArabic-Bold.ttf",
-        repo_root / "fonts" / "Cairo.ttf",
-        repo_root / "fonts" / "Cairo-Bold.ttf",
-        Path("/usr/share/fonts/truetype/amiri/amiri-bold.ttf"),
-        Path("/usr/share/fonts/truetype/amiri/Amiri-Bold.ttf"),
-        Path("/usr/share/fonts/truetype/noto/NotoSansArabic-Bold.ttf"),
-        Path("C:/Windows/Fonts/seguisb.ttf"),
-        Path("C:/Windows/Fonts/segoeui.ttf"),
-        Path("C:/Windows/Fonts/arialbd.ttf"),
-    ]
+    if lang == "ar":
+        font_candidates = [
+            repo_root / "assets" / "fonts" / "NotoSansArabic-Bold.ttf",
+            repo_root / "assets" / "fonts" / "Amiri-Bold.ttf",
+            Path("C:/Windows/Fonts/seguisb.ttf"),
+            Path("C:/Windows/Fonts/segoeui.ttf"),
+            Path("/usr/share/fonts/truetype/noto/NotoSansArabic-Bold.ttf"),
+            Path("/usr/share/fonts/truetype/amiri/amiri-bold.ttf"),
+            Path("/usr/share/fonts/truetype/amiri/Amiri-Bold.ttf"),
+            repo_root / "assets" / "fonts" / "Cairo.ttf",
+        ]
+    else:
+        font_candidates = [
+            repo_root / "assets" / "fonts" / "Cairo.ttf",
+            repo_root / "assets" / "fonts" / "Amiri-Bold.ttf",
+            Path("C:/Windows/Fonts/arialbd.ttf"),
+            Path("C:/Windows/Fonts/segoeui.ttf"),
+            Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
+        ]
+
     for p in font_candidates:
         if p.exists():
             try:
@@ -422,9 +428,9 @@ def get_font(size: int = 52, bold: bool = True) -> ImageFont.FreeTypeFont | Imag
     try:
         f_dir = repo_root / "assets" / "fonts"
         f_dir.mkdir(parents=True, exist_ok=True)
-        target_f = f_dir / "Cairo.ttf"
+        target_f = f_dir / "NotoSansArabic-Bold.ttf" if lang == "ar" else f_dir / "Cairo.ttf"
         if not target_f.exists():
-            u = "https://github.com/google/fonts/raw/main/ofl/cairo/Cairo%5Bslnt%2Cwght%5D.ttf"
+            u = "https://github.com/googlefonts/noto-arabic/raw/main/hinted/ttf/NotoSansArabic/NotoSansArabic-Bold.ttf" if lang == "ar" else "https://github.com/google/fonts/raw/main/ofl/cairo/Cairo%5Bslnt%2Cwght%5D.ttf"
             req = urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0"})
             with urllib.request.urlopen(req, timeout=12) as resp:
                 target_f.write_bytes(resp.read())
@@ -514,11 +520,10 @@ def synthesize_dual_voice_scene(
     out_mp3: Path,
     work_dir: Path
 ) -> float:
-    """Synthesizes accurate dual-character voice acting (Mentor vs Consumer) with synchronized SFX."""
+    """Synthesizes crystal-clear dual-character voice acting (Lord Sterling vs Felix) with Foley SFX."""
     profile = VOICE_PROFILES.get(lang, VOICE_PROFILES["ar"]).get(speaker, VOICE_PROFILES["ar"]["mentor"])
     voice = profile["voice"]
-    pitch = profile["pitch"]
-    rate = profile["rate"]
+    rate = profile.get("rate", "+0%")
 
     raw_voice_mp3 = work_dir / f"raw_{out_mp3.name}"
 
@@ -526,7 +531,6 @@ def synthesize_dual_voice_scene(
         cmd = [
             sys.executable, "-m", "edge_tts",
             "--voice", voice,
-            f"--pitch={pitch}",
             f"--rate={rate}",
             "--text", text,
             "--write-media", str(raw_voice_mp3),
@@ -537,7 +541,7 @@ def synthesize_dual_voice_scene(
         from gtts import gTTS
         gTTS(text=text, lang=lang, slow=False).save(str(raw_voice_mp3))
 
-    # If Foley SFX cue is specified, mix SFX at the start of the scene
+    # If Foley SFX cue is specified, mix SFX without attenuating dialogue (normalize=0)
     if sfx_cue:
         sfx_wav = work_dir / f"{sfx_cue}.wav"
         generate_procedural_sfx(sfx_cue, sfx_wav)
@@ -546,7 +550,7 @@ def synthesize_dual_voice_scene(
                 "ffmpeg", "-y",
                 "-i", str(raw_voice_mp3),
                 "-i", str(sfx_wav),
-                "-filter_complex", "[0:a]volume=1.0[v];[1:a]volume=0.45[s];[v][s]amix=inputs=2:duration=first:dropout_transition=2[a]",
+                "-filter_complex", "[0:a]volume=1.0[v];[1:a]volume=0.32[s];[v][s]amix=inputs=2:duration=first:normalize=0[a]",
                 "-map", "[a]",
                 "-c:a", "aac",
                 "-b:a", "192k",
@@ -568,55 +572,111 @@ def synthesize_dual_voice_scene(
     except Exception:
         return max(3.5, len(text.split()) * 0.45)
 
+
 # ==============================================================================
 # 5. VISUAL GENERATION & CHARACTER ASSET PIPELINE
 # ==============================================================================
 
-def resolve_character_visual(character_focus: str, style_hint: str, visual_prompt: str, out_jpg: Path) -> Path:
-    """Resolves character visual with guaranteed character consistency (Lord Sterling / Felix)."""
+def create_dark_cinematic_procedural_backdrop(style_hint: str, target_w: int = 1080, target_h: int = 1920) -> Image.Image:
+    """Generates high-contrast neo-noir background when offline/fallback."""
+    img = Image.new("RGB", (target_w, target_h), (12, 14, 20))
+    draw = ImageDraw.Draw(img)
+
+    if any(k in style_hint for k in ("boardroom", "madison", "1952", "vintage")):
+        top_c, bot_c = (24, 20, 16), (8, 6, 6)
+        accent = (255, 195, 65, 40)
+    elif any(k in style_hint for k in ("factory", "production", "gear", "machine")):
+        top_c, bot_c = (20, 22, 26), (6, 8, 10)
+        accent = (200, 215, 230, 35)
+    elif any(k in style_hint for k in ("luxury", "pricing", "gold", "coins")):
+        top_c, bot_c = (28, 22, 12), (8, 6, 4)
+        accent = (255, 215, 60, 45)
+    else:
+        top_c, bot_c = (18, 16, 24), (8, 6, 12)
+        accent = (220, 180, 240, 30)
+
+    for y in range(target_h):
+        alpha = y / float(target_h)
+        r = int(top_c[0] * (1.0 - alpha) + bot_c[0] * alpha)
+        g = int(top_c[1] * (1.0 - alpha) + bot_c[1] * alpha)
+        b = int(top_c[2] * (1.0 - alpha) + bot_c[2] * alpha)
+        draw.line([(0, y), (target_w, y)], fill=(r, g, b))
+
+    overlay = Image.new("RGBA", (target_w, target_h), (0, 0, 0, 0))
+    d_over = ImageDraw.Draw(overlay, "RGBA")
+    d_over.ellipse([target_w * 0.1, target_h * 0.15, target_w * 0.9, target_h * 0.65], fill=accent)
+    return Image.alpha_composite(img.convert("RGBA"), overlay).convert("RGB")
+
+
+def resolve_character_visual(
+    character_focus: str,
+    style_hint: str,
+    visual_prompt: str,
+    scene_idx: int,
+    out_jpg: Path
+) -> Path:
+    """Resolves character and scene visuals with guaranteed variety and character continuity."""
     repo_root = Path(__file__).resolve().parent
     chars_dir = repo_root / "assets" / "characters"
+    scenes_dir = repo_root / "assets" / "scenes"
 
-    mentor_asset = chars_dir / "sterling_raven_mentor.jpg"
-    consumer_asset = chars_dir / "felix_fox_consumer.jpg"
+    # 1. Direct scene-specific asset mapping
+    style_map = {
+        "madison_boardroom": scenes_dir / "madison_boardroom_1952.jpg",
+        "factory_production": scenes_dir / "factory_production_floor.jpg",
+        "luxury_cafe_pricing": scenes_dir / "luxury_cafe_pricing.jpg",
+        "cafe_consumer": chars_dir / "felix_fox_consumer.jpg",
+        "cafe_shock": chars_dir / "felix_fox_shock.jpg",
+        "consumer_epiphany": chars_dir / "felix_fox_epiphany.jpg",
+        "mentor_study": chars_dir / "sterling_raven_mentor.jpg",
+        "mentor_axiom": chars_dir / "sterling_raven_cufflinks.jpg",
+        "mentor_outro": chars_dir / "sterling_raven_mentor.jpg",
+    }
+    for key, p in style_map.items():
+        if key in style_hint and p.exists():
+            return p
 
-    # 1. Direct Original IP Character Assets
-    if character_focus == "mentor" and mentor_asset.exists():
-        return mentor_asset
-    if character_focus == "consumer" and consumer_asset.exists():
-        return consumer_asset
+    # 2. Character-specific shots & expressions
+    if character_focus == "consumer":
+        if ("shock" in style_hint or scene_idx == 2) and (chars_dir / "felix_fox_shock.jpg").exists():
+            return chars_dir / "felix_fox_shock.jpg"
+        if ("epiphany" in style_hint or scene_idx >= 6) and (chars_dir / "felix_fox_epiphany.jpg").exists():
+            return chars_dir / "felix_fox_epiphany.jpg"
+        if (chars_dir / "felix_fox_consumer.jpg").exists():
+            return chars_dir / "felix_fox_consumer.jpg"
 
-    # 2. Try Flux ZeroGPU for scene-specific variations if HF_TOKEN is present
-    hf_token = os.environ.get("HF_TOKEN", "").strip()
-    if hf_token:
-        try:
-            from gradio_client import Client
-            client = Client("black-forest-labs/FLUX.1-schnell")
-            res = client.predict(prompt=f"{visual_prompt}, 1930s neo-noir animation style, 8k vertical", api_name="/predict")
-            found = res[0] if isinstance(res, (list, tuple)) else res
-            if found and os.path.exists(str(found)):
-                shutil.copy(str(found), str(out_jpg))
-                return out_jpg
-        except Exception:
-            pass
+    if character_focus == "mentor":
+        if ("axiom" in style_hint or "cufflinks" in style_hint or scene_idx == 7) and (chars_dir / "sterling_raven_cufflinks.jpg").exists():
+            return chars_dir / "sterling_raven_cufflinks.jpg"
+        if (chars_dir / "sterling_raven_mentor.jpg").exists():
+            return chars_dir / "sterling_raven_mentor.jpg"
 
-    # 3. Fallback to appropriate character asset
-    if character_focus == "mentor" or "mentor" in style_hint:
-        if mentor_asset.exists():
-            return mentor_asset
-    if consumer_asset.exists():
-        return consumer_asset
-    if mentor_asset.exists():
-        return mentor_asset
+    # 3. Flashbacks: Dedicated scene artwork (never fallback to fox!)
+    if character_focus == "flashback":
+        if "boardroom" in visual_prompt.lower() or "1952" in visual_prompt:
+            p = scenes_dir / "madison_boardroom_1952.jpg"
+            if p.exists(): return p
+        if "factory" in visual_prompt.lower() or "gear" in visual_prompt.lower():
+            p = scenes_dir / "factory_production_floor.jpg"
+            if p.exists(): return p
+        if "luxury" in visual_prompt.lower() or "price" in visual_prompt.lower() or "cafe" in visual_prompt.lower():
+            p = scenes_dir / "luxury_cafe_pricing.jpg"
+            if p.exists(): return p
 
-    # 4. Synthesize a dark neo-noir illustrated frame if assets are missing
-    img = Image.new("RGB", (1080, 1920), (16, 20, 28))
-    d = ImageDraw.Draw(img)
-    for y in range(1920):
-        c = int(16 + 25 * (y / 1920.0))
-        d.line([(0, y), (1080, y)], fill=(c, c + 2, c + 8))
-    img.save(str(out_jpg))
+        for s_file in scenes_dir.glob("*.jpg"):
+            if s_file.exists():
+                return s_file
+
+        # Fallback to procedural neo-noir backdrop
+        bd = create_dark_cinematic_procedural_backdrop(style_hint)
+        bd.save(str(out_jpg))
+        return out_jpg
+
+    # Final fallback
+    if (chars_dir / "sterling_raven_mentor.jpg").exists():
+        return chars_dir / "sterling_raven_mentor.jpg"
     return out_jpg
+
 
 # ==============================================================================
 # 6. KINETIC TYPOGRAPHY & CINEMATIC CAPTION OVERLAY
@@ -628,10 +688,11 @@ def render_cinematic_caption_overlay(
     target_w: int = 1080,
     target_h: int = 1920,
 ) -> tuple[np.ndarray, np.ndarray]:
+    """Renders crisp, centered, elegant subtitles in frosted dark container with gold accents."""
     overlay = Image.new("RGBA", (target_w, target_h), (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay, "RGBA")
 
-    f_cap = get_font(size=52, bold=True)
+    f_cap = get_font(size=46, lang=lang, bold=True)
     center_x = target_w // 2
     center_y = int(target_h * 0.72)  # Centered in lower third to keep character faces clear
 
@@ -659,7 +720,7 @@ def render_cinematic_caption_overlay(
         x1 = min(target_w - 40, center_x + max_w // 2 + pad_x)
         y1 = center_y + total_h // 2 + pad_y
 
-        draw.rounded_rectangle([x0, y0, x1, y1], radius=22, fill=(8, 10, 16, 220), outline=(255, 215, 60, 45), width=2)
+        draw.rounded_rectangle([x0, y0, x1, y1], radius=22, fill=(8, 10, 16, 225), outline=(255, 215, 60, 45), width=2)
         draw.text((center_x, center_y - (h2 // 2 + line_spacing // 2)), r1, font=f_cap, fill=(255, 255, 255, 255), anchor="mm")
         draw.text((center_x, center_y + (h1 // 2 + line_spacing // 2)), r2, font=f_cap, fill=(255, 215, 60, 255), anchor="mm")
     else:
@@ -673,13 +734,14 @@ def render_cinematic_caption_overlay(
         x1 = min(target_w - 40, center_x + tw // 2 + pad_x)
         y1 = center_y + th // 2 + pad_y
 
-        draw.rounded_rectangle([x0, y0, x1, y1], radius=20, fill=(8, 10, 16, 220), outline=(255, 215, 60, 45), width=2)
+        draw.rounded_rectangle([x0, y0, x1, y1], radius=20, fill=(8, 10, 16, 225), outline=(255, 215, 60, 45), width=2)
         draw.text((center_x, center_y), shaped, font=f_cap, fill=(255, 215, 60, 255), anchor="mm")
 
     rgba = np.array(overlay)
     rgb = rgba[:, :, :3].astype(np.float32)
     alpha = (rgba[:, :, 3:4].astype(np.float32)) / 255.0
     return rgb, alpha
+
 
 # ==============================================================================
 # 7. HIGH-PERFORMANCE DIRECT-STREAMING RENDERER (O(1) CONSTANT RAM)
@@ -692,11 +754,12 @@ def stream_render_scene(
     duration: float,
     scene_mp3: Path,
     scene_mp4: Path,
+    scene_idx: int = 0,
     fps: int = 30,
     target_w: int = 1080,
     target_h: int = 1920,
 ) -> bool:
-    """Streams animated Ken-Burns frames directly into FFmpeg stdin pipe (O(1) constant RAM footprint)."""
+    """Streams animated Ken-Burns frames directly into FFmpeg stdin pipe with alternating camera dynamics."""
     n_frames = max(15, int(round(duration * fps)))
     over_w, over_h = int(target_w * 1.25), int(target_h * 1.25)
 
@@ -734,11 +797,17 @@ def stream_render_scene(
     try:
         for f in range(n_frames):
             t = f / float(n_frames)
-            scale = 1.0 + 0.12 * t
+            # Alternating camera kinematics per scene
+            if scene_idx % 2 == 0:
+                scale = 1.0 + 0.12 * t
+                drift_x = int(math.sin(t * math.pi) * 25)
+            else:
+                scale = 1.15 - 0.10 * t
+                drift_x = int(-math.sin(t * math.pi) * 25)
+
             crop_w = int(target_w / scale)
             crop_h = int(target_h / scale)
 
-            drift_x = int(math.sin(t * math.pi) * 30)
             x0 = max(0, min(over_w - crop_w, (over_w - crop_w) // 2 + drift_x))
             y0 = max(0, min(over_h - crop_h, (over_h - crop_h) // 2))
 
@@ -761,6 +830,7 @@ def stream_render_scene(
         except Exception:
             pass
         return False
+
 
 # ==============================================================================
 # 8. MASTER V16 EPISODE PRODUCER
@@ -809,6 +879,7 @@ def produce_v16_animated_episode(channel_key: str, cfg: dict, output_root: Path)
             character_focus=scene.get("character_focus", "mentor"),
             style_hint=scene.get("visual_style", "dark"),
             visual_prompt=scene.get("visual_prompt", ""),
+            scene_idx=s_idx,
             out_jpg=scene_visual
         )
 
@@ -820,6 +891,7 @@ def produce_v16_animated_episode(channel_key: str, cfg: dict, output_root: Path)
             duration=duration,
             scene_mp3=scene_mp3,
             scene_mp4=scene_mp4,
+            scene_idx=s_idx,
             fps=FPS,
             target_w=W,
             target_h=H,
@@ -853,12 +925,12 @@ def produce_v16_animated_episode(channel_key: str, cfg: dict, output_root: Path)
     drone_wav = work_dir / "ambient_sub_bass_drone.wav"
     synthesize_cinematic_sub_bass_drone(total_duration + 2.0, drone_wav)
 
-    # Final audio mix: Dialogue (1.0) + Sub-bass drone (0.18)
+    # Final audio mix: Dialogue (1.0) + Sub-bass drone (0.15) with normalize=0 to preserve speech power
     final_cmd = [
         "ffmpeg", "-y",
         "-i", str(combined_dry_mp4),
         "-i", str(drone_wav),
-        "-filter_complex", "[0:a]volume=1.0[v];[1:a]volume=0.18[d];[v][d]amix=inputs=2:duration=first:dropout_transition=2[a]",
+        "-filter_complex", "[0:a]volume=1.0[v];[1:a]volume=0.15[d];[v][d]amix=inputs=2:duration=first:normalize=0[a]",
         "-map", "0:v",
         "-map", "[a]",
         "-c:v", "copy",
