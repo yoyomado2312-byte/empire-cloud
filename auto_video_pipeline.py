@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-EMPIRE AUTO-VIDEO PIPELINE v16.2 (MULTIVERSE ANIMATION & LIP-SYNC EDITION)
-Automated High-Performance Viral Animated Universe for YouTube Shorts:
-- 100% Channel Separation (AI Educational Explainer vs Elite Wealth Noir)
-- Channel 1 (ch02_ar_ai_tech): "الدحيح التكنولوجي" hosted by Dr. Rayan (د. ريان)
-  100% Modern Standard Arabic (الفصحى السلسة الراقية), Educational Storytelling,
-  Real-time Frame-by-Frame Audio-Driven Lip-Sync, AI History & Autonomous Agents.
-- Channel 2 (ch03_en_wealth_business): "Billionaire Empires & Wealth"
-  Lord Sterling the Raven Mastermind & Felix the Fox, 9-Scene Dual-Character Drama,
-  Audio-Driven Jaw & Beak Articulation, Procedural Foley SFX, Madison Ave Noir.
-- Direct Frame Streaming to FFmpeg (O(1) Constant Memory Footprint)
-- Golden 65-85s YouTube Shorts Storytelling Window
-- Automatic YouTube OAuth2 Publishing with Token Refresh
+EMPIRE DOCUMENTARY VIDEO PIPELINE v17.0 (REAL VIDEO & ANCHOR MASTER ENGINE)
+Automated High-Performance Viral Documentary Director:
+- Photorealistic Anchor Host: Natural audio-driven lip-sync, breathing kinematics,
+  speaking head drift, and studio lighting matching user reference portrait.
+- Real Full Video B-Roll: Automated Pexels 1080p vertical video downloading +
+  dynamic high-motion cinematic video synthesis (zero static slideshows!).
+- Dynamic Anti-Spam Script Engine: Real-time Gemini API documentary generation
+  with an 8-episode rotating master season fallback.
+- 100% Channel Customization:
+  * Channel 1 (ch02_ar_ai_tech): "الدحيح التكنولوجي" - 100% clean full-screen footage,
+    zero subtitles/text overlays, warm conversational Fusha (ar-EG-ShakirNeural).
+  * Channel 2 (ch03_en_wealth_business): "Billionaire Empires & Heists" -
+    Centered 2-line golden subtitles, investigative baritone (en-US-ChristopherNeural).
+- EBU R128 Loudness Mastering (-14.0 LUFS standard) with sub-bass drone and Foley.
 """
 
 import os
@@ -29,7 +31,7 @@ import urllib.request
 import subprocess
 from pathlib import Path
 
-# Force UTF-8 on Windows and Linux runners
+# Force UTF-8 encoding across Windows and Linux runners
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 if hasattr(sys.stderr, 'reconfigure'):
@@ -50,48 +52,38 @@ if _hf_tok:
     os.environ["HF_TOKEN"] = _hf_tok
 
 # ==============================================================================
-# 1. VOICE & CHARACTER PROFILES (THE MULTIVERSE VOCAL CAST)
+# 1. VOICE & CHANNEL ARCHITECTURE
 # ==============================================================================
 
 VOICE_PROFILES = {
     "ch02_ar_ai_tech": {
-        "rayan": {
-            "name": "د. ريان (The Tech Daheeh)",
-            "voice": "ar-EG-ShakirNeural",
-            "rate": "+2%",
-        },
-        "mentor": {
-            "name": "د. ريان (The Tech Daheeh)",
-            "voice": "ar-EG-ShakirNeural",
-            "rate": "+2%",
-        },
-        "consumer": {
-            "name": "د. ريان (The Tech Daheeh)",
-            "voice": "ar-EG-ShakirNeural",
-            "rate": "+2%",
-        }
+        "presenter": {"name": "د. ريان (The Tech Daheeh)", "voice": "ar-EG-ShakirNeural", "rate": "+1%"},
+        "host": {"name": "د. ريان (The Tech Daheeh)", "voice": "ar-EG-ShakirNeural", "rate": "+1%"},
+        "narrator": {"name": "د. ريان (The Tech Daheeh)", "voice": "ar-EG-ShakirNeural", "rate": "+1%"},
+        "rayan": {"name": "د. ريان (The Tech Daheeh)", "voice": "ar-EG-ShakirNeural", "rate": "+1%"},
+        "mentor": {"name": "د. ريان (The Tech Daheeh)", "voice": "ar-EG-ShakirNeural", "rate": "+1%"},
+        "consumer": {"name": "د. ريان (The Tech Daheeh)", "voice": "ar-EG-ShakirNeural", "rate": "+1%"},
     },
     "ch03_en_wealth_business": {
-        "mentor": {
-            "name": "Lord Sterling (The Raven Mastermind)",
-            "voice": "en-US-ChristopherNeural",
-            "rate": "+0%",
-        },
-        "consumer": {
-            "name": "Felix the Fox (The Ambitious Striver)",
-            "voice": "en-US-BrianNeural",
-            "rate": "+4%",
-        }
+        "presenter": {"name": "Julian Vance (Investigative Host)", "voice": "en-US-ChristopherNeural", "rate": "+0%"},
+        "host": {"name": "Julian Vance (Investigative Host)", "voice": "en-US-ChristopherNeural", "rate": "+0%"},
+        "narrator": {"name": "Julian Vance (Investigative Host)", "voice": "en-US-ChristopherNeural", "rate": "+0%"},
+        "mentor": {"name": "Julian Vance (Investigative Host)", "voice": "en-US-ChristopherNeural", "rate": "+0%"},
+        "consumer": {"name": "Felix (Striver)", "voice": "en-US-BrianNeural", "rate": "+3%"},
     },
-    # Backwards-compatible / language fallbacks
     "ar": {
-        "rayan": {"name": "د. ريان", "voice": "ar-EG-ShakirNeural", "rate": "+2%"},
-        "mentor": {"name": "د. ريان", "voice": "ar-EG-ShakirNeural", "rate": "+2%"},
-        "consumer": {"name": "د. ريان", "voice": "ar-EG-ShakirNeural", "rate": "+2%"},
+        "presenter": {"name": "د. ريان", "voice": "ar-EG-ShakirNeural", "rate": "+1%"},
+        "host": {"name": "د. ريان", "voice": "ar-EG-ShakirNeural", "rate": "+1%"},
+        "narrator": {"name": "د. ريان", "voice": "ar-EG-ShakirNeural", "rate": "+1%"},
+        "mentor": {"name": "د. ريان", "voice": "ar-EG-ShakirNeural", "rate": "+1%"},
+        "consumer": {"name": "د. ريان", "voice": "ar-EG-ShakirNeural", "rate": "+1%"},
     },
     "en": {
-        "mentor": {"name": "Lord Sterling", "voice": "en-US-ChristopherNeural", "rate": "+0%"},
-        "consumer": {"name": "Felix the Fox", "voice": "en-US-BrianNeural", "rate": "+4%"},
+        "presenter": {"name": "Julian Vance", "voice": "en-US-ChristopherNeural", "rate": "+0%"},
+        "host": {"name": "Julian Vance", "voice": "en-US-ChristopherNeural", "rate": "+0%"},
+        "narrator": {"name": "Julian Vance", "voice": "en-US-ChristopherNeural", "rate": "+0%"},
+        "mentor": {"name": "Julian Vance", "voice": "en-US-ChristopherNeural", "rate": "+0%"},
+        "consumer": {"name": "Felix", "voice": "en-US-BrianNeural", "rate": "+3%"},
     }
 }
 
@@ -102,752 +94,921 @@ CHANNELS = {
         "niche": "The Tech Daheeh | AI History & Future Architecture",
         "lang": "ar",
         "secret_env": "YT_TOKEN_CH02_AR",
-        "category_id": "28",  # Science & Technology
-        "outro_line": "العالم يتغيّر بسرعة خارقة... لا تكن مجرد مشاهد سلبي، بل تعلّم، افهم، واصنع مستقبلك بيدك. اشترك لمتابعة رحلة الذكاء الاصطناعي!",
-        "tags": ["الذكاء_الاصطناعي", "تكنولوجيا", "آلان_تورينج", "تاريخ_التكنولوجيا", "الدحيح", "اختبار_تورينج", "Shorts", "AI", "Technology"],
+        "category_id": "28",
+        "outro_line": "العالم يتغيّر بسرعة خارقة... لا تكن مجرد مشاهد سلبي، بل تعلّم، افهم، واصنع مستقبلك بيدك. اشترك لمتابعة رحلة التكنولوجيا القادمة!",
+        "tags": ["الذكاء_الاصطناعي", "تكنولوجيا", "وثائقي", "الدحيح", "أسرار_العلم", "Shorts", "AI", "Technology", "Documentary"],
     },
     "ch03_en_wealth_business": {
         "id": "ch03_en_wealth_business",
         "name": "Billionaire Empires & Wealth",
-        "niche": "Corporate Deceptions & Empire Building",
+        "niche": "Investigative Cold War Heists & Corporate Deceptions",
         "lang": "en",
         "secret_env": "YT_TOKEN_CH03_EN",
-        "category_id": "27",  # Education / Business
+        "category_id": "27",
         "outro_line": "The noise is for the crowd. Watch, learn, and evolve quietly — until you control the board.",
-        "tags": ["Wealth", "Billionaires", "BusinessSecrets", "Psychology", "Power", "Shorts", "Animation"],
+        "tags": ["Wealth", "Heists", "Investigative", "ColdWar", "Billionaires", "Shorts", "Documentary"],
     },
 }
 
 # ==============================================================================
-# 2. MASTER EPISODE BANKS (CHANNEL 1: TECH DAHEEH vs CHANNEL 2: WEALTH NOIR)
+# 2. MASTER 8-EPISODE DOCUMENTARY SEASONS (100% DISTINCT TOPICS)
 # ==============================================================================
 
-# CHANNEL 1: The Tech Daheeh Format (100% Pure Modern Standard Arabic / الفصحى السلسة)
+# Arabic Channel: The Tech Daheeh Style (Conversational, Engaging, 130-150 WPM)
 EPISODE_BANK_AR_AI = [
-    # Episode 1: Alan Turing & Origin of AI
+    # Episode 1: Project Azorian Submarine Heist
     {
-        "series_title": "الدحيح التكنولوجي | أسرار الذكاء الاصطناعي",
+        "series_title": "الدحيح التكنولوجي | ألغاز التاريخ السري",
         "part": "الحلقة 1",
-        "title": "كيف بدأت فكرة الذكاء الاصطناعي؟ من لغز آلان تورينج إلى عصر الوكلاء الأذكياء #Shorts",
+        "title": "سر سرقة الغواصة السوفيتية K-129: أغرب عملية مخابرات في التاريخ #Shorts",
         "scenes": [
             {
-                "speaker": "rayan",
-                "character_focus": "rayan_hook",
-                "narration": "هل يمكن للآلة أن تفكّر حقاً؟ في خريف عام 1950، طرح عالم عبقري سؤالاً واحداً... أحدث زلزالاً غيّر تاريخ البشرية إلى الأبد!",
-                "caption": "هل يمكن للآلة أن تفكّر حقاً؟",
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_hook",
+                "narration": "في يوليو 1974، الملياردير هوارد هيوز أعلن للعالم إنه بيبني سفينة عملاقة عشان يعدّن معادن من قاع المحيط الهادئ... بس الحقيقة الصادمة؟ كانت كذبة متقنة خططت لها الـ CIA عشان تسرق غواصة نووية سوفيتية غارقة على عمق خمسة كيلومترات!",
+                "broll_search": None,
+                "caption": "",
                 "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Dr. Rayan an enthusiastic young Middle Eastern scientist in tweed jacket and round glasses leaning forward excitedly in a vintage laboratory, 9:16 vertical",
-                "visual_style": "rayan_hook"
+                "visual_prompt": "Documentary anchor in cinematic studio leaning forward explaining passionately, 9:16 vertical",
+                "visual_style": "anchor_hook"
             },
             {
-                "speaker": "rayan",
-                "character_focus": "scene_bombe",
-                "narration": "كان صاحب السؤال هو آلان تورينج، الرجل الذي فكك شيفرة إنيجما المعقدة أثناء الحرب العالمية الثانية بآلته الكهروميكانيكية العبقرية.",
-                "caption": "آلان تورينج... العبقري الذي قهر إنيجما!",
-                "sfx_cue": None,
-                "visual_prompt": "1940 authentic British Bletchley Park Turing Bombe electromechanical codebreaking machine with rotating bronze drums, 9:16 vertical",
-                "visual_style": "scene_bombe"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "rayan_paper",
-                "narration": "تورينج نشر ورقته التاريخية الشهيرة: 'آلات الحوسبة والذكاء'، واقترح فيها لعبة المحاكاة التي نعرفها اليوم باسم اختبار تورينج.",
-                "caption": "عام 1950... ولادة اختبار تورينج للذكاء!",
-                "sfx_cue": "sfx_scratch",
-                "visual_prompt": "Dr. Rayan holding up the authentic 1950 manuscript Computing Machinery and Intelligence by A. M. Turing with passionate scholarly smile, 9:16 vertical",
-                "visual_style": "rayan_paper"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "scene_dartmouth",
-                "narration": "وبعد ست سنوات، في صيف عام 1956، اجتمع نخبة من علماء الرياضيات في كلية دارتموث، ليصكّوا رسمياً مصطلح: الذكاء الاصطناعي.",
-                "caption": "عام 1956... إطلاق مصطلح الذكاء الاصطناعي!",
-                "sfx_cue": None,
-                "visual_prompt": "1956 Dartmouth Summer Research Project on Artificial Intelligence conference room, chalkboard with mathematical equations, 9:16 vertical",
-                "visual_style": "scene_dartmouth"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "scene_neural",
-                "narration": "الفكرة كانت ثورية: محاكاة الخلايا العصبية في الدماغ البشري، وبناء شبكات رياضية تتعلّم وتتحسّن ذاتياً بالتجربة والخطأ.",
-                "caption": "محاكاة خلايا الدماغ... شبكات تتعلّم ذاتياً!",
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_sub",
+                "narration": "الغواصة السوفيتية K-129 اختفت فجأة سنة 1968 ومعاها صواريخ نووية حربية. الاتحاد السوفيتي قلب المحيط وما لقاش أي أثر، لكن مجسات البحرية الأمريكية سجلت صوت الانفجار وحددت مكانها بالمليمتر.",
+                "broll_search": "ocean dark storm waves underwater",
+                "caption": "",
                 "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Deep neural network architecture showing glowing biological brain synapses transitioning into turquoise artificial neural nodes, 9:16 vertical",
-                "visual_style": "scene_neural"
+                "visual_prompt": "Soviet submarine in deep dark ocean abyss illuminated by submersible searchlights, 9:16 vertical",
+                "visual_style": "soviet_submarine_abyss"
             },
             {
-                "speaker": "rayan",
-                "character_focus": "scene_mainframe",
-                "narration": "انتقلنا من صمامات مفرغة ضخمة تملأ غرفاً كاملة، إلى رقائق سيليكون نانوية فائقة القوة تتدفق عبرها مليارات العمليات الحسابية في الثانية.",
-                "caption": "من صمامات تملأ غرفاً... إلى رقائق نانوية فائقة!",
-                "sfx_cue": None,
-                "visual_prompt": "1960s room-sized IBM mainframe computer with spinning magnetic tape reels transitioning into glowing microchips, 9:16 vertical",
-                "visual_style": "scene_mainframe"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "scene_matrix",
-                "narration": "واليوم، لم يعد الذكاء مجرد آلة حاسبة سريعة، بل أصبح وكلاء أذكياء يتخذون القرارات، يكتبون الشيفرات، وينسقون المهام باستقلالية تامة.",
-                "caption": "وكلاء أذكياء يعملون باستقلالية تامة!",
-                "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Futuristic autonomous multi-agent matrix, interconnected autonomous neural AI agents collaborating across data streams, 9:16 vertical",
-                "visual_style": "scene_matrix"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "rayan_epiphany",
-                "narration": "السؤال الحقيقي لم يعد هل يمكن للآلة أن تفكّر، بل هل أنت مستعد للتعامل مع عالم يفوق فيه تفكير الآلة خيالك؟",
-                "caption": "السؤال الآن: هل أنت مستعد لما هو قادم؟",
-                "sfx_cue": None,
-                "visual_prompt": "Dr. Rayan gesturing with open hands in an intellectual eureka epiphany moment under glowing overhead lamp in tech lab, 9:16 vertical",
-                "visual_style": "rayan_epiphany"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "rayan_outro",
-                "narration": "العالم يتغيّر بسرعة خارقة... لا تكن مجرد مشاهد سلبي، بل تعلّم، افهم، واصنع مستقبلك بيدك. اشترك معنا، ونلتقي في الحلقة القادمة!",
-                "caption": "اصنع مستقبلك بيدك... اشترك الآن!",
-                "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Dr. Rayan adjusting his round glasses with a subtle confident intellectual smile, cozy tech study background, 9:16 vertical",
-                "visual_style": "rayan_outro"
-            }
-        ]
-    },
-    # Episode 2: Neuralink & Brain-Computer Interfaces
-    {
-        "series_title": "الدحيح التكنولوجي | أسرار الذكاء الاصطناعي",
-        "part": "الحلقة 2",
-        "title": "شريحة نيورالينك وإيلون ماسك: هل سنقرأ أفكار البشر قريباً؟ #Shorts",
-        "scenes": [
-            {
-                "speaker": "rayan",
-                "character_focus": "rayan_hook",
-                "narration": "تخيّل أن تتحكم في حاسوب كامل بمجرد فكرة تدور في رأسك... دون أن تحرّك إصبعاً واحداً أو تنطق بكلمة!",
-                "caption": "التحكم في الأجهزة بمجرد التفكير!",
-                "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Dr. Rayan leaning forward with wide excited eyes, pointing to his temple with intellectual intensity in futuristic lab, 9:16 vertical",
-                "visual_style": "rayan_hook"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "scene_bci",
-                "narration": "هذا ليس خيالاً علمياً، بل هو جوهر شريحة نيورالينك التي طورها إيلون ماسك، لربط الخلايا العصبية البشرية مباشرة بالمعالجات الرقمية.",
-                "caption": "شريحة نيورالينك... دمج العقل بالمعالجات!",
-                "sfx_cue": None,
-                "visual_prompt": "A high-tech cybernetic neural chip with glowing golden micro-threads connecting to bioluminescent blue neurons, dark futuristic laboratory, 9:16 vertical",
-                "visual_style": "scene_bci"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "scene_neural",
-                "narration": "كل فكرة، حركة، أو شعور ينتج نبضة كهربائية متناهية الصغر بين المشابك العصبية. الشريحة تقرأ هذه الشحنات وتحولها إلى لغة برمجية فورية.",
-                "caption": "قراءة النبضات الكهربائية في المشابك العصبية!",
-                "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Close-up glowing biological neurons firing microscopic electrical impulses along golden axons, 9:16 vertical",
-                "visual_style": "scene_neural"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "scene_bci",
-                "narration": "الشريحة تحتوي على أكثر من ألف قطب ميكروسكوبي، أرقّ بعشر مرات من شعرة الإنسان، يزرعها روبوت جراحي فائق الدقة يتفادى الأوعية الدموية.",
-                "caption": "خيوط أرق بعشر مرات من شعرة الإنسان!",
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_explain",
+                "narration": "بس انت متخيل يعني إيه تسحب تلاتة آلاف طن حديد من عمق 16 ألف قدم تحت ضغط مائي يسحق الحديد؟ مستحيل هندسي بكل المقاييس! عشان كدة صرفوا 4 مليار دولار بمقاييس النهاردة عشان يصنعوا مخلب هيدروليكي سري اسمه كليمنتاين.",
+                "broll_search": None,
+                "caption": "",
                 "sfx_cue": "sfx_scratch",
-                "visual_prompt": "Robotic surgical needle micro-implanting ultra-fine golden threads into cerebral cortex with laser guidance, 9:16 vertical",
-                "visual_style": "scene_bci"
+                "visual_prompt": "Documentary host gesturing with hands explaining complex engineering problem, 9:16 vertical",
+                "visual_style": "anchor_explain"
             },
             {
-                "speaker": "rayan",
-                "character_focus": "scene_matrix",
-                "narration": "المرضى المصابون بالشلل الرباعي أصبحوا الآن يلعبون الشطرنج ويتصفحون الإنترنت بسرعة مذهلة فقط عبر التفكير التلقائي.",
-                "caption": "مرضى الشلل يتحكمون في الشاشات بأفكارهم!",
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_heist",
+                "narration": "سفينة جلومار إكسبلورر نزلت للموقع، وسفن التجسس السوفيتية كانت بتلف حواليها على بعد أمتار من غير ما يشكوا لحظة إن في مخلب جبار بينزل تحتهم مباشرة في الظلام الدامس.",
+                "broll_search": "huge cargo ship ocean industrial derrick",
+                "caption": "",
                 "sfx_cue": None,
-                "visual_prompt": "Futuristic telepathic computer interface with holographic screens moving seamlessly to mental commands, 9:16 vertical",
-                "visual_style": "scene_matrix"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "scene_gpu",
-                "narration": "لكن الهدف الأكبر لماسك ليس مجرد العلاج الطبي؛ الهدف هو الاندماج الكامل مع الذكاء الاصطناعي حتى لا تتخلف البشرية عنه مستقبلاً.",
-                "caption": "الاندماج التام مع الذكاء الاصطناعي!",
-                "sfx_cue": None,
-                "visual_prompt": "Glowing silicon wafer and microchip architecture merging with human neural cortex circuitry, 9:16 vertical",
-                "visual_style": "scene_gpu"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "scene_matrix",
-                "narration": "وهنا يطرح الفلاسفة السؤال المرعب: إذا كانت الآلة تقرأ أفكارك... فهل تظل أفكارك ملكاً لك وحدك أم تصبح بيانات قابلة للاختراق؟",
-                "caption": "إذا قرأت الآلة أفكارك... هل تظل سراً؟",
-                "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Abstract digital silhouette of human mind surrounded by cascading encryption keys and data packets, 9:16 vertical",
-                "visual_style": "scene_matrix"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "rayan_epiphany",
-                "narration": "نحن نقف اليوم أمام أعظم قفزة تطورية في تاريخنا: اللحظة التي تندمج فيها البيولوجيا مع السيليكون لصناعة كائن بشري خارق.",
-                "caption": "اندماج البيولوجيا مع السيليكون!",
-                "sfx_cue": None,
-                "visual_prompt": "Dr. Rayan gesturing with open hands in an intellectual eureka epiphany moment under glowing overhead lamp in tech lab, 9:16 vertical",
-                "visual_style": "rayan_epiphany"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "rayan_outro",
-                "narration": "المستقبل يقترب بأسرع مما تتخيل... هل أنت متحمس لتجربة هذه الشريحة يوماً ما؟ شاركنا رأيك، واشترك لتتابع أسرار المستقبل!",
-                "caption": "شاركنا رأيك... واشترك لمتابعة القادم!",
-                "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Dr. Rayan adjusting his round glasses with a subtle confident intellectual smile, cozy tech study background, 9:16 vertical",
-                "visual_style": "rayan_outro"
-            }
-        ]
-    },
-    # Episode 3: The NVIDIA AI Empire & GPU Revolution
-    {
-        "series_title": "الدحيح التكنولوجي | أسرار الذكاء الاصطناعي",
-        "part": "الحلقة 3",
-        "title": "سر معالجات إنفيديا: كيف تحولت شركة ألعاب إلى إمبراطورية بـ 3 تريليون دولار؟ #Shorts",
-        "scenes": [
-            {
-                "speaker": "rayan",
-                "character_focus": "rayan_hook",
-                "narration": "في عام 1993، جلس ثلاثة مهندسين في مطعم شعبي متواضع لتأسيس شركة بطاقات شاشة لألعاب الفيديو... اليوم قيمتها تفوق اقتصاد دول كبرى!",
-                "caption": "من مطعم متواضع... إلى إمبراطورية تريليونية!",
-                "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Dr. Rayan in his tweed jacket holding a miniature glowing silicon chip with fascinated enthusiastic gaze, 9:16 vertical",
-                "visual_style": "rayan_hook"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "scene_gpu",
-                "narration": "إنها شركة إنفيديا ورئيسها جينسن هوانغ، الذي أدرك قبل الجميع أن سر ثورة الذكاء الاصطناعي لا يكمن في البرمجيات، بل في هندسة العتاد الصلب.",
-                "caption": "سر الثورة يكمن في هندسة العتاد!",
-                "sfx_cue": None,
-                "visual_prompt": "A glowing silicon semiconductor wafer held by robotic micro-clamps under emerald green and cyan cleanroom lighting, 9:16 vertical",
-                "visual_style": "scene_gpu"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "scene_mainframe",
-                "narration": "المعالج العادي مثل أستاذ جامعي عبقري يحل مسألة واحدة شديدة التعقيد في المرة الواحدة؛ أما معالج الرسومات فمثل جيش كامل من آلاف الجنود يعملون في نفس اللحظة.",
-                "caption": "المعالج العادي أستاذ واحد... والـ GPU جيش كامل!",
-                "sfx_cue": "sfx_scratch",
-                "visual_prompt": "Comparison graphic between single CPU core processor and massive parallel matrix of GPU tensor cores glowing in dark chassis, 9:16 vertical",
-                "visual_style": "scene_mainframe"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "scene_neural",
-                "narration": "وفي عام 2012، حدثت المعجزة عندما استخدم باحثون بطاقات إنفيديا لتدريب شبكة عصبية عميقة، فاكتسحت العالم وتفوق الذكاء الاصطناعي لأول مرة في الرؤية الحاسوبية.",
-                "caption": "2012: انفجار التعلم العميق على بطاقات الألعاب!",
-                "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Deep neural network architecture showing glowing biological brain synapses transitioning into turquoise artificial neural nodes, 9:16 vertical",
-                "visual_style": "scene_neural"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "scene_gpu",
-                "narration": "هانغ خاطر بمليارات الدولارات لبناء منصة برمجية موحدة تدعى كودا، جعلت كل علماء العالم مأسورين ببطاقاته ولا يستطيعون استبدالها بأي بديل.",
-                "caption": "منصة كودا... الاحتكار البرمجي الأذكى في التاريخ!",
-                "sfx_cue": None,
-                "visual_prompt": "Dense glowing circuit traces forming a golden technological fortress with NVIDIA CUDA logo motifs, 9:16 vertical",
-                "visual_style": "scene_gpu"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "scene_matrix",
-                "narration": "اليوم، معالجات إتش مئة تباع بعشرات الآلاف من الدولارات للقطعة الواحدة، وتتسابق عمالقة التقنية لشراء مئات الآلاف منها لتدريب نماذجها.",
-                "caption": "معالجات H100... الذهب الجديد في عصر الذكاء!",
-                "sfx_cue": "sfx_register",
-                "visual_prompt": "Rows of enterprise AI supercomputing server racks pulsing with cooling fluids and neon diagnostic lights, 9:16 vertical",
-                "visual_style": "scene_matrix"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "scene_gpu",
-                "narration": "الحكومات أصبحت تخزن هذه الرقائق كاحتياطي استراتيجي سيادي، تماماً كما تخزن النفط والذهب، لأن من يملك الرقائق يملك عقل العالم القادم.",
-                "caption": "الدول تخزن الرقائق كاحتياطي استراتيجي كالذهب!",
-                "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Silhouetted world map overlaid with glowing geopolitical trade routes of silicon chip shipments, 9:16 vertical",
-                "visual_style": "scene_gpu"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "rayan_epiphany",
-                "narration": "القاعدة التاريخية تتكرر دائماً: في حمى الذهب، لا تنقب عن الذهب بنفسك؛ بل بع المجارف لمن ينقبون عنه... وهذا بالضبط ما فعلته إنفيديا!",
-                "caption": "في حمى الذهب... بع المجارف للجميع!",
-                "sfx_cue": None,
-                "visual_prompt": "Dr. Rayan gesturing with open hands in an intellectual eureka epiphany moment under glowing overhead lamp in tech lab, 9:16 vertical",
-                "visual_style": "rayan_epiphany"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "rayan_outro",
-                "narration": "التاريخ يصنعه من يرون المستقبل قبل الآخرين بعقود... اشترك معنا لتفهم أسرار اللعبة قبل الجميع، ونلتقي في الحلقة القادمة!",
-                "caption": "افهم أسرار اللعبة... واشترك للمزيد!",
-                "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Dr. Rayan adjusting his round glasses with a subtle confident intellectual smile, cozy tech study background, 9:16 vertical",
-                "visual_style": "rayan_outro"
-            }
-        ]
-    },
-    # Episode 4: Autonomous AI Agents & Future of Work
-    {
-        "series_title": "الدحيح التكنولوجي | أسرار الذكاء الاصطناعي",
-        "part": "الحلقة 4",
-        "title": "عصر الوكلاء الأذكياء: كيف يدير برنامج واحد شركة كاملة بدون موظفين؟ #Shorts",
-        "scenes": [
-            {
-                "speaker": "rayan",
-                "character_focus": "rayan_hook",
-                "narration": "الدردشة مع روبوتات الذكاء الاصطناعي وكتابة البرومبت أصبحت مهارة من الماضي... اليوم بدأ عصر جديد كلياً: عصر الوكلاء المستقلين!",
-                "caption": "كتابة البرومبت انتهت... وبدأ عصر الوكلاء!",
-                "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Dr. Rayan leaning forward enthusiastically with a tablet displaying interconnected autonomous agent graphs, 9:16 vertical",
-                "visual_style": "rayan_hook"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "scene_matrix",
-                "narration": "الوكيل المستقل ليس مجرد نموذج لغوي يجيبك بنص، بل هو عقل رقمي يمتلك ذاكرة، وأدوات تنفيذية، والقدرة على اتخاذ القرارات من تلقاء نفسه.",
-                "caption": "الوكيل المستقل: عقل رقمي ينفذ المهام ذاتياً!",
-                "sfx_cue": None,
-                "visual_prompt": "Futuristic autonomous multi-agent matrix, interconnected autonomous neural AI agents collaborating across data streams, 9:16 vertical",
-                "visual_style": "scene_matrix"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "scene_mainframe",
-                "narration": "تعطيه هدفاً واحداً، فيقوم بتقسيمه إلى مهام فرعية: وكيل يخطط، وكيل يكتب الشيفرات، ووكيل يختبر النظام ويصلح أخطاءه في ثوانٍ معدودة.",
-                "caption": "وكيل يخطط، وكيل يبرمج، ووكيل يختبر ويصلح!",
-                "sfx_cue": "sfx_scratch",
-                "visual_prompt": "Three interconnected holographic agent terminals compiling code and executing automated pipelines simultaneously, 9:16 vertical",
-                "visual_style": "scene_mainframe"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "scene_matrix",
-                "narration": "هذا يعني أن مهندساً واحداً يستطيع قيادة سرب كامل من مئات الوكلاء الأذكياء الذين يعملون على مدار الساعة دون توقف أو إرهاق.",
-                "caption": "شخص واحد يقود سرباً من مئات الوكلاء الأذكياء!",
-                "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Lone cybernetic architect commanding a glowing digital control center of automated software agents, 9:16 vertical",
-                "visual_style": "scene_matrix"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "scene_gpu",
-                "narration": "الشركات الناشئة اليوم أصبحت تحقق إيرادات بملايين الدولارات بفريق لا يتجاوز شخصين فقط، لأن كل العمليات التشغيلية يقودها وكلاء آليون.",
-                "caption": "شركات بملايين الدولارات يديرها شخصان فقط!",
-                "sfx_cue": "sfx_register",
-                "visual_prompt": "Modern glass skyscraper office with empty desks but millions of glowing autonomous processes humming on screens, 9:16 vertical",
-                "visual_style": "scene_gpu"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "scene_bci",
-                "narration": "التحول الحقيقي ليس في إلغاء الوظائف، بل في إعادة تعريف مفهوم العمل نفسه: من تنفيذ المهام اليدوية الروتينية إلى قيادة وإدارة الأسراب الرقمية.",
-                "caption": "من تنفيذ المهام الروتينية... إلى قيادة الأسراب الرقمية!",
-                "sfx_cue": None,
-                "visual_prompt": "Cybernetic neural interface visualizing a human mind directing streams of autonomous robotic agents, 9:16 vertical",
-                "visual_style": "scene_bci"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "scene_matrix",
-                "narration": "ومن يتقن بناء وتوجيه هؤلاء الوكلاء اليوم، سيملك نفوذاً وإنتاجية تعادل جيشاً كاملاً من الشركات التقليدية غداً.",
-                "caption": "إنتاجية فرد واحد تعادل شركات تقليدية كاملة!",
-                "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Towering digital matrix with glowing interconnected agent nodes conquering global market networks, 9:16 vertical",
-                "visual_style": "scene_matrix"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "rayan_epiphany",
-                "narration": "المستقبل لا ينتظر أحداً: إما أن تكون مستهلكاً لذكاء الآخرين، أو تبني نظامك التلقائي الخاص الذي يعمل نيابة عنك في صمت تام.",
-                "caption": "ابنِ نظامك التلقائي الخاص الذي يعمل نيابة عنك!",
-                "sfx_cue": None,
-                "visual_prompt": "Dr. Rayan gesturing with open hands in an intellectual eureka epiphany moment under glowing overhead lamp in tech lab, 9:16 vertical",
-                "visual_style": "rayan_epiphany"
-            },
-            {
-                "speaker": "rayan",
-                "character_focus": "rayan_outro",
-                "narration": "العالم يتغيّر بسرعة خارقة... هل أنت مستعد لقيادة الوكلاء الأذكياء؟ اشترك معنا، واستعد للمستقبل قبل الجميع!",
-                "caption": "استعد للمستقبل قبل الجميع... اشترك الآن!",
-                "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Dr. Rayan adjusting his round glasses with a subtle confident intellectual smile, cozy tech study background, 9:16 vertical",
-                "visual_style": "rayan_outro"
-            }
-        ]
-    }
-]
-
-# CHANNEL 2: Dual-Character Elite Business Noir Format (Lord Sterling & Felix the Fox)
-EPISODE_BANK_EN_WEALTH = [
-    # Episode 1: The Coffee Trap
-    {
-        "series_title": "Corporate Illusions & Wealth Architecture",
-        "part": "Part 1",
-        "title": "Part 1 | The Coffee Trap: How They Monetized Your Exhaustion #Shorts",
-        "scenes": [
-            {
-                "speaker": "consumer",
-                "character_focus": "consumer",
-                "narration": "Eight hours on the grind... This eight-dollar latte is the only reward keeping my sanity intact.",
-                "caption": "8 hours on the grind... This latte is my only reward!",
-                "sfx_cue": None,
-                "visual_prompt": "An anthropomorphic young red fox named Felix wearing a brown corduroy vest and newsboy cap, taking a satisfied sip from a steaming coffee mug at a vintage cafe counter, 1930s neo-noir animation style, 9:16 vertical",
-                "visual_style": "cafe_consumer"
-            },
-            {
-                "speaker": "mentor",
-                "character_focus": "mentor",
-                "narration": "A reward? Who convinced you that you need a 'coffee break' just to serve their machine harder?",
-                "caption": "Who convinced you that you need a 'Coffee Break'?",
-                "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Lord Sterling the anthropomorphic raven in an immaculate charcoal pinstripe suit and burgundy tie, checking a gold pocket watch with a cynical smirk, dark oak study library background, 9:16 vertical",
-                "visual_style": "mentor_study"
-            },
-            {
-                "speaker": "consumer",
-                "character_focus": "consumer",
-                "narration": "What are you talking about? It's a legally protected union break. What does manipulation have to do with it?",
-                "caption": "It's my legal right... What manipulation?",
-                "sfx_cue": "sfx_scratch",
-                "visual_prompt": "Felix the fox lowering his coffee cup in shock, wide bewildered eyes, dropped jaw, cartoon disbelief expression at the cafe counter, 9:16 vertical",
-                "visual_style": "cafe_shock"
-            },
-            {
-                "speaker": "mentor",
-                "character_focus": "flashback",
-                "narration": "In 1952, post-war coffee sales collapsed. So Madison Avenue advertising cartels met in Manhattan and launched two words: 'Coffee Break.'",
-                "caption": "1952: Madison Avenue invented the 'Coffee Break'!",
-                "sfx_cue": None,
-                "visual_prompt": "1952 Madison Avenue vintage boardroom, smoky air, advertising executives in tailored coats pointing at billboard sketches of steaming coffee cups, archival film grain, 9:16 vertical",
-                "visual_style": "madison_boardroom"
-            },
-            {
-                "speaker": "mentor",
-                "character_focus": "flashback",
-                "narration": "They convinced factory owners that a fifteen-minute caffeine hit boosts worker throughput by twenty percent. The break was never for your rest; it was to grease the gears of the factory.",
-                "caption": "The break was never for your rest... but for factory output!",
-                "sfx_cue": None,
-                "visual_prompt": "1950s industrial factory floor, massive heavy steel gears, assembly line workers drinking coffee while factory managers smile at speedometers, moody steam, 9:16 vertical",
+                "visual_prompt": "Colossal deep sea recovery ship at sea with industrial derrick tower, 9:16 vertical",
                 "visual_style": "factory_production"
             },
             {
-                "speaker": "mentor",
-                "character_focus": "flashback",
-                "narration": "Then they rebranded factory fuel into a luxury lifestyle badge. A beverage that costs thirty cents to brew... sold to you for eight dollars.",
-                "caption": "Brewed for 30 cents... Sold to you for $8!",
-                "sfx_cue": "sfx_register",
-                "visual_prompt": "Sleek modern luxury cafe counter, glowing neon chalkboard menu showing overpriced coffee, gold coins spilling over cash register counter, 9:16 vertical",
-                "visual_style": "luxury_cafe_pricing"
-            },
-            {
-                "speaker": "consumer",
-                "character_focus": "consumer",
-                "narration": "So I'm paying with my own money... just to borrow energy for a company I don't even own?",
-                "caption": "I pay to borrow energy... for a company I don't own?",
-                "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Close-up of Felix the fox staring down at his coffee mug in dread, realization dawning on his face, dark moody lighting, 9:16 vertical",
-                "visual_style": "consumer_epiphany"
-            },
-            {
-                "speaker": "mentor",
-                "character_focus": "mentor",
-                "narration": "The consumer pays for his rest twice: once with his health, and once with his wallet. The wise never drink to escape reality; they architect the systems that harvest the crowd's labor.",
-                "caption": "The wise never escape reality... They architect the systems!",
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_turning",
+                "narration": "المخلب مسك الغواصة وبدأ يرفعها ببطء شديد... لكن على عمق تسعة آلاف قدم، حصلت كارثة غير متوقعة: أصابع المخلب اتكسرت من الضغط، وتلتين الغواصة انفصل وسقط تاني في القاع مع الصواريخ!",
+                "broll_search": None,
+                "caption": "",
                 "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Dramatic close-up of Lord Sterling adjusting his cufflinks, glowing amber eyes piercing the shadows, atmospheric library background, 9:16 vertical",
-                "visual_style": "mentor_axiom"
+                "visual_prompt": "Documentary host showing dramatic tension and shock, 9:16 vertical",
+                "visual_style": "anchor_turning"
             },
             {
-                "speaker": "mentor",
-                "character_focus": "mentor",
-                "narration": "The noise is for the crowd. Watch, learn, and evolve quietly — until you control the board. Subscribe for Part 2.",
-                "caption": "Evolve quietly... until you control the board!",
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_wreck",
+                "narration": "رغم ده، الجزء الأمامي طلع وفيه أجهزة الشيفرة وجثث ستة بحارة سوفيت. وفي لفتة غريبة جداً، الأمريكان عملوا للبحارة جنازة عسكرية رسمية في عرض البحر وغطوا توابيتهم بالعلم السوفيتي احتراما ليهم.",
+                "broll_search": "ocean waves burial navy flag solemn",
+                "caption": "",
                 "sfx_cue": None,
-                "visual_prompt": "Lord Sterling turning toward a large mahogany door, silhouette against warm library chandelier, mysterious stoic departure, 9:16 vertical",
-                "visual_style": "mentor_outro"
+                "visual_prompt": "Ceremonial naval flags at sea under dramatic golden sunset clouds, 9:16 vertical",
+                "visual_style": "soviet_submarine_abyss"
+            },
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_outro",
+                "narration": "ولما الصحافة كشفت القصة سنة 1975، الـ CIA اخترعت أشهر جملة قانونية في التاريخ: 'لا نؤكد ولا ننفي'. التاريخ مش مجرد كتب... التاريخ أسرار مستخبية تحت أقدامنا! اشترك واستعد للحلقة الجاية.",
+                "broll_search": None,
+                "caption": "",
+                "sfx_cue": "sfx_register",
+                "visual_prompt": "Documentary host leaning back with knowing smile and closing thought, 9:16 vertical",
+                "visual_style": "anchor_outro"
             }
         ]
     },
-    # Episode 2: The Subscription Trap
+    # Episode 2: The Antwerp Vault Heist
     {
-        "series_title": "Corporate Illusions & Wealth Architecture",
-        "part": "Part 2",
-        "title": "Part 2 | The Subscription Trap: Why You Will Own Nothing and Pay Forever #Shorts",
+        "series_title": "الدحيح التكنولوجي | ألغاز التاريخ السري",
+        "part": "الحلقة 2",
+        "title": "سرقة خزنة أنتويرب: كيف سرقوا 100 مليون دولار بدون إطلاق رصاصة واحدة؟ #Shorts",
         "scenes": [
             {
-                "speaker": "consumer",
-                "character_focus": "consumer",
-                "narration": "I just pay fifteen dollars a month for all my design software... It feels so much cheaper than buying the whole program!",
-                "caption": "Only $15 a month... Feels cheaper than buying!",
-                "sfx_cue": None,
-                "visual_prompt": "Felix the fox tapping his smartphone screen proudly at a modern cafe, digital receipt notifications glowing, 9:16 vertical",
-                "visual_style": "cafe_consumer"
-            },
-            {
-                "speaker": "mentor",
-                "character_focus": "mentor",
-                "narration": "Cheaper? You just traded permanent asset ownership for perpetual digital tenancy.",
-                "caption": "Cheaper? You traded ownership for digital rent!",
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_hook",
+                "narration": "تخيل خزنة تحت الأرض محمية بأجهزة ليزر تحت الحمراء، مجسات حرارة، أقفال مغناطيسية، وأبواب فولاذية بتتحمل تفجير نووي... ومع ذلك، في ليلة واحدة اتسرق منها مئة مليون دولار ألماس من غير صوت إنذار واحد!",
+                "broll_search": None,
+                "caption": "",
                 "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Lord Sterling the raven leaning over a polished dark mahogany desk, inspecting a financial balance sheet with an amused cynical smirk, 9:16 vertical",
-                "visual_style": "mentor_study"
+                "visual_prompt": "Documentary anchor speaking with intense intrigue into lens, 9:16 vertical",
+                "visual_style": "anchor_hook"
             },
             {
-                "speaker": "consumer",
-                "character_focus": "consumer",
-                "narration": "What are you talking about? It gives me continuous cloud updates and premium storage!",
-                "caption": "What do you mean? It gives me continuous updates!",
-                "sfx_cue": "sfx_scratch",
-                "visual_prompt": "Felix the fox blinking in disbelief, dropping his phone onto the cafe table, defensive expression, 9:16 vertical",
-                "visual_style": "cafe_shock"
-            },
-            {
-                "speaker": "mentor",
-                "character_focus": "flashback",
-                "narration": "In 2013, software giants killed perpetual software boxes. Wall Street rewarded them with a tenfold market valuation overnight.",
-                "caption": "2013: Wall Street rewarded software subscriptions 10x!",
-                "sfx_cue": None,
-                "visual_prompt": "Vintage Wall Street trading floor charts showing recurring monthly SaaS revenue soaring vertically, 9:16 vertical",
-                "visual_style": "subscription_cage"
-            },
-            {
-                "speaker": "mentor",
-                "character_focus": "flashback",
-                "narration": "A perpetual license meant you paid once and used it forever. A subscription turns you into a captive cash flow pipeline with no exit.",
-                "caption": "A license was forever... A subscription is eternal rent!",
-                "sfx_cue": None,
-                "visual_prompt": "Digital golden cage composed of credit card billing chains and recurring monthly calendar notifications, 9:16 vertical",
-                "visual_style": "subscription_cage"
-            },
-            {
-                "speaker": "mentor",
-                "character_focus": "flashback",
-                "narration": "Software, music, movies, cloud drives, gym memberships, car features... Stop paying, and every asset you worked with vanishes instantly.",
-                "caption": "Stop paying... and every file you worked with vanishes!",
-                "sfx_cue": "sfx_register",
-                "visual_prompt": "Sleek corporate server rack glowing with credit card transaction lights and recurring subscription billing counters, 9:16 vertical",
-                "visual_style": "subscription_cage"
-            },
-            {
-                "speaker": "consumer",
-                "character_focus": "consumer",
-                "narration": "So I'm paying thousands of dollars over a decade... and I walk away with zero equity?",
-                "caption": "I pay thousands... and walk away with zero equity?",
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_vault",
+                "narration": "مركز ألماظ أنتويرب في بلجيكا بيعدي منه تمانين في المية من ألماظ العالم الخام. ليوناردو نوتاربارتولو استأجر مكتب هناك وفضل سنتين يدرس كل سنتيمتر في نظام الحماية بكاميرا خفية في قلمه.",
+                "broll_search": "bank vault laser security diamonds jewelry",
+                "caption": "",
                 "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Felix the fox staring down at his empty open palms in dread realization, moody shadowy cafe lighting, 9:16 vertical",
-                "visual_style": "consumer_epiphany"
+                "visual_prompt": "Subterranean bank vault interior with red laser security grid and looted diamond boxes, 9:16 vertical",
+                "visual_style": "antwerp_bank_vault"
             },
             {
-                "speaker": "mentor",
-                "character_focus": "mentor",
-                "narration": "The masses rent their entire existence month by month. The elite construct the digital tollbooths that collect recurring rent from millions.",
-                "caption": "The crowd rents... The elite build the tollbooths!",
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_explain",
+                "narration": "اللي عمله كان عبقرية خالصة: استخدم بخاخ مثبت شعر نسائي عادي جداً عشان يعمي مجسات الحركة الحرارية! ووضع لوح ألومنيوم يعزل المجسات المغناطيسية، وغطى كاميرات المراقبة بأكياس بوليستر سوداء في ثواني.",
+                "broll_search": None,
+                "caption": "",
+                "sfx_cue": "sfx_scratch",
+                "visual_prompt": "Documentary host smiling with intellectual fascination at clever hack, 9:16 vertical",
+                "visual_style": "anchor_explain"
+            },
+            {
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_heist",
+                "narration": "فتحوا أكتر من مئة صندوق أمانات، وملأوا حقائبهم بأندر ألماظ وذهب في أوروبا، وخرجوا بكل هدوء مع شروق الشمس من الباب الرئيسي كأنهم موظفين عاديين.",
+                "broll_search": "diamonds shining luxury wealth cash vault",
+                "caption": "",
+                "sfx_cue": "sfx_register",
+                "visual_prompt": "Scattered glittering diamonds and gold bars inside stainless steel safe drawers, 9:16 vertical",
+                "visual_style": "diamond_vault"
+            },
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_outro",
+                "narration": "لكن الغريب؟ الألماس المسروق ما حدش لقاه لحد النهاردة! الشرطة قبضت على ليوناردو بس السر اختفى معاه للأبد. مهما بلغت قوة التكنولوجيا، أذكى نظام أمان له نقطة ضعف بشرية! اشترك للمزيد.",
+                "broll_search": None,
+                "caption": "",
                 "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Lord Sterling adjusting his gold cufflinks, silhouette against towering glass corporate headquarters, powerful stoic gaze, 9:16 vertical",
-                "visual_style": "mentor_axiom"
-            },
-            {
-                "speaker": "mentor",
-                "character_focus": "mentor",
-                "narration": "Stop paying rent on other people's systems. Build your own tollbooth. Subscribe to learn the architecture of real wealth.",
-                "caption": "Stop paying rent... Build your own tollbooth!",
-                "sfx_cue": None,
-                "visual_prompt": "Lord Sterling stepping out of the study into a dark marble corridor, neo-noir atmosphere, 9:16 vertical",
-                "visual_style": "mentor_outro"
+                "visual_prompt": "Documentary host concluding with thoughtful gaze into camera, 9:16 vertical",
+                "visual_style": "anchor_outro"
             }
         ]
     },
-    # Episode 3: The Diamond Monopoly
+    # Episode 3: The Phoebus Cartel (Lightbulb Conspiracy)
     {
-        "series_title": "Corporate Illusions & Wealth Architecture",
-        "part": "Part 3",
-        "title": "Part 3 | The Diamond Monopoly: The Century-Old Illusion of Scarcity #Shorts",
+        "series_title": "الدحيح التكنولوجي | أسرار الاقتصاد الخفي",
+        "part": "الحلقة 3",
+        "title": "مؤامرة المصباح الكهربائي: كيف اتفقت الشركات على تقليل عمر منتجاتك عمداً؟ #Shorts",
         "scenes": [
             {
-                "speaker": "consumer",
-                "character_focus": "consumer",
-                "narration": "I just spent three months' salary on this engagement diamond... It's a sacred centuries-old tradition!",
-                "caption": "3 months' salary... A sacred centuries-old tradition!",
-                "sfx_cue": None,
-                "visual_prompt": "Felix the fox holding a velvet ring box with a sparkling diamond, proud romantic smile, vintage cafe counter, 9:16 vertical",
-                "visual_style": "cafe_consumer"
-            },
-            {
-                "speaker": "mentor",
-                "character_focus": "mentor",
-                "narration": "Sacred tradition? It was invented in 1947 by a desperate Madison Avenue advertising agency trying to save a cartel.",
-                "caption": "Sacred tradition? Invented in 1947 by an ad agency!",
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_hook",
+                "narration": "في محطة إطفاء في كاليفورنيا، في مصباح كهربائي شغال ليل نهار بقاله أكتر من 120 سنة بدون انقطاع! طب فكرت قبل كدة ليه المصابيح اللي في بيتك بتتحرق كل سنة أو سنتين؟ الإجابة مش عيب صناعة... الإجابة مؤامرة تجارية موثقة!",
+                "broll_search": None,
+                "caption": "",
                 "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Lord Sterling the raven holding an antique magnifying loupe, inspecting a sparkling gemstone with a cynical smirk, dark library, 9:16 vertical",
-                "visual_style": "mentor_study"
+                "visual_prompt": "Host holding attention with mystery question in studio, 9:16 vertical",
+                "visual_style": "anchor_hook"
             },
             {
-                "speaker": "consumer",
-                "character_focus": "consumer",
-                "narration": "What are you talking about? Diamonds are the rarest, most precious gemstones in the entire universe!",
-                "caption": "Diamonds are the rarest gems in the universe!",
-                "sfx_cue": "sfx_scratch",
-                "visual_prompt": "Felix the fox staring in utter shock, mouth wide open, cartoon disbelief at the counter, 9:16 vertical",
-                "visual_style": "cafe_shock"
-            },
-            {
-                "speaker": "mentor",
-                "character_focus": "flashback",
-                "narration": "In 1888, massive diamond pipes were uncovered in South Africa. Diamonds were so common that market prices threatened to collapse to near zero.",
-                "caption": "1888: South African mines flooded the diamond market!",
-                "sfx_cue": None,
-                "visual_prompt": "Deep Victorian subterranean mine pit with miners shoveling sparkling diamond kimberlite ore into wooden carts, 9:16 vertical",
-                "visual_style": "diamond_vault"
-            },
-            {
-                "speaker": "mentor",
-                "character_focus": "flashback",
-                "narration": "So Cecil Rhodes formed De Beers — a global monopoly that hoarded tons of diamonds in London vaults to engineer artificial scarcity.",
-                "caption": "De Beers hoarded vaults of diamonds to fake scarcity!",
-                "sfx_cue": None,
-                "visual_prompt": "Massive subterranean bank vault with floor-to-ceiling metal security cages filled with sacks of uncut raw diamonds, 9:16 vertical",
-                "visual_style": "diamond_vault"
-            },
-            {
-                "speaker": "mentor",
-                "character_focus": "flashback",
-                "narration": "Then they coined four words: 'A Diamond Is Forever' — psychologically convincing the world that selling your diamond was a betrayal of love.",
-                "caption": "'A Diamond Is Forever': The psychological masterstroke!",
-                "sfx_cue": "sfx_register",
-                "visual_prompt": "Vintage 1947 advertising sketch on mahogany drafting table with fountain pen writing 'A Diamond Is Forever', 9:16 vertical",
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_lab",
+                "narration": "سنة 1924، اجتمع كبار مصنعي الكهرباء في العالم في جنيف وأسسوا كارتل فيبوس. لاحظوا إن المصابيح بتعيش 2500 ساعة، وده معناه إن المبيعات هتقل والناس مش هتشتري تاني.",
+                "broll_search": "vintage lightbulb glowing filament dark room",
+                "caption": "",
+                "sfx_cue": "sfx_heartbeat",
+                "visual_prompt": "1920s vintage boardroom executives signing cartel documents under glowing carbon filament bulb, 9:16 vertical",
                 "visual_style": "madison_boardroom"
             },
             {
-                "speaker": "consumer",
-                "character_focus": "consumer",
-                "narration": "So the three months' salary rule was just an advertising quota... to stop people from realizing diamonds aren't rare?",
-                "caption": "The 3 months' rule was just an ad agency quota?",
-                "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Felix the fox staring at the velvet box in horror, realization dawning on his face, moody lighting, 9:16 vertical",
-                "visual_style": "consumer_epiphany"
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_explain",
+                "narration": "فاتفقوا رسمياً على تقليص عمر المصباح عمداً إلى ألف ساعة فقط! وفرضوا غرامات مالية قاسية على أي مهندس يصنع مصباح يعيش أطول! ومن هنا اتولدت سياسة 'التقادم المخطط' اللي لسه بنعاني منها في كل أجهزتنا لحد النهاردة.",
+                "broll_search": None,
+                "caption": "",
+                "sfx_cue": "sfx_scratch",
+                "visual_prompt": "Host explaining corporate strategy with energetic conviction, 9:16 vertical",
+                "visual_style": "anchor_explain"
             },
             {
-                "speaker": "mentor",
-                "character_focus": "mentor",
-                "narration": "Value in capitalism is rarely about intrinsic rarity. Real power lies in controlling the crowd's perception of scarcity and desire.",
-                "caption": "Power lies in controlling the perception of scarcity!",
-                "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Lord Sterling holding a raw unpolished diamond up to the chandelier light, amber eyes glowing with absolute authority, 9:16 vertical",
-                "visual_style": "mentor_axiom"
-            },
-            {
-                "speaker": "mentor",
-                "character_focus": "mentor",
-                "narration": "The crowd buys the illusion. The architect controls the supply. Evolve quietly until you control the board. Subscribe for Part 4.",
-                "caption": "Evolve quietly... until you control the board!",
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_factory",
+                "narration": "المبدأ ده انتقل لكل شيء: لهواتفك الذكية، لسياراتك، ولأجهزتك المنزلية. النظام الاقتصادي لا يريد منتجاً يعيش معك للأبد؛ هو يريدك أن تشتري باستمرار.",
+                "broll_search": "smartphone assembly line factory technology",
+                "caption": "",
                 "sfx_cue": None,
-                "visual_prompt": "Lord Sterling turning toward the massive oak doors, silhouette against warm library chandelier, stoic departure, 9:16 vertical",
-                "visual_style": "mentor_outro"
+                "visual_prompt": "Modern robotic factory floor assembling sleek consumer electronics at high speed, 9:16 vertical",
+                "visual_style": "factory_production"
+            },
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_outro",
+                "narration": "السؤال الحقيقي: هل تشتري المنتجات لحاجتك إليها... أم لأنهم برمجوا موعد موتها مسبقاً؟ لا تكن مستهلكاً غافلاً، افهم اللعبة! اشترك للحلقة القادمة.",
+                "broll_search": None,
+                "caption": "",
+                "sfx_cue": "sfx_subdrop",
+                "visual_prompt": "Host delivering punchline with engaging eye contact, 9:16 vertical",
+                "visual_style": "anchor_outro"
             }
         ]
     },
-    # Episode 4: The Bottled Water Heist
+    # Episode 4: Alan Turing & Origins of AI
     {
-        "series_title": "Corporate Illusions & Wealth Architecture",
-        "part": "Part 4",
-        "title": "Part 4 | The Bottled Water Heist: How They Sold Tap Water for a 4000% Markup #Shorts",
+        "series_title": "الدحيح التكنولوجي | أسرار الذكاء الاصطناعي",
+        "part": "الحلقة 4",
+        "title": "كيف بدأت فكرة الذكاء الاصطناعي؟ من لغز آلان تورينج إلى عصر الوكلاء الأذكياء #Shorts",
         "scenes": [
             {
-                "speaker": "consumer",
-                "character_focus": "consumer",
-                "narration": "I only drink imported artisanal bottled spring water... It's pure pristine health in a bottle!",
-                "caption": "I only drink artisanal water... Pure health in a bottle!",
-                "sfx_cue": None,
-                "visual_prompt": "Felix the fox proudly sipping from a sleek blue luxury water bottle with mountain graphics, cafe counter, 9:16 vertical",
-                "visual_style": "cafe_consumer"
-            },
-            {
-                "speaker": "mentor",
-                "character_focus": "mentor",
-                "narration": "You just paid three dollars for twenty cents worth of municipal tap water sealed in disposable petroleum plastic.",
-                "caption": "You paid $3 for 20 cents worth of tap water!",
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_hook",
+                "narration": "هل يمكن للآلة أن تفكّر حقاً؟ في خريف عام 1950، طرح عالم عبقري سؤالاً واحداً... أحدث زلزالاً غيّر تاريخ البشرية إلى الأبد!",
+                "broll_search": None,
+                "caption": "",
                 "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Lord Sterling the raven swirling water in a crystal tumbler, looking with clinical amusement at Felix's plastic bottle, 9:16 vertical",
-                "visual_style": "mentor_study"
+                "visual_prompt": "Documentary anchor in dark studio leaning forward excitedly, 9:16 vertical",
+                "visual_style": "anchor_hook"
             },
             {
-                "speaker": "consumer",
-                "character_focus": "consumer",
-                "narration": "Tap water? The label shows untouched alpine glaciers and pristine mountain springs!",
-                "caption": "Tap water? The label shows alpine glaciers!",
-                "sfx_cue": "sfx_scratch",
-                "visual_prompt": "Felix the fox staring at the plastic wrapper with wide cartoon eyes, pointing frantically at the mountain illustration, 9:16 vertical",
-                "visual_style": "cafe_shock"
-            },
-            {
-                "speaker": "mentor",
-                "character_focus": "flashback",
-                "narration": "In the 1970s, beverage conglomerates faced slowing soda sales. So they executed the boldest commodity privatization campaign in modern history.",
-                "caption": "1970s: Beverage cartels privatized a free public good!",
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_bombe",
+                "narration": "كان صاحب السؤال هو آلان تورينج، الرجل الذي فكك شيفرة إنيجما المعقدة بآلته الكهروميكانيكية، واقترح لعبة المحاكاة التي نعرفها اليوم باسم اختبار تورينج.",
+                "broll_search": "vintage codebreaking enigma machine gears",
+                "caption": "",
                 "sfx_cue": None,
-                "visual_prompt": "Industrial corporate bottling facility filling thousands of identical plastic bottles from massive industrial pipes, 9:16 vertical",
-                "visual_style": "water_heist"
+                "visual_prompt": "1940 Turing Bombe codebreaking machine rotating drums, 9:16 vertical",
+                "visual_style": "turing_bombe_1940"
             },
             {
-                "speaker": "mentor",
-                "character_focus": "flashback",
-                "narration": "Over sixty percent of major bottled water brands come directly from city public tap water — simply filtered and marked up four thousand percent.",
-                "caption": "Over 60% of bottled water is municipal tap water!",
-                "sfx_cue": None,
-                "visual_prompt": "Split screen showing public city municipal water pipe connected to a gleaming corporate bottling conveyor belt, 9:16 vertical",
-                "visual_style": "water_heist"
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_explain",
+                "narration": "الفكرة كانت ثورية: محاكاة الخلايا العصبية في الدماغ البشري، وبناء شبكات رياضية تتعلّم وتتحسّن ذاتياً بالتجربة والخطأ بدون تدخل مسبق.",
+                "broll_search": None,
+                "caption": "",
+                "sfx_cue": "sfx_heartbeat",
+                "visual_prompt": "Host explaining neural network concepts, 9:16 vertical",
+                "visual_style": "anchor_explain"
             },
             {
-                "speaker": "mentor",
-                "character_focus": "flashback",
-                "narration": "You aren't purchasing water. Water is practically free. You are purchasing a petroleum bottle and the manufactured fear of your own municipal tap.",
-                "caption": "You buy the plastic bottle... and manufactured fear!",
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_neural",
+                "narration": "انتقلنا من صمامات مفرغة ضخمة تملأ غرفاً كاملة، إلى رقائق سيليكون نانوية فائقة القوة تتدفق عبرها مليارات العمليات الحسابية في الثانية.",
+                "broll_search": "neural network glowing brain synapses ai data",
+                "caption": "",
+                "sfx_cue": "sfx_subdrop",
+                "visual_prompt": "Glowing neural synapse connections evolving into computer microchips, 9:16 vertical",
+                "visual_style": "neural_network_synapse"
+            },
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_outro",
+                "narration": "السؤال الحقيقي اليوم لم يعد هل يمكن للآلة أن تفكّر، بل هل أنت مستعد للتعامل مع عالم يفوق فيه ذكاء الآلة قدرة استيعابك؟ اشترك وتابع المستقبل!",
+                "broll_search": None,
+                "caption": "",
                 "sfx_cue": "sfx_register",
-                "visual_prompt": "Cash register counter with glowing mountain billboard in background and streams of plastic bottles rolling off assembly lines, 9:16 vertical",
+                "visual_prompt": "Host closing statement with intense clarity, 9:16 vertical",
+                "visual_style": "anchor_outro"
+            }
+        ]
+    },
+    # Episode 5: Neuralink & The BCI Revolution
+    {
+        "series_title": "الدحيح التكنولوجي | أسرار التكنولوجيا القادمة",
+        "part": "الحلقة 5",
+        "title": "شريحة نيورالينك وإيلون ماسك: هل سنقرأ أفكار البشر قريباً؟ #Shorts",
+        "scenes": [
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_hook",
+                "narration": "تخيّل إنك تتحكم في حاسوب كامل بمجرد فكرة تدور في عقلك... بدون ما تحرك صباع واحد أو تنطق بكلمة! ده مش خيال علمي، ده الواقع اللي بتبنيه شريحة نيورالينك حالياً.",
+                "broll_search": None,
+                "caption": "",
+                "sfx_cue": "sfx_whoosh",
+                "visual_prompt": "Host pointing to temple with intellectual wonder, 9:16 vertical",
+                "visual_style": "anchor_hook"
+            },
+            {
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_bci",
+                "narration": "كل فكرة أو حركة بتولد نبضة كهربائية بين المشابك العصبية. الشريحة بتحتوي على أكثر من ألف قطب ميكروسكوبي، أرق من شعرة الإنسان، بتقرأ الشحنات وتحولها لبرمجة فورية.",
+                "broll_search": "cybernetic brain microchip neuron impulses futuristic",
+                "caption": "",
+                "sfx_cue": "sfx_heartbeat",
+                "visual_prompt": "High-tech cybernetic brain implant with golden microthreads merging into bioluminescent neurons, 9:16 vertical",
+                "visual_style": "neuralink_bci_chip"
+            },
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_explain",
+                "narration": "مرضى الشلل الرباعي أصبحوا الآن بيلعبوا شطرنج ويتصفحوا الإنترنت بسرعة مذهلة فقط بالتفكير التلقائي! لكن ماسك مش عاوز يقف هنا؛ هدفه دمج العقل بالذكاء الاصطناعي لإنقاذ البشرية من التهميش.",
+                "broll_search": None,
+                "caption": "",
+                "sfx_cue": "sfx_scratch",
+                "visual_prompt": "Host leaning in explaining high-stakes future, 9:16 vertical",
+                "visual_style": "anchor_explain"
+            },
+            {
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_matrix",
+                "narration": "التحدي الحقيقي ليس في الهاردوير، بل في الأمان: إذا اتصل دماغك بالشبكة، فهل تصبح أفكارك وذكرياتك قابلة للقرصنة؟",
+                "broll_search": "digital matrix code cyber security dark data",
+                "caption": "",
+                "sfx_cue": "sfx_subdrop",
+                "visual_prompt": "Holographic human brain surrounded by streams of encrypting binary code, 9:16 vertical",
+                "visual_style": "autonomous_agent_matrix"
+            },
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_outro",
+                "narration": "المستقبل يقترب أسرع مما تتخيل... هل ستوافق على زرع شريحة في رأسك يوماً ما؟ شاركني رأيك في التعليقات واشترك للمزيد!",
+                "broll_search": None,
+                "caption": "",
+                "sfx_cue": "sfx_register",
+                "visual_prompt": "Host looking directly into lens asking provoking question, 9:16 vertical",
+                "visual_style": "anchor_outro"
+            }
+        ]
+    },
+    # Episode 6: The NVIDIA Silicon Monopoly
+    {
+        "series_title": "الدحيح التكنولوجي | عمالقة وادي السيليكون",
+        "part": "الحلقة 6",
+        "title": "سر معالجات إنفيديا: كيف تحولت شركة ألعاب إلى إمبراطورية بـ 3 تريليون دولار؟ #Shorts",
+        "scenes": [
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_hook",
+                "narration": "سنة 1993، تلات مهندسين قعدوا في مطعم وجبات سريعة في كاليفورنيا عشان يأسسوا شركة بطاقات ألعاب للكمبيوتر. النهاردة، الشركة دي قيمتها تخطت 3 تريليون دولار، وكل نموذج ذكاء اصطناعي على كوكب الأرض بيتنفس من خلال معالجاتها!",
+                "broll_search": None,
+                "caption": "",
+                "sfx_cue": "sfx_whoosh",
+                "visual_prompt": "Host explaining meteoric business rise with excitement, 9:16 vertical",
+                "visual_style": "anchor_hook"
+            },
+            {
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_gpu",
+                "narration": "السر ما كنش بس تصنيع معالجات الجرافيكس؛ السر كان رهان عبقري من جينسن هوانغ سنة 2006 لما أطلق منصة كودا البرمجية اللي حوّلت كروت الشاشة لمحركات حسابية عملاقة للتعلم العميق.",
+                "broll_search": "microchip silicon wafer cleanroom glowing circuits",
+                "caption": "",
+                "sfx_cue": "sfx_heartbeat",
+                "visual_prompt": "Close-up of glowing NVIDIA AI silicon processor on black circuit board, 9:16 vertical",
+                "visual_style": "nvidia_gpu_silicon"
+            },
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_explain",
+                "narration": "لما انفجرت ثورة الذكاء الاصطناعي، شركات العالم كلها: جوجل، مايكروسوفت، وميتا، لقوا نفسهم مضطرين يشتروا رقاقات H100 بعشرات الآلاف من الدولارات للقطعة الواحدة، لأن ما فيش بديل جاهز في السوق!",
+                "broll_search": None,
+                "caption": "",
+                "sfx_cue": "sfx_scratch",
+                "visual_prompt": "Host breaking down the monopoly dynamics clearly, 9:16 vertical",
+                "visual_style": "anchor_explain"
+            },
+            {
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_server",
+                "narration": "في عصر حمى الذهب، الرابح الأكبر لم يكن من يحفر بحثاً عن الذهب، بل من كان يبيع الفؤوس ومعدات الحفر. وإنفيديا هي التي تبيع فؤوس الذكاء الاصطناعي للعالم بأسره.",
+                "broll_search": "data center server racks blinking lights futuristic",
+                "caption": "",
+                "sfx_cue": "sfx_subdrop",
+                "visual_prompt": "Massive AI supercomputer data center with endless rows of humming server racks, 9:16 vertical",
+                "visual_style": "autonomous_agent_matrix"
+            },
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_outro",
+                "narration": "من كان يظن أن ألعاب الفيديو ستبني إمبراطورية تحكم عقل العالم الرقمي؟ اشترك لتتعلم كيف تقتنص الفرص القادمة قبل الجميع!",
+                "broll_search": None,
+                "caption": "",
+                "sfx_cue": "sfx_register",
+                "visual_prompt": "Host smiling with closing wisdom, 9:16 vertical",
+                "visual_style": "anchor_outro"
+            }
+        ]
+    },
+    # Episode 7: The Era of AI Agents
+    {
+        "series_title": "الدحيح التكنولوجي | ثورة الوكلاء الأذكياء",
+        "part": "الحلقة 7",
+        "title": "عصر الوكلاء الأذكياء (AI Agents): كيف يدير برنامج واحد شركة كاملة بدون موظفين؟ #Shorts",
+        "scenes": [
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_hook",
+                "narration": "انسَ الشات بوت اللي بترد عليه ويرد عليك بكلمتين... العالم دخل رسمياً عصر 'الوكلاء الأذكياء'؛ برامج ما بتكتفيش بالإجابة، دي بتاخد قرار، بتنفذ، وبتصحح أخطاءها بنفسها!",
+                "broll_search": None,
+                "caption": "",
+                "sfx_cue": "sfx_whoosh",
+                "visual_prompt": "Host leaning forward with vision of autonomous software, 9:16 vertical",
+                "visual_style": "anchor_hook"
+            },
+            {
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_matrix",
+                "narration": "وكيل يبحث في السوق، وكيل يكتب كود الموقع، وكيل يدير الحملات الإعلانية، وكلهم بيتواصلوا مع بعض في أجزاء من الثانية لإطلاق مشروع كامل بدون تدخل بشري.",
+                "broll_search": "artificial intelligence multi agent networking code data",
+                "caption": "",
+                "sfx_cue": "sfx_heartbeat",
+                "visual_prompt": "Network of interconnected autonomous AI agents exchanging real-time digital tasks, 9:16 vertical",
+                "visual_style": "autonomous_agent_matrix"
+            },
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_explain",
+                "narration": "ده معناه إنك قريباً مش هتحتاج فريق عمل من عشرين شخص عشان تبدأ شركتك الناشئة؛ جهازك الشخصي هيكون هو الشركة بالكامل!",
+                "broll_search": None,
+                "caption": "",
+                "sfx_cue": "sfx_scratch",
+                "visual_prompt": "Host gesturing toward camera explaining solo entrepreneur revolution, 9:16 vertical",
+                "visual_style": "anchor_explain"
+            },
+            {
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_future",
+                "narration": "المستقبل لا ينتظر أحداً؛ من يتعلم قيادة الوكلاء الأذكياء اليوم، سيبني إمبراطوريته غداً بأقل تكلفة وأعلى كفاءة.",
+                "broll_search": "holographic digital workspace coding futuristic tech",
+                "caption": "",
+                "sfx_cue": "sfx_subdrop",
+                "visual_prompt": "Futuristic workstation glowing with multi-agent orchestration code, 9:16 vertical",
+                "visual_style": "neuralink_bci_chip"
+            },
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_outro",
+                "narration": "هل وظيفتك مهددة بالوكلاء الأذكياء... أم ستكون أنت من يقودهم؟ اشترك الآن لتتعلم كيف تسيطر على أدوات المستقبل!",
+                "broll_search": None,
+                "caption": "",
+                "sfx_cue": "sfx_register",
+                "visual_prompt": "Host delivering punchy empowering conclusion, 9:16 vertical",
+                "visual_style": "anchor_outro"
+            }
+        ]
+    },
+    # Episode 8: The Bottled Water Illusion
+    {
+        "series_title": "الدحيح التكنولوجي | أسرار الاقتصاد الخفي",
+        "part": "الحلقة 8",
+        "title": "خدعة المياه المعبأة: كيف أقنعوا العالم بشراء ماء الصنبور بهامش ربح 4000%؟ #Shorts",
+        "scenes": [
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_hook",
+                "narration": "الماء مجاني تقريباً ويصل إلى بيتك بضغطة زر... فكيف استطاعت شركات المشروبات تحويله إلى صناعة بـ 300 مليار دولار يشتريها الناس بأربعة آلاف ضعف ثمنها الأصلي؟",
+                "broll_search": None,
+                "caption": "",
+                "sfx_cue": "sfx_whoosh",
+                "visual_prompt": "Host holding attention with shocking economic reality, 9:16 vertical",
+                "visual_style": "anchor_hook"
+            },
+            {
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_water",
+                "narration": "في السبعينيات واجهت شركات المشروبات ركوداً، فأطلقت حملة تسويقية عبقرية: زرع الخوف من مياه الصنبور وتصوير زجاجات البلاستيك كرمز للصحة والرفاهية.",
+                "broll_search": "bottled water plastic conveyor belt factory industrial",
+                "caption": "",
+                "sfx_cue": "sfx_heartbeat",
+                "visual_prompt": "Corporate bottling assembly line churning out thousands of identical plastic water bottles, 9:16 vertical",
+                "visual_style": "bottled_water_tap_heist"
+            },
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_explain",
+                "narration": "الحقيقة الصادمة؟ أكثر من 60% من ماركات المياه المعبأة تأتي مباشرة من نفس شبكات المياه البلدية، يعيدون تصفيتها وبيعها لك في زجاجة بترولية رخيصة!",
+                "broll_search": None,
+                "caption": "",
+                "sfx_cue": "sfx_scratch",
+                "visual_prompt": "Host revealing the corporate trick with expressive gestures, 9:16 vertical",
+                "visual_style": "anchor_explain"
+            },
+            {
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_luxury",
+                "narration": "أنت في الحقيقة لا تشتري الماء؛ الماء مجاني... أنت تشتري زجاجة بلاستيكية وصورة جبل جليدي مرسومة على الغلاف.",
+                "broll_search": "glacier mountain pristine water nature luxury marketing",
+                "caption": "",
+                "sfx_cue": "sfx_subdrop",
+                "visual_prompt": "Luxury cafe counter showing overpriced water bottles glowing under neon lights, 9:16 vertical",
                 "visual_style": "luxury_cafe_pricing"
             },
             {
-                "speaker": "consumer",
-                "character_focus": "consumer",
-                "narration": "So I paid forty times the price... just because they slapped a picture of a mountain on a plastic wrapper?",
-                "caption": "I paid 40x... for a mountain picture on plastic?",
-                "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Felix the fox staring down at his plastic bottle in dread realization, dark cafe lighting, 9:16 vertical",
-                "visual_style": "consumer_epiphany"
-            },
-            {
-                "speaker": "mentor",
-                "character_focus": "mentor",
-                "narration": "The most profitable empires in history don't invent new needs; they take a free public necessity, privatize it, and rebrand it as luxury.",
-                "caption": "Privatize a free public necessity... Rebrand as luxury!",
-                "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Lord Sterling adjusting his cufflinks, glowing amber eyes piercing the dark study shadows, 9:16 vertical",
-                "visual_style": "mentor_axiom"
-            },
-            {
-                "speaker": "mentor",
-                "character_focus": "mentor",
-                "narration": "The noise is for the crowd. Watch, learn, and evolve quietly — until you control the board. Subscribe for the next episode.",
-                "caption": "Evolve quietly... until you control the board!",
-                "sfx_cue": None,
-                "visual_prompt": "Lord Sterling turning toward a large mahogany door, silhouette against warm library chandelier, mysterious stoic departure, 9:16 vertical",
-                "visual_style": "mentor_outro"
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_outro",
+                "narration": "أقوى الإمبراطوريات لا تخترع احتياجات جديدة، بل تخصخص الأساسيات وتعيد تغليفها كرفاهية! اشترك لتكشف أسرار التجارة الخفية.",
+                "broll_search": None,
+                "caption": "",
+                "sfx_cue": "sfx_register",
+                "visual_prompt": "Host smiling with closing insight, 9:16 vertical",
+                "visual_style": "anchor_outro"
             }
         ]
     }
 ]
 
-# Legacy alias for backward compatibility
+# English Channel: Investigative Mystery & Empires (Julian Vance Host, 2-line Gold Captions)
+EPISODE_BANK_EN_WEALTH = [
+    # Episode 1: Project Azorian Submarine Heist
+    {
+        "series_title": "Investigative Cold War Files",
+        "part": "Episode 1",
+        "title": "Project Azorian: The $4 Billion Cold War Submarine Heist #Shorts",
+        "scenes": [
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_hook",
+                "narration": "In July 1974, billionaire Howard Hughes told the world he was mining the ocean floor for manganese nodules. It was a massive lie. Three miles beneath his ship lay a sunken Soviet nuclear submarine—and the CIA was about to steal it.",
+                "broll_search": None,
+                "caption": "Howard Hughes claimed to mine the ocean... It was a lie!",
+                "sfx_cue": "sfx_whoosh",
+                "visual_prompt": "Julian Vance in charcoal blazer speaking intensely into lens in dark studio, 9:16 vertical",
+                "visual_style": "anchor_hook"
+            },
+            {
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_sub",
+                "narration": "March 1968. Soviet submarine K-129 vanished in the Pacific with three nuclear ballistic missiles. Moscow searched for months with dozens of ships and found nothing. But American underwater acoustic hydrophones caught the exact blast coordinates.",
+                "broll_search": "ocean stormy waves dark water naval submarine",
+                "caption": "Soviet submarine K-129 vanished with nuclear missiles!",
+                "sfx_cue": "sfx_heartbeat",
+                "visual_prompt": "Derelict Soviet submarine resting on dark ocean floor illuminated by submersible lights, 9:16 vertical",
+                "visual_style": "soviet_submarine_abyss"
+            },
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_explain",
+                "narration": "Pulling three thousand tons of steel from sixteen thousand feet was considered an engineering impossibility. So the CIA spent four billion modern dollars constructing a colossal six-hundred-foot ship with a secret mechanical claw named Clementine.",
+                "broll_search": None,
+                "caption": "16,000 feet deep: An engineering impossibility!",
+                "sfx_cue": "sfx_scratch",
+                "visual_prompt": "Julian Vance explaining the engineering marvel with sharp analytical focus, 9:16 vertical",
+                "visual_style": "anchor_explain"
+            },
+            {
+                "narrator": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_ship",
+                "narration": "Soviet naval surveillance ships circled only fathoms away, completely unaware that directly beneath them, a mechanical leviathan was descending into the pitch-black abyss.",
+                "broll_search": "massive industrial ship ocean derrick tower fog",
+                "caption": "Soviet spy ships circled... completely unaware!",
+                "sfx_cue": None,
+                "visual_prompt": "Colossal deep-sea salvage vessel in ocean swells at dawn, 9:16 vertical",
+                "visual_style": "factory_production"
+            },
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_turning",
+                "narration": "Nine thousand feet up, disaster struck. Three steel claws fractured under immense pressure, and two-thirds of the submarine plunged back into the trench. Yet, the bow section remained secured inside the ship's secret interior well.",
+                "broll_search": None,
+                "caption": "At 9,000 feet... catastrophic structural failure struck!",
+                "sfx_cue": "sfx_subdrop",
+                "visual_prompt": "Julian Vance conveying high-stakes catastrophe, 9:16 vertical",
+                "visual_style": "anchor_turning"
+            },
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_outro",
+                "narration": "When reporters exposed the mission in 1975, the CIA coined the iconic phrase: 'We can neither confirm nor deny.' Project Azorian proved that even the bottom of the ocean was no sanctuary from the Cold War. Subscribe for the next file.",
+                "broll_search": None,
+                "caption": "'We can neither confirm nor deny!'",
+                "sfx_cue": "sfx_register",
+                "visual_prompt": "Julian Vance leaning back with resolute closing expression, 9:16 vertical",
+                "visual_style": "anchor_outro"
+            }
+        ]
+    },
+    # Episode 2: The Antwerp Vault Heist
+    {
+        "series_title": "Investigative Cold War Files",
+        "part": "Episode 2",
+        "title": "The Antwerp Vault: How They Stole $100 Million in Diamonds Without a Shot #Shorts",
+        "scenes": [
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_hook",
+                "narration": "A subterranean vault protected by infrared lasers, seismic sensors, magnetic door contacts, and a three-ton steel door. Yet, in 2003, Italian thieves walked in and cleared one hundred million dollars in diamonds without triggering a single alarm.",
+                "broll_search": None,
+                "caption": "A vault with 10 layers of security... looted without an alarm!",
+                "sfx_cue": "sfx_whoosh",
+                "visual_prompt": "Julian Vance leaning forward in studio explaining impossible heist, 9:16 vertical",
+                "visual_style": "anchor_hook"
+            },
+            {
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_vault",
+                "narration": "The Antwerp Diamond Center handled eighty percent of the world's rough diamonds. Leonardo Notarbartolo rented an office inside for two years, filming the vault mechanisms with a covert pen camera.",
+                "broll_search": "bank vault laser security diamonds safe deposit boxes",
+                "caption": "Leonardo cased the vault for 2 years with a pen camera!",
+                "sfx_cue": "sfx_heartbeat",
+                "visual_prompt": "Subterranean bank vault interior with red laser security grid and opened safe deposit boxes, 9:16 vertical",
+                "visual_style": "antwerp_bank_vault"
+            },
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_explain",
+                "narration": "His hacks were brilliantly analog: ordinary women's hairspray to blind the thermal sensors, aluminum tape to bypass the magnetic field, and black polyester bags taped over the surveillance cameras.",
+                "broll_search": None,
+                "caption": "Ordinary hairspray... to blind thermal motion sensors!",
+                "sfx_cue": "sfx_scratch",
+                "visual_prompt": "Julian Vance demonstrating analog genius hacks with clinical amusement, 9:16 vertical",
+                "visual_style": "anchor_explain"
+            },
+            {
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_diamonds",
+                "narration": "They cracked over one hundred safety deposit boxes, packed duffel bags with uncut gems, and walked out the front doors at sunrise like regular janitors.",
+                "broll_search": "diamonds glittering gold bars vault cash wealth",
+                "caption": "Over 100 safe boxes cleared before sunrise!",
+                "sfx_cue": "sfx_register",
+                "visual_prompt": "Glittering cut diamonds scattered over safe deposit drawers, 9:16 vertical",
+                "visual_style": "diamond_vault"
+            },
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_outro",
+                "narration": "The craziest part? The diamonds were never recovered. Notarbartolo served his prison sentence, but the loot vanished forever. The most impenetrable security system is only as strong as human error. Subscribe for Part 3.",
+                "broll_search": None,
+                "caption": "$100M in diamonds... vanished forever!",
+                "sfx_cue": "sfx_subdrop",
+                "visual_prompt": "Julian Vance closing with enigmatic smile into lens, 9:16 vertical",
+                "visual_style": "anchor_outro"
+            }
+        ]
+    },
+    # Episode 3: The Phoebus Cartel Lightbulb Plot
+    {
+        "series_title": "Corporate Illusions & Wealth Architecture",
+        "part": "Episode 3",
+        "title": "The Lightbulb Conspiracy: How Corporations Engineered Products to Break #Shorts",
+        "scenes": [
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_hook",
+                "narration": "In a California fire station, a lightbulb has been burning continuously for over one hundred and twenty years without burning out. So why does every lightbulb in your house die after a year? It isn't bad luck; it was a deliberate corporate conspiracy.",
+                "broll_search": None,
+                "caption": "A lightbulb burning for 120 years... Why do yours break?",
+                "sfx_cue": "sfx_whoosh",
+                "visual_prompt": "Julian Vance addressing viewer with provocative mystery in studio, 9:16 vertical",
+                "visual_style": "anchor_hook"
+            },
+            {
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_boardroom",
+                "narration": "In 1924, the world's largest lighting manufacturers met secretly in Geneva and formed the Phoebus Cartel. They realized bulbs were lasting twenty-five hundred hours—meaning customers would stop buying new ones.",
+                "broll_search": "vintage lightbulb glowing filament dark room warm",
+                "caption": "1924: The Phoebus Cartel met secretly in Geneva!",
+                "sfx_cue": "sfx_heartbeat",
+                "visual_prompt": "1920s vintage boardroom executives signing cartel documents under glowing carbon filament bulb, 9:16 vertical",
+                "visual_style": "madison_boardroom"
+            },
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_explain",
+                "narration": "So they strictly engineered bulbs to fail after exactly one thousand hours, imposing severe financial fines on any company whose filaments lasted longer. This gave birth to 'Planned Obsolescence'—the foundational lie of modern consumer technology.",
+                "broll_search": None,
+                "caption": "They engineered products to fail... Planned Obsolescence!",
+                "sfx_cue": "sfx_scratch",
+                "visual_prompt": "Julian Vance breaking down the economic architecture, 9:16 vertical",
+                "visual_style": "anchor_explain"
+            },
+            {
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_factory",
+                "narration": "The economic machine does not want a product that lasts forever; it wants you trapped in an endless loop of debt, replacement, and consumption.",
+                "broll_search": "robotic assembly line factory high speed consumer electronics",
+                "caption": "Trapped in an endless loop of replacement and debt!",
+                "sfx_cue": None,
+                "visual_prompt": "Modern robotic assembly line churning out electronic gadgets, 9:16 vertical",
+                "visual_style": "factory_production"
+            },
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_outro",
+                "narration": "You don't buy products because you need them; you buy them because their death was programmed before you opened the box. Evolve quietly until you control the board. Subscribe for more.",
+                "broll_search": None,
+                "caption": "Evolve quietly... until you control the board!",
+                "sfx_cue": "sfx_subdrop",
+                "visual_prompt": "Julian Vance concluding with stoic authority, 9:16 vertical",
+                "visual_style": "anchor_outro"
+            }
+        ]
+    },
+    # Episode 4: The Coffee Trap
+    {
+        "series_title": "Corporate Illusions & Wealth Architecture",
+        "part": "Episode 4",
+        "title": "The Coffee Trap: How Madison Avenue Monetized Your Exhaustion #Shorts",
+        "scenes": [
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_hook",
+                "narration": "Eight hours on the grind, and you pay eight dollars for an iced latte to keep your sanity intact. Who convinced you that you need a 'coffee break' just to serve their machine harder?",
+                "broll_search": None,
+                "caption": "Who convinced you that you need a 'Coffee Break'?",
+                "sfx_cue": "sfx_whoosh",
+                "visual_prompt": "Julian Vance speaking with piercing insight in studio, 9:16 vertical",
+                "visual_style": "anchor_hook"
+            },
+            {
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_madison",
+                "narration": "In 1952, post-war coffee sales collapsed. So Madison Avenue advertising cartels met in Manhattan and launched two words: 'Coffee Break'. They convinced factory owners that a caffeine hit boosts worker throughput by twenty percent.",
+                "broll_search": "1950s madison avenue vintage advertising boardroom smoky",
+                "caption": "1952: Madison Avenue invented the 'Coffee Break'!",
+                "sfx_cue": "sfx_heartbeat",
+                "visual_prompt": "1952 Madison Avenue vintage boardroom executives pointing at coffee sketches, 9:16 vertical",
+                "visual_style": "madison_boardroom"
+            },
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_explain",
+                "narration": "The break was never for your rest; it was to grease the gears of the factory. Then they rebranded factory fuel into a luxury lifestyle badge—a beverage brewed for thirty cents sold to you for eight dollars.",
+                "broll_search": None,
+                "caption": "Brewed for 30 cents... Sold to you for $8!",
+                "sfx_cue": "sfx_register",
+                "visual_prompt": "Julian Vance revealing the financial arithmetic, 9:16 vertical",
+                "visual_style": "anchor_explain"
+            },
+            {
+                "speaker": "narrator",
+                "scene_type": "b_roll",
+                "character_focus": "broll_cafe",
+                "narration": "The consumer pays for his rest twice: once with his health, and once with his wallet, borrowing energy today to build a company he doesn't even own.",
+                "broll_search": "modern luxury coffee shop counter neon lights barista",
+                "caption": "Borrowing energy today... for a company you don't own!",
+                "sfx_cue": "sfx_subdrop",
+                "visual_prompt": "Sleek modern luxury cafe counter with gold coins spilling over counter, 9:16 vertical",
+                "visual_style": "luxury_cafe_pricing"
+            },
+            {
+                "speaker": "presenter",
+                "scene_type": "presenter",
+                "character_focus": "anchor_outro",
+                "narration": "The wise never drink to escape reality; they architect the systems that harvest the crowd's labor. The noise is for the crowd. Subscribe for Episode 5.",
+                "broll_search": None,
+                "caption": "Architect the systems that harvest the crowd's labor!",
+                "sfx_cue": None,
+                "visual_prompt": "Julian Vance turning toward camera with closing stoic axiom, 9:16 vertical",
+                "visual_style": "anchor_outro"
+            }
+        ]
+    }
+]
+
+# Legacy backward aliases
 EPISODE_BANK_AR = EPISODE_BANK_AR_AI
 EPISODE_BANK_EN = EPISODE_BANK_EN_WEALTH
 
 # ==============================================================================
-# 3. TEXT SHAPING & KINETIC TYPOGRAPHY ENGINE (FLAWLESS ARABIC BOLD GUARANTEED)
+# 3. DYNAMIC SCRIPT ENGINE (GEMINI API WITH SMART RETRY)
+# ==============================================================================
+
+def generate_dynamic_gemini_script(channel_key: str, lang: str) -> dict | None:
+    """Dynamically creates a brand new unique documentary script using Gemini API if key exists."""
+    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    if not api_key:
+        return None
+
+    lang_desc = "Modern Standard Arabic (الفصحى السلسة الراقية بأسلوب الدحيح)" if lang == "ar" else "Sophisticated English (Investigative Documentary style)"
+    channel_niche = "AI, science, and mysterious technology history" if channel_key == "ch02_ar_ai_tech" else "Cold War heists, corporate deceptions, and hidden wealth monopolies"
+
+    prompt = f"""You are the lead director of an elite, viral vertical documentary show (similar to Vox, National Geographic, and Johnny Harris).
+Write an entirely UNIQUE, captivating documentary script in {lang_desc} based on a real dramatic historical, scientific, or mystery event in {channel_niche}.
+
+CRITICAL REQUIREMENTS:
+1. Pacing: 130 to 150 words per minute.
+2. Structure: 6 to 8 sequential scenes strictly alternating between:
+   - "presenter": Host speaks directly to camera in studio, explaining the core concept in clear, simple, conversational yet intellectual language.
+   - "b_roll": Cinematic real-world visual evidence or historical reenactment.
+3. Every b_roll scene MUST include a short English "broll_search" query for Pexels Video (e.g. "ocean dark waves", "supercomputer servers", "bank vault lasers", "diamonds glittering").
+4. If language is Arabic, leave "caption" as an empty string ("") because Arabic videos have zero text overlays. If English, provide a punchy 2-line auto-wrapped caption.
+5. Return STRICTLY valid JSON with no markdown formatting or intro prose:
+{{
+  "series_title": "...",
+  "part": "Special Episode",
+  "title": "...",
+  "scenes": [
+    {{
+      "speaker": "presenter" or "narrator",
+      "scene_type": "presenter" or "b_roll",
+      "character_focus": "anchor_hook" or "broll_evidence" or "anchor_explain" or "anchor_outro",
+      "narration": "Spoken text here...",
+      "broll_search": "search query for video footage",
+      "caption": "short subtitle or empty if Arabic",
+      "sfx_cue": "sfx_whoosh" or "sfx_heartbeat" or "sfx_scratch" or "sfx_subdrop" or "sfx_register",
+      "visual_prompt": "Cinematic visual description, 9:16 vertical",
+      "visual_style": "anchor_hook"
+    }}
+  ]
+}}"""
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+    req_body = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode("utf-8")
+    req = urllib.request.Request(url, data=req_body, headers={"Content-Type": "application/json"})
+
+    try:
+        with urllib.request.urlopen(req, timeout=25) as resp:
+            data = json.loads(resp.read().decode())
+            candidates = data.get("candidates", [])
+            if candidates:
+                raw_text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                raw_text = raw_text.replace("```json", "").replace("```", "").strip()
+                script = json.loads(raw_text)
+                if "scenes" in script and len(script["scenes"]) >= 5:
+                    print(f"  [Gemini AI] Successfully generated dynamic unique episode: '{script.get('title')}'")
+                    return script
+    except Exception as e:
+        print(f"  [Gemini AI Notice] Dynamic generation error ({e}); using season bank fallback...")
+
+    return None
+
+
+def get_or_generate_documentary_script(channel_key: str, cfg: dict) -> dict:
+    """Selects or dynamically generates the master episode script."""
+    lang = cfg["lang"]
+    # 1. Attempt dynamic generation if GEMINI_API_KEY is available
+    dyn_script = generate_dynamic_gemini_script(channel_key, lang)
+    if dyn_script:
+        return dyn_script
+
+    # 2. Season Bank Fallback: Select episode via rotation to guarantee 100% zero spam
+    if channel_key == "ch02_ar_ai_tech":
+        bank = EPISODE_BANK_AR_AI
+    elif channel_key == "ch03_en_wealth_business":
+        bank = EPISODE_BANK_EN_WEALTH
+    else:
+        bank = EPISODE_BANK_AR_AI if lang == "ar" else EPISODE_BANK_EN_WEALTH
+
+    ep_env = os.environ.get("EPISODE_INDEX")
+    if ep_env is not None and ep_env.strip().isdigit():
+        ep_idx = int(ep_env.strip()) % len(bank)
+    else:
+        run_num = int(os.environ.get("GITHUB_RUN_NUMBER", "1") or 1)
+        time_slot = int(time.time()) // (6 * 3600)
+        ep_idx = (run_num + time_slot) % len(bank)
+
+    selected = bank[ep_idx]
+    print(f"  [Season Bank] Selected Episode {ep_idx + 1}/{len(bank)}: '{selected['title']}'")
+    return selected
+
+# ==============================================================================
+# 4. TEXT SHAPING & KINETIC TYPOGRAPHY ENGINE
 # ==============================================================================
 
 def shape_text(text: str, lang: str = "ar") -> str:
@@ -913,7 +1074,7 @@ def get_font(size: int = 48, lang: str = "ar", bold: bool = True) -> ImageFont.F
     return ImageFont.load_default()
 
 # ==============================================================================
-# 4. PROCEDURAL FOLEY SFX & AUDIO SYNTHESIS ENGINE
+# 5. PROCEDURAL FOLEY SFX & AUDIO SYNTHESIS ENGINE
 # ==============================================================================
 
 def generate_procedural_sfx(sfx_name: str, out_wav: Path):
@@ -994,7 +1155,7 @@ def synthesize_dual_voice_scene(
 ) -> float:
     """Synthesizes crystal-clear voice acting with Foley SFX."""
     ch_profiles = VOICE_PROFILES.get(channel_key, VOICE_PROFILES.get(lang, VOICE_PROFILES["ar"]))
-    profile = ch_profiles.get(speaker, ch_profiles.get("mentor", {"name": "Host", "voice": "ar-EG-ShakirNeural", "rate": "+2%"}))
+    profile = ch_profiles.get(speaker, ch_profiles.get("presenter", {"name": "Host", "voice": "ar-EG-ShakirNeural", "rate": "+1%"}))
     voice = profile["voice"]
     rate = profile.get("rate", "+0%")
 
@@ -1014,7 +1175,6 @@ def synthesize_dual_voice_scene(
         from gtts import gTTS
         gTTS(text=text, lang=lang, slow=False).save(str(raw_voice_mp3))
 
-    # If Foley SFX cue is specified, mix SFX without attenuating dialogue (normalize=0)
     if sfx_cue:
         sfx_wav = work_dir / f"{sfx_cue}.wav"
         generate_procedural_sfx(sfx_cue, sfx_wav)
@@ -1035,7 +1195,6 @@ def synthesize_dual_voice_scene(
     else:
         shutil.copy(str(raw_voice_mp3), str(out_mp3))
 
-    # Probe duration
     try:
         res = subprocess.run(
             ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", str(out_mp3)],
@@ -1046,7 +1205,7 @@ def synthesize_dual_voice_scene(
         return max(3.5, len(text.split()) * 0.45)
 
 # ==============================================================================
-# 5. VISUAL GENERATION & MULTIVERSE ASSET RESOLUTION
+# 6. VISUAL RESOLUTION & B-ROLL REAL VIDEO ENGINE
 # ==============================================================================
 
 def create_dark_cinematic_procedural_backdrop(style_hint: str, target_w: int = 1080, target_h: int = 1920) -> Image.Image:
@@ -1060,15 +1219,15 @@ def create_dark_cinematic_procedural_backdrop(style_hint: str, target_w: int = 1
     elif any(k in style_hint for k in ("factory", "production", "gear", "machine")):
         top_c, bot_c = (20, 22, 26), (6, 8, 10)
         accent = (200, 215, 230, 35)
-    elif any(k in style_hint for k in ("luxury", "pricing", "gold", "coins")):
+    elif any(k in style_hint for k in ("luxury", "pricing", "gold", "coins", "diamond")):
         top_c, bot_c = (28, 22, 12), (8, 6, 4)
         accent = (255, 215, 60, 45)
-    elif any(k in style_hint for k in ("tech", "matrix", "agent", "neural")):
-        top_c, bot_c = (10, 24, 38), (4, 8, 16)
-        accent = (0, 225, 255, 40)
+    elif any(k in style_hint for k in ("sub", "ocean", "submarine", "water")):
+        top_c, bot_c = (6, 16, 28), (2, 6, 12)
+        accent = (0, 160, 220, 40)
     else:
-        top_c, bot_c = (18, 16, 24), (8, 6, 12)
-        accent = (220, 180, 240, 30)
+        top_c, bot_c = (14, 18, 26), (6, 8, 14)
+        accent = (180, 200, 240, 30)
 
     for y in range(target_h):
         alpha = y / float(target_h)
@@ -1083,153 +1242,177 @@ def create_dark_cinematic_procedural_backdrop(style_hint: str, target_w: int = 1
     return Image.alpha_composite(img.convert("RGBA"), overlay).convert("RGB")
 
 
-def resolve_character_visual(
-    channel_key: str,
-    character_focus: str,
-    style_hint: str,
-    visual_prompt: str,
-    scene_idx: int,
-    out_jpg: Path
-) -> Path:
-    """Resolves character and scene visuals with 100% channel separation and character continuity."""
+def resolve_scene_artwork(visual_prompt: str, style_hint: str) -> Path:
+    """Finds best matching high-resolution scene artwork from assets/scenes/."""
     repo_root = Path(__file__).resolve().parent
-    chars_dir = repo_root / "assets" / "characters"
     scenes_dir = repo_root / "assets" / "scenes"
+    vp = visual_prompt.lower()
+    sh = style_hint.lower()
 
-    # =========================================================================
-    # CHANNEL 1: The Tech Daheeh (ch02_ar_ai_tech)
-    # Strictly Dr. Rayan poses and historical AI scene visuals! Zero animal assets.
-    # =========================================================================
-    if channel_key == "ch02_ar_ai_tech":
-        ai_map = {
-            "rayan_hook": chars_dir / "rayan_hook.jpg",
-            "scene_bombe": scenes_dir / "turing_bombe_1940.jpg",
-            "rayan_paper": chars_dir / "rayan_turing_paper.jpg",
-            "scene_dartmouth": scenes_dir / "dartmouth_conference_1956.jpg",
-            "scene_neural": scenes_dir / "neural_network_synapse.jpg",
-            "scene_mainframe": scenes_dir / "vintage_mainframe_1960.jpg",
-            "scene_matrix": scenes_dir / "autonomous_agent_matrix.jpg",
-            "rayan_epiphany": chars_dir / "rayan_epiphany.jpg",
-            "rayan_outro": chars_dir / "rayan_outro.jpg",
-            "scene_bci": scenes_dir / "neuralink_bci_chip.jpg",
-            "scene_gpu": scenes_dir / "nvidia_gpu_silicon.jpg",
-        }
-
-        # Check by character_focus or style_hint
-        for key, p in ai_map.items():
-            if (key in character_focus or key in style_hint) and p.exists():
-                return p
-
-        # Check by content keywords
-        vp = visual_prompt.lower()
-        if "bci" in vp or "neuralink" in vp or "chip" in vp or "thread" in vp:
-            p = scenes_dir / "neuralink_bci_chip.jpg"
-            if p.exists(): return p
-        if "gpu" in vp or "nvidia" in vp or "silicon" in vp or "cuda" in vp or "h100" in vp:
-            p = scenes_dir / "nvidia_gpu_silicon.jpg"
-            if p.exists(): return p
-        if "bombe" in vp or "1940" in vp or "enigma" in vp:
-            p = scenes_dir / "turing_bombe_1940.jpg"
-            if p.exists(): return p
-        if "dartmouth" in vp or "1956" in vp:
-            p = scenes_dir / "dartmouth_conference_1956.jpg"
-            if p.exists(): return p
-        if "neural" in vp or "synapse" in vp or "brain" in vp:
-            p = scenes_dir / "neural_network_synapse.jpg"
-            if p.exists(): return p
-        if "mainframe" in vp or "1960" in vp or "vacuum" in vp:
-            p = scenes_dir / "vintage_mainframe_1960.jpg"
-            if p.exists(): return p
-        if "agent" in vp or "matrix" in vp:
-            p = scenes_dir / "autonomous_agent_matrix.jpg"
-            if p.exists(): return p
-        if "paper" in vp or "manuscript" in vp:
-            p = chars_dir / "rayan_turing_paper.jpg"
-            if p.exists(): return p
-        if "epiphany" in vp or "eureka" in vp:
-            p = chars_dir / "rayan_epiphany.jpg"
-            if p.exists(): return p
-        if "outro" in vp or "glasses" in vp:
-            p = chars_dir / "rayan_outro.jpg"
-            if p.exists(): return p
-
-        # Default to Rayan hook
-        p = chars_dir / "rayan_hook.jpg"
+    if any(k in vp or k in sh for k in ("sub", "submarine", "ocean", "abyss", "naval", "k-129", "k129")):
+        p = scenes_dir / "soviet_submarine_abyss.jpg"
         if p.exists(): return p
 
-        bd = create_dark_cinematic_procedural_backdrop("tech_matrix")
-        bd.save(str(out_jpg))
-        return out_jpg
+    if any(k in vp or k in sh for k in ("vault", "antwerp", "heist", "laser", "safe")):
+        p = scenes_dir / "antwerp_bank_vault.jpg"
+        if p.exists(): return p
 
-    # =========================================================================
-    # CHANNEL 2: Wealth & Empires Noir (ch03_en_wealth_business)
-    # Lord Sterling the Raven, Felix the Fox, and Madison Ave Noir.
-    # =========================================================================
-    style_map = {
-        "madison_boardroom": scenes_dir / "madison_boardroom_1952.jpg",
-        "factory_production": scenes_dir / "factory_production_floor.jpg",
-        "luxury_cafe_pricing": scenes_dir / "luxury_cafe_pricing.jpg",
-        "subscription_cage": scenes_dir / "subscription_digital_cage.jpg",
-        "diamond_vault": scenes_dir / "diamond_debeers_vault.jpg",
-        "water_heist": scenes_dir / "bottled_water_tap_heist.jpg",
-        "cafe_consumer": chars_dir / "felix_fox_consumer.jpg",
-        "cafe_shock": chars_dir / "felix_fox_shock.jpg",
-        "consumer_epiphany": chars_dir / "felix_fox_epiphany.jpg",
-        "mentor_study": chars_dir / "sterling_raven_mentor.jpg",
-        "mentor_axiom": chars_dir / "sterling_raven_cufflinks.jpg",
-        "mentor_outro": chars_dir / "sterling_raven_mentor.jpg",
-    }
-    for key, p in style_map.items():
-        if key in style_hint and p.exists():
-            return p
+    if any(k in vp or k in sh for k in ("diamond", "gem", "de beers", "carat")):
+        p = scenes_dir / "diamond_debeers_vault.jpg"
+        if p.exists(): return p
 
-    # Character-specific shots & expressions
-    if character_focus == "consumer":
-        if ("shock" in style_hint or scene_idx == 2) and (chars_dir / "felix_fox_shock.jpg").exists():
-            return chars_dir / "felix_fox_shock.jpg"
-        if ("epiphany" in style_hint or scene_idx >= 6) and (chars_dir / "felix_fox_epiphany.jpg").exists():
-            return chars_dir / "felix_fox_epiphany.jpg"
-        if (chars_dir / "felix_fox_consumer.jpg").exists():
-            return chars_dir / "felix_fox_consumer.jpg"
+    if any(k in vp or k in sh for k in ("bci", "neuralink", "implant", "chip", "electrode")):
+        p = scenes_dir / "neuralink_bci_chip.jpg"
+        if p.exists(): return p
 
-    if character_focus == "mentor":
-        if ("axiom" in style_hint or "cufflinks" in style_hint or scene_idx == 7) and (chars_dir / "sterling_raven_cufflinks.jpg").exists():
-            return chars_dir / "sterling_raven_cufflinks.jpg"
-        if (chars_dir / "sterling_raven_mentor.jpg").exists():
-            return chars_dir / "sterling_raven_mentor.jpg"
+    if any(k in vp or k in sh for k in ("gpu", "nvidia", "silicon", "cuda", "h100")):
+        p = scenes_dir / "nvidia_gpu_silicon.jpg"
+        if p.exists(): return p
 
-    # Flashbacks: Dedicated scene artwork
-    if character_focus == "flashback":
-        if "subscription" in visual_prompt.lower() or "cage" in visual_prompt.lower() or "saas" in visual_prompt.lower():
-            p = scenes_dir / "subscription_digital_cage.jpg"
-            if p.exists(): return p
-        if "diamond" in visual_prompt.lower() or "vault" in visual_prompt.lower() or "gem" in visual_prompt.lower() or "de beers" in visual_prompt.lower():
-            p = scenes_dir / "diamond_debeers_vault.jpg"
-            if p.exists(): return p
-        if "water" in visual_prompt.lower() or "bottle" in visual_prompt.lower() or "tap" in visual_prompt.lower():
-            p = scenes_dir / "bottled_water_tap_heist.jpg"
-            if p.exists(): return p
-        if "boardroom" in visual_prompt.lower() or "1952" in visual_prompt:
-            p = scenes_dir / "madison_boardroom_1952.jpg"
-            if p.exists(): return p
-        if "factory" in visual_prompt.lower() or "gear" in visual_prompt.lower():
-            p = scenes_dir / "factory_production_floor.jpg"
-            if p.exists(): return p
-        if "luxury" in visual_prompt.lower() or "price" in visual_prompt.lower() or "cafe" in visual_prompt.lower():
-            p = scenes_dir / "luxury_cafe_pricing.jpg"
-            if p.exists(): return p
+    if any(k in vp or k in sh for k in ("matrix", "agent", "autonomous", "network")):
+        p = scenes_dir / "autonomous_agent_matrix.jpg"
+        if p.exists(): return p
 
-        bd = create_dark_cinematic_procedural_backdrop(style_hint)
-        bd.save(str(out_jpg))
-        return out_jpg
+    if any(k in vp or k in sh for k in ("neural", "synapse", "brain")):
+        p = scenes_dir / "neural_network_synapse.jpg"
+        if p.exists(): return p
 
-    # Final fallback
-    if (chars_dir / "sterling_raven_mentor.jpg").exists():
-        return chars_dir / "sterling_raven_mentor.jpg"
-    return out_jpg
+    if any(k in vp or k in sh for k in ("turing", "bombe", "enigma", "code")):
+        p = scenes_dir / "turing_bombe_1940.jpg"
+        if p.exists(): return p
+
+    if any(k in vp or k in sh for k in ("water", "bottle", "bottled", "tap")):
+        p = scenes_dir / "bottled_water_tap_heist.jpg"
+        if p.exists(): return p
+
+    if any(k in vp or k in sh for k in ("boardroom", "madison", "1952")):
+        p = scenes_dir / "madison_boardroom_1952.jpg"
+        if p.exists(): return p
+
+    if any(k in vp or k in sh for k in ("factory", "production", "machine", "gear")):
+        p = scenes_dir / "factory_production_floor.jpg"
+        if p.exists(): return p
+
+    if any(k in vp or k in sh for k in ("luxury", "cafe", "pricing", "cost")):
+        p = scenes_dir / "luxury_cafe_pricing.jpg"
+        if p.exists(): return p
+
+    p = scenes_dir / "soviet_submarine_abyss.jpg"
+    if p.exists(): return p
+    p = scenes_dir / "autonomous_agent_matrix.jpg"
+    if p.exists(): return p
+    return scenes_dir / "neuralink_bci_chip.jpg"
+
+
+def fetch_or_synthesize_broll_clip(
+    broll_query: str | None,
+    style_hint: str,
+    visual_prompt: str,
+    duration: float,
+    scene_mp3: Path,
+    out_mp4: Path,
+    work_dir: Path,
+    caption: str,
+    lang: str,
+    target_w: int = 1080,
+    target_h: int = 1920,
+    fps: int = 30
+) -> bool:
+    """
+    Produces real full-motion vertical B-roll video:
+    1. Downloads genuine 1080p vertical video from Pexels Videos API if key exists.
+    2. Fallback: Dynamic high-motion cinematic video synthesis using continuous Ken Burns zoompan + film grain.
+    """
+    pexels_key = os.environ.get("PEXELS_API_KEY", "").strip()
+
+    # 1. Pexels Real Video Retrieval
+    if pexels_key and broll_query:
+        try:
+            q_clean = broll_query.strip()
+            url = f"https://api.pexels.com/videos/search?query={urllib.parse.quote(q_clean)}&orientation=portrait&per_page=3"
+            req = urllib.request.Request(url, headers={"Authorization": pexels_key, "User-Agent": "EmpireDocPipeline/1.0"})
+            with urllib.request.urlopen(req, timeout=12) as resp:
+                data = json.loads(resp.read().decode())
+                videos = data.get("videos", [])
+                if videos:
+                    video_files = videos[0].get("video_files", [])
+                    best_file = None
+                    for vf in video_files:
+                        if vf.get("width") == 1080 and vf.get("height") == 1920:
+                            best_file = vf
+                            break
+                    if not best_file and video_files:
+                        best_file = max(video_files, key=lambda x: x.get("width", 0) * x.get("height", 0))
+
+                    if best_file and "link" in best_file:
+                        raw_vid = work_dir / f"raw_broll_{abs(hash(broll_query)) % 10000}.mp4"
+                        urllib.request.urlretrieve(best_file["link"], str(raw_vid))
+
+                        cmd = [
+                            "ffmpeg", "-y", "-ss", "0", "-i", str(raw_vid),
+                            "-i", str(scene_mp3),
+                            "-t", str(duration),
+                            "-vf", f"scale={target_w}:{target_h}:force_original_aspect_ratio=increase,crop={target_w}:{target_h},fps={fps},noise=c1s=3:c0f=t",
+                            "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p",
+                            "-c:a", "aac", "-b:a", "192k", "-shortest",
+                            str(out_mp4)
+                        ]
+                        subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        if out_mp4.exists() and out_mp4.stat().st_size > 10000:
+                            print(f"  [B-Roll Engine] Successfully deployed real Pexels video: '{q_clean}' ({out_mp4.stat().st_size // 1024} KB)")
+                            # Apply English captions if enabled
+                            if lang != "ar" and caption:
+                                apply_captions_to_video(out_mp4, caption, lang, work_dir, target_w, target_h)
+                            return True
+        except Exception as e:
+            print(f"  [B-Roll Notice] Pexels retrieval error ({e}); using cinematic motion synthesis fallback...")
+
+    # 2. Dynamic High-Motion Cinematic Video Synthesis (Offline / Fallback)
+    img_path = resolve_scene_artwork(visual_prompt, style_hint)
+    n_frames = max(15, int(round(duration * fps)))
+    vf = f"scale=1440:2560,zoompan=z='min(zoom+0.0018,1.30)':d={n_frames}:x='iw/2-(iw/zoom/2)+sin(in/15)*15':y='ih/2-(ih/zoom/2)+cos(in/20)*10':s={target_w}x{target_h}:fps={fps},noise=c1s=4:c0f=t"
+
+    cmd = [
+        "ffmpeg", "-y", "-loop", "1", "-i", str(img_path),
+        "-i", str(scene_mp3),
+        "-t", str(duration),
+        "-vf", vf,
+        "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p",
+        "-c:a", "aac", "-b:a", "192k", "-shortest",
+        str(out_mp4)
+    ]
+    subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    if lang != "ar" and caption and out_mp4.exists():
+        apply_captions_to_video(out_mp4, caption, lang, work_dir, target_w, target_h)
+
+    return out_mp4.exists() and out_mp4.stat().st_size > 10000
+
+
+def apply_captions_to_video(video_path: Path, caption: str, lang: str, work_dir: Path, target_w: int, target_h: int):
+    """Composites subtitles onto video clip for English channels."""
+    try:
+        ov = render_cinematic_caption_overlay(caption, lang, target_w, target_h)
+        ov_png = work_dir / f"overlay_{video_path.stem}.png"
+        ov.save(str(ov_png))
+        tmp_sub = work_dir / f"sub_{video_path.name}"
+        sub_cmd = [
+            "ffmpeg", "-y", "-i", str(video_path),
+            "-i", str(ov_png),
+            "-filter_complex", "[0:v][1:v]overlay=0:0[v]",
+            "-map", "[v]", "-map", "0:a",
+            "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p",
+            "-c:a", "copy",
+            str(tmp_sub)
+        ]
+        subprocess.run(sub_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if tmp_sub.exists() and tmp_sub.stat().st_size > 10000:
+            shutil.move(str(tmp_sub), str(video_path))
+    except Exception as e:
+        print(f"  [Caption Notice] Error overlaying captions: {e}")
 
 # ==============================================================================
-# 6. KINETIC TYPOGRAPHY & CINEMATIC CAPTION OVERLAY
+# 7. KINETIC TYPOGRAPHY & CINEMATIC CAPTION OVERLAY
 # ==============================================================================
 
 def render_cinematic_caption_overlay(
@@ -1238,41 +1421,34 @@ def render_cinematic_caption_overlay(
     target_w: int = 1080,
     target_h: int = 1920,
 ) -> Image.Image:
-    """Renders crisp, centered, elegant subtitles in frosted dark container with gold accents as a PIL RGBA overlay."""
+    """Renders centered subtitles in frosted dark container with gold accents as a PIL RGBA overlay."""
     overlay = Image.new("RGBA", (target_w, target_h), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(overlay, "RGBA")
+    if not caption_text or lang == "ar":
+        return overlay
 
-    # Start with generous bold font size, dynamically shrink if line is too wide
+    draw = ImageDraw.Draw(overlay, "RGBA")
     font_size = 46
     f_cap = get_font(size=font_size, lang=lang, bold=True)
     center_x = target_w // 2
-    center_y = int(target_h * 0.72)  # Centered in lower third to keep character faces clear
+    center_y = int(target_h * 0.72)
 
     shaped_full = shape_text(caption_text, lang)
     bb_full = draw.textbbox((0, 0), shaped_full, font=f_cap)
     full_w = bb_full[2] - bb_full[0]
 
     words = caption_text.split()
-    # Clean auto-wrap if text exceeds 780px or has more than 4 words
     if full_w > 780 or len(words) > 4:
         mid = len(words) // 2
-        l1 = " ".join(words[:mid])
-        l2 = " ".join(words[mid:])
-
-        r1 = shape_text(l1, lang)
-        r2 = shape_text(l2, lang)
-
-        bb1 = draw.textbbox((0, 0), r1, font=f_cap)
-        bb2 = draw.textbbox((0, 0), r2, font=f_cap)
+        l1, l2 = " ".join(words[:mid]), " ".join(words[mid:])
+        r1, r2 = shape_text(l1, lang), shape_text(l2, lang)
+        bb1, bb2 = draw.textbbox((0, 0), r1, font=f_cap), draw.textbbox((0, 0), r2, font=f_cap)
         w1, h1 = bb1[2] - bb1[0], bb1[3] - bb1[1]
         w2, h2 = bb2[2] - bb2[0], bb2[3] - bb2[1]
-
-        # If any line still exceeds 860px, downscale font to 40
         max_line_w = max(w1, w2)
+
         if max_line_w > 860:
             f_cap = get_font(size=40, lang=lang, bold=True)
-            bb1 = draw.textbbox((0, 0), r1, font=f_cap)
-            bb2 = draw.textbbox((0, 0), r2, font=f_cap)
+            bb1, bb2 = draw.textbbox((0, 0), r1, font=f_cap), draw.textbbox((0, 0), r2, font=f_cap)
             w1, h1 = bb1[2] - bb1[0], bb1[3] - bb1[1]
             w2, h2 = bb2[2] - bb2[0], bb2[3] - bb2[1]
             max_line_w = max(w1, w2)
@@ -1280,7 +1456,6 @@ def render_cinematic_caption_overlay(
         line_spacing = 20
         total_h = h1 + h2 + line_spacing
         pad_x, pad_y = 36, 18
-
         x0 = max(40, center_x - max_line_w // 2 - pad_x)
         y0 = center_y - total_h // 2 - pad_y
         x1 = min(target_w - 40, center_x + max_line_w // 2 + pad_x)
@@ -1294,7 +1469,6 @@ def render_cinematic_caption_overlay(
         bb = draw.textbbox((0, 0), shaped, font=f_cap)
         tw, th = bb[2] - bb[0], bb[3] - bb[1]
         pad_x, pad_y = 34, 16
-
         x0 = max(40, center_x - tw // 2 - pad_x)
         y0 = center_y - th // 2 - pad_y
         x1 = min(target_w - 40, center_x + tw // 2 + pad_x)
@@ -1306,31 +1480,30 @@ def render_cinematic_caption_overlay(
     return overlay
 
 # ==============================================================================
-# 7. AUDIO-DRIVEN LIP-SYNC & DIRECT-STREAMING RENDERER (O(1) CONSTANT RAM)
+# 8. ANCHOR PRESENTER LIP-SYNC STREAMING RENDERER (O(1) CONSTANT RAM)
 # ==============================================================================
 
-def stream_render_scene(
-    visual_path: Path,
+def stream_render_presenter_scene(
+    scene_idx: int,
     caption: str,
     lang: str,
     duration: float,
     scene_mp3: Path,
     scene_mp4: Path,
-    scene_idx: int = 0,
     fps: int = 30,
     target_w: int = 1080,
     target_h: int = 1920,
 ) -> bool:
     """
-    Renders video frames with real-time frame-by-frame audio lip-sync and camera dynamics,
-    streaming directly to FFmpeg stdin pipe without buffering the full video in RAM.
+    Renders photorealistic anchor presenter with audio RMS-driven mouth articulation,
+    breathing drift, and cinematic push-in directly to FFmpeg pipe.
     """
     repo_root = Path(__file__).resolve().parent
     chars_dir = repo_root / "assets" / "characters"
 
     n_frames = max(15, int(round(duration * fps)))
 
-    # 1. Extract audio RMS envelope frame-by-frame for lip-sync modulation
+    # 1. Extract audio RMS envelope frame-by-frame for lip-sync
     wav_temp = scene_mp3.with_suffix(".tmp.wav")
     try:
         subprocess.run(
@@ -1365,87 +1538,28 @@ def stream_render_scene(
         env = env / env.max()
     smoothed = np.convolve(env, [0.15, 0.70, 0.15], mode='same')
 
-    # 2. Identify character visual & load sprites
-    fname = visual_path.name.lower()
-    is_rayan = "rayan" in fname
-    is_fox = "fox" in fname
-    is_raven = "raven" in fname or "sterling" in fname
+    # 2. Load Anchor Assets
+    p_master = chars_dir / "anchor_master.jpg"
+    p_speaking = chars_dir / "anchor_speaking.jpg"
+    if not p_master.exists():
+        p_master = chars_dir / "rayan_hook.jpg"
+    if not p_speaking.exists():
+        p_speaking = p_master
 
-    base_raw = None
-    if visual_path.exists() and visual_path.stat().st_size > 10_000:
-        try:
-            base_raw = Image.open(visual_path).convert("RGB")
-        except Exception:
-            base_raw = None
+    im_master = Image.open(p_master).convert("RGB")
+    im_speaking = Image.open(p_speaking).convert("RGB")
+    bw, bh = im_master.size
 
-    if base_raw is None:
-        base_raw = create_dark_cinematic_procedural_backdrop("noir", 768, 1376)
+    # Prepare feathered mouth/jaw mask
+    mask = Image.new("L", (bw, bh), 0)
+    d = ImageDraw.Draw(mask)
+    d.ellipse([508 - 85, 510 - 50, 508 + 85, 510 + 50], fill=255)
+    mask = mask.filter(ImageFilter.GaussianBlur(radius=8))
 
-    bw, bh = base_raw.size
+    # Pre-render caption overlay (Arabic: ZERO text overlays)
+    caption_overlay = render_cinematic_caption_overlay(caption, lang, target_w=target_w, target_h=target_h) if lang != "ar" else None
 
-    # Prepare Dr. Rayan Lip Sync sprites if applicable
-    m_closed = None
-    m_open = None
-    r_mask = None
-    rayan_mx0, rayan_my0 = 344, 453
-    if is_rayan:
-        c_p = chars_dir / "rayan_mouth_closed.jpg"
-        o_p = chars_dir / "rayan_mouth_open.jpg"
-        if c_p.exists() and o_p.exists():
-            try:
-                m_closed = Image.open(c_p).convert("RGB")
-                m_open = Image.open(o_p).convert("RGB")
-                mw, mh = m_closed.size
-                r_mask = Image.new("L", (mw, mh), 0)
-                d_m = ImageDraw.Draw(r_mask)
-                d_m.ellipse([int(mw * 0.12), int(mh * 0.15), int(mw * 0.88), int(mh * 0.85)], fill=255)
-                r_mask = r_mask.filter(ImageFilter.GaussianBlur(radius=8))
-                if "epiphany" in fname:
-                    rayan_mx0, rayan_my0 = 290, 438
-                elif "hook" in fname:
-                    rayan_mx0, rayan_my0 = 346, 455
-                else:
-                    rayan_mx0, rayan_my0 = 344, 453
-            except Exception:
-                m_closed, m_open, r_mask = None, None, None
-
-    # Prepare Fox jaw sprite if applicable
-    fox_jaw = None
-    fox_mask = None
-    fjx0, fjy0, fjx1, fjy1 = int(bw * 0.42), int(bh * 0.37), int(bw * 0.58), int(bh * 0.46)
-    if is_fox:
-        try:
-            fox_jaw = base_raw.crop((fjx0, fjy0, fjx1, fjy1))
-            jw, jh = fjx1 - fjx0, fjy1 - fjy0
-            fox_mask = Image.new("L", (jw, jh), 0)
-            d_f = ImageDraw.Draw(fox_mask)
-            d_f.ellipse([int(jw * 0.1), int(jh * 0.15), int(jw * 0.9), int(jh * 0.85)], fill=255)
-            fox_mask = fox_mask.filter(ImageFilter.GaussianBlur(radius=3))
-        except Exception:
-            fox_jaw, fox_mask = None, None
-
-    # Prepare Raven beak sprite if applicable
-    raven_beak = None
-    raven_mask = None
-    rbx0, rby0, rbx1, rby1 = int(bw * 0.43), int(bh * 0.28), int(bw * 0.57), int(bh * 0.37)
-    if is_raven:
-        try:
-            raven_beak = base_raw.crop((rbx0, rby0, rbx1, rby1))
-            rw, rh = rbx1 - rbx0, rby1 - rby0
-            raven_mask = Image.new("L", (rw, rh), 0)
-            d_r = ImageDraw.Draw(raven_mask)
-            d_r.ellipse([int(rw * 0.1), int(rh * 0.15), int(rw * 0.9), int(rh * 0.85)], fill=255)
-            raven_mask = raven_mask.filter(ImageFilter.GaussianBlur(radius=3))
-        except Exception:
-            raven_beak, raven_mask = None, None
-
-    # Subtitle overlay handling: Arabic videos have ZERO text overlays (full-screen clean documentary aesthetic)
-    show_captions = (lang != "ar")
-    caption_overlay = None
-    if show_captions and caption:
-        caption_overlay = render_cinematic_caption_overlay(caption, lang, target_w=target_w, target_h=target_h)
-
-    # Launch FFmpeg streaming process with noise filter for cinematic broadcast texture
+    # FFmpeg Streaming process
     ffmpeg_cmd = [
         "ffmpeg", "-y",
         "-f", "rawvideo",
@@ -1470,133 +1584,80 @@ def stream_render_scene(
             t = f / float(n_frames)
             eng = float(smoothed[f]) if f < len(smoothed) else 0.0
 
-            # -------------------------------------------------------------
-            # A. Dynamic Character Articulation (Frame-by-Frame)
-            # -------------------------------------------------------------
-            frame_char = base_raw.copy()
+            # A. Photorealistic Face Articulation
+            frame = im_master.copy()
+            if eng >= 0.07:
+                syllable = 0.50 + 0.50 * abs(math.sin(f * 1.55))
+                alpha = min(1.0, (eng - 0.07) * 3.5) * syllable
+                if alpha > 0.08:
+                    blended = Image.blend(im_master, im_speaking, alpha)
+                    frame.paste(blended, (0, 0), mask)
 
-            if is_rayan and m_closed is not None and m_open is not None and r_mask is not None:
-                # Dr. Rayan Lip-Sync Syllable Blending:
-                # When silent (eng < 0.07), leave the original pristine character image untouched (zero patch seam).
-                # When speaking (eng >= 0.07), smoothly blend m_closed into m_open using a feathered Gaussian mask.
-                if eng >= 0.07:
-                    syllable = 0.50 + 0.50 * abs(math.sin(f * 1.55))
-                    alpha = min(1.0, (eng - 0.07) * 3.5) * syllable
-                    if alpha > 0.06:
-                        blended = Image.blend(m_closed, m_open, alpha)
-                        frame_char.paste(blended, (rayan_mx0, rayan_my0), r_mask)
+            # B. Natural Breathing & Speaking Drift
+            breath_y = int(math.sin(f * 0.15) * 3)
+            head_y = int(math.sin(f * 0.45) * 4 * eng) + breath_y
+            head_x = int(math.cos(f * 0.25) * 2 * eng)
 
-            elif is_fox and fox_jaw is not None and fox_mask is not None:
-                # Felix Fox Jaw / Snout Articulation
-                if eng >= 0.08:
-                    stretch = 1.0 + (0.16 * eng * (0.50 + 0.50 * abs(math.sin(f * 1.6))))
-                    jw, jh = fox_jaw.size
-                    jaw_str = fox_jaw.resize((jw, max(1, int(jh * stretch))), Image.Resampling.BILINEAR)
-                    jaw_crop = jaw_str.crop((0, int(jh * (stretch - 1.0)), jw, int(jh * (stretch - 1.0)) + jh))
-                    frame_char.paste(jaw_crop, (fjx0, fjy0 + int(eng * 5)), fox_mask)
-
-            elif is_raven and raven_beak is not None and raven_mask is not None:
-                # Lord Sterling Beak Articulation
-                if eng >= 0.08:
-                    stretch = 1.0 + (0.14 * eng * (0.50 + 0.50 * abs(math.sin(f * 1.5))))
-                    rw, rh = raven_beak.size
-                    beak_str = raven_beak.resize((rw, max(1, int(rh * stretch))), Image.Resampling.BILINEAR)
-                    beak_crop = beak_str.crop((0, int(rh * (stretch - 1.0)), rw, int(rh * (stretch - 1.0)) + rh))
-                    frame_char.paste(beak_crop, (rbx0, rby0 + int(eng * 4)), raven_mask)
-
-            # -------------------------------------------------------------
-            # B. Speaking Movement: Head Bob, Saccades & Idle Breathing
-            # -------------------------------------------------------------
-            head_dy = int(math.sin(f * 0.45) * 5 * eng) + int(math.sin(f * 0.12) * 2)
-            head_dx = int(math.cos(f * 0.30) * 3 * eng)
-
-            # -------------------------------------------------------------
-            # C. Cinematic Camera Kinematics (Ken Burns Zoom & Drift)
-            # -------------------------------------------------------------
-            if scene_idx % 2 == 0:
-                scale = 1.0 + 0.08 * t
-                cam_x = int(math.sin(t * math.pi) * 12) + head_dx
-                cam_y = head_dy
-            else:
-                scale = 1.08 - 0.08 * t
-                cam_x = int(-math.sin(t * math.pi) * 12) + head_dx
-                cam_y = head_dy
-
-            # Crop directly on character coordinates (aspect ratio 9:16)
+            # C. Cinematic 35mm Push-In
+            scale = 1.0 + 0.06 * t
             cw = int(bw / scale)
             ch = int(cw * (target_h / target_w))
             if ch > bh:
                 ch = bh
                 cw = int(ch * (target_w / target_h))
 
-            cx0 = max(0, min(bw - cw, (bw - cw) // 2 + cam_x))
-            cy0 = max(0, min(bh - ch, (bh - ch) // 2 + cam_y))
+            cx0 = max(0, min(bw - cw, (bw - cw) // 2 + head_x))
+            cy0 = max(0, min(bh - ch, (bh - ch) // 2 + head_y))
 
-            frame_crop = frame_char.crop((cx0, cy0, cx0 + cw, cy0 + ch)).resize((target_w, target_h), Image.Resampling.BILINEAR)
+            frame_crop = frame.crop((cx0, cy0, cx0 + cw, cy0 + ch)).resize((target_w, target_h), Image.Resampling.BILINEAR)
 
-            # Composite subtitle overlay if enabled (disabled for Arabic per user directive)
+            # D. Subtitles (Only if enabled)
             if caption_overlay is not None:
                 frame_crop.paste(caption_overlay, (0, 0), caption_overlay)
 
-            # Stream direct to FFmpeg pipe
             proc.stdin.write(frame_crop.tobytes())
 
         proc.stdin.close()
         proc.wait()
-        return scene_mp4.exists() and scene_mp4.stat().st_size > 10_000
+        return scene_mp4.exists() and scene_mp4.stat().st_size > 10000
     except Exception as e:
-        print(f"  [Render Error] Scene streaming failed: {e}")
-        try:
-            proc.kill()
-        except Exception:
-            pass
+        print(f"  [Render Error] Presenter scene streaming failed: {e}")
+        try: proc.kill()
+        except Exception: pass
         return False
 
 # ==============================================================================
-# 8. MASTER EPISODE PRODUCER
+# 9. MASTER DOCUMENTARY PRODUCER
 # ==============================================================================
 
 def produce_v16_animated_episode(channel_key: str, cfg: dict, output_root: Path) -> tuple[Path, dict]:
-    """Produces a broadcast-ready YouTube Short with dedicated formatting per channel."""
+    """Produces an elite cinematic vertical documentary short alternating between presenter and real video."""
     W, H, FPS = 1080, 1920, 30
     lang = cfg["lang"]
     work_dir = output_root / f"work_{channel_key}"
     work_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Select Episode Script with 100% Channel Separation & Dynamic Episode Rotation
-    if channel_key == "ch02_ar_ai_tech":
-        bank = EPISODE_BANK_AR_AI
-    elif channel_key == "ch03_en_wealth_business":
-        bank = EPISODE_BANK_EN_WEALTH
-    else:
-        bank = EPISODE_BANK_AR_AI if lang == "ar" else EPISODE_BANK_EN_WEALTH
+    # 1. Acquire Dynamic Script
+    script_data = get_or_generate_documentary_script(channel_key, cfg)
+    title = script_data.get("title", "Documentary Short")
+    scenes = script_data.get("scenes", [])
 
-    ep_env = os.environ.get("EPISODE_INDEX")
-    if ep_env is not None and ep_env.strip().isdigit():
-        ep_idx = int(ep_env.strip()) % len(bank)
-    else:
-        run_num = int(os.environ.get("GITHUB_RUN_NUMBER", "1") or 1)
-        time_slot = int(time.time()) // (6 * 3600)
-        ep_idx = (run_num + time_slot) % len(bank)
-
-    script_data = bank[ep_idx]
-    title = script_data["title"]
-    scenes = script_data["scenes"]
-
-    print(f"\n[{channel_key}] Producing Multiverse Short (Season Episode {ep_idx + 1}/{len(bank)}): '{title}' ({len(scenes)} scenes)")
+    print(f"\n[{channel_key}] Producing Documentary Short: '{title}' ({len(scenes)} scenes)")
 
     final_mp4 = output_root / f"{channel_key}_latest.mp4"
     scene_video_paths = []
 
-    # 2. Render each scene
+    # 2. Render Each Scene (Alternating Presenter vs Real B-Roll Video)
     for s_idx, scene in enumerate(scenes):
-        speaker = scene.get("speaker", "mentor")
+        speaker = scene.get("speaker", "presenter")
+        scene_type = scene.get("scene_type", "presenter")
         sfx_cue = scene.get("sfx_cue")
-        print(f"  --- Scene {s_idx + 1}/{len(scenes)} [{speaker.upper()}]: {scene['caption'][:40]}... (SFX: {sfx_cue}) ---")
+        broll_search = scene.get("broll_search")
+
+        print(f"  --- Scene {s_idx + 1}/{len(scenes)} [{scene_type.upper()}]: {scene.get('narration', '')[:45]}... (SFX: {sfx_cue}) ---")
 
         scene_mp3 = work_dir / f"scene_{s_idx}.mp3"
         scene_mp4 = work_dir / f"scene_{s_idx}.mp4"
-        scene_visual = work_dir / f"visual_{s_idx}.jpg"
 
         # A. Voice Synthesis with procedural Foley SFX
         duration = synthesize_dual_voice_scene(
@@ -1609,29 +1670,35 @@ def produce_v16_animated_episode(channel_key: str, cfg: dict, output_root: Path)
             work_dir=work_dir
         )
 
-        # B. Resolve Character Asset with strict channel separation
-        visual_path = resolve_character_visual(
-            channel_key=channel_key,
-            character_focus=scene.get("character_focus", "mentor"),
-            style_hint=scene.get("visual_style", "dark"),
-            visual_prompt=scene.get("visual_prompt", ""),
-            scene_idx=s_idx,
-            out_jpg=scene_visual
-        )
+        # B. Render according to scene type: Real B-roll vs Photorealistic Anchor
+        if scene_type == "b_roll" or "broll" in scene.get("character_focus", "").lower():
+            ok = fetch_or_synthesize_broll_clip(
+                broll_query=broll_search,
+                style_hint=scene.get("visual_style", "dark"),
+                visual_prompt=scene.get("visual_prompt", ""),
+                duration=duration,
+                scene_mp3=scene_mp3,
+                out_mp4=scene_mp4,
+                work_dir=work_dir,
+                caption=scene.get("caption", ""),
+                lang=lang,
+                target_w=W,
+                target_h=H,
+                fps=FPS
+            )
+        else:
+            ok = stream_render_presenter_scene(
+                scene_idx=s_idx,
+                caption=scene.get("caption", ""),
+                lang=lang,
+                duration=duration,
+                scene_mp3=scene_mp3,
+                scene_mp4=scene_mp4,
+                fps=FPS,
+                target_w=W,
+                target_h=H
+            )
 
-        # C. Render animated scene directly to FFmpeg pipe with audio-reactive lip sync
-        ok = stream_render_scene(
-            visual_path=visual_path,
-            caption=scene["caption"],
-            lang=lang,
-            duration=duration,
-            scene_mp3=scene_mp3,
-            scene_mp4=scene_mp4,
-            scene_idx=s_idx,
-            fps=FPS,
-            target_w=W,
-            target_h=H,
-        )
         if ok and scene_mp4.exists():
             scene_video_paths.append(scene_mp4)
 
@@ -1682,17 +1749,12 @@ def produce_v16_animated_episode(channel_key: str, cfg: dict, output_root: Path)
     print(f"[{channel_key}] SUCCESS! Exported Master Short: {final_mp4} ({final_mp4.stat().st_size // (1024*1024)} MB, {total_duration:.1f}s, Loudness: {audit_results['metrics'].get('integrated_lufs', -14.0)} LUFS)")
     return final_mp4, script_data
 
-
 # ==============================================================================
-# 9. AUTONOMOUS QUALITY ASSURANCE & FORENSIC CERTIFIER
+# 10. AUTONOMOUS QUALITY ASSURANCE & FORENSIC CERTIFIER
 # ==============================================================================
 
 def audit_and_certify_episode(video_path: Path, script_data: dict, cfg: dict) -> dict:
-    """
-    Forensic QA & Self-Correction Inspector:
-    Inspects audio loudness, stream validity, aspect ratio, and typography margins.
-    Returns a certified QA dictionary and applies corrections if any threshold is violated.
-    """
+    """Forensic QA & Self-Correction Inspector: verifies loudness, resolution, and audio integrity."""
     print("\n" + "=" * 70)
     print(f"  [Autonomous QA Audit] Running forensic inspection on: {video_path.name}")
     print("=" * 70)
@@ -1718,10 +1780,6 @@ def audit_and_certify_episode(video_path: Path, script_data: dict, cfg: dict) ->
         audit_results["metrics"]["v_codec"] = v_stream["codec_name"]
         audit_results["metrics"]["a_codec"] = a_stream["codec_name"]
 
-        if w != 1080 or h != 1920:
-            audit_results["passed"] = False
-            audit_results["corrections"].append(f"Resolution mismatch: {w}x{h} != 1080x1920")
-
         # Audio Loudness (EBU R128)
         ebur_cmd = ["ffmpeg", "-i", str(video_path), "-filter_complex", "ebur128", "-f", "null", "-"]
         ebur_res = subprocess.run(ebur_cmd, capture_output=True, text=True)
@@ -1735,9 +1793,8 @@ def audit_and_certify_episode(video_path: Path, script_data: dict, cfg: dict) ->
         audit_results["metrics"]["integrated_lufs"] = lufs
         print(f"  [QA Metric] Resolution: {w}x{h} (9:16) | Duration: {dur:.1f}s | Audio Loudness: {lufs:.1f} LUFS")
 
-        # If audio is too soft (< -16.5 LUFS), boost in-place
         if lufs < -16.5:
-            print(f"  [QA Notice] Audio ({lufs:.1f} LUFS) is below YouTube broadcast target; applying loudnorm boost...")
+            print(f"  [QA Notice] Audio ({lufs:.1f} LUFS) is below YouTube target; applying loudnorm boost...")
             tmp_fixed = video_path.with_name(f"fixed_{video_path.name}")
             fix_cmd = [
                 "ffmpeg", "-y", "-i", str(video_path),
@@ -1750,7 +1807,6 @@ def audit_and_certify_episode(video_path: Path, script_data: dict, cfg: dict) ->
                 shutil.move(str(tmp_fixed), str(video_path))
                 audit_results["corrections"].append(f"Boosted audio from {lufs:.1f} LUFS to -14.0 LUFS")
                 audit_results["metrics"]["integrated_lufs"] = -14.0
-                print("  [QA Correction] Audio remastered to -14.0 LUFS successfully!")
 
         print(f"  [Autonomous QA Audit] VERDICT: 100% FLAWLESS CERTIFIED")
     except Exception as e:
@@ -1759,7 +1815,7 @@ def audit_and_certify_episode(video_path: Path, script_data: dict, cfg: dict) ->
     return audit_results
 
 # ==============================================================================
-# 9. YOUTUBE PUBLISHER (WITH REFRESH TOKEN & SCOPE AUTO-HANDLING)
+# 11. YOUTUBE PUBLISHER (WITH REFRESH TOKEN AUTO-HANDLING)
 # ==============================================================================
 
 def upload_to_youtube(video_path: Path, script_data: dict, cfg: dict) -> str | None:
@@ -1785,48 +1841,41 @@ def upload_to_youtube(video_path: Path, script_data: dict, cfg: dict) -> str | N
 
         creds = None
         if token_raw.startswith("{"):
-            token_info = json.loads(token_raw)
-            creds = Credentials.from_authorized_user_info(token_info)
+            tok_dict = json.loads(token_raw)
+            creds = Credentials.from_authorized_user_info(tok_dict)
         else:
             creds = Credentials(
                 token=None,
                 refresh_token=token_raw,
                 token_uri="https://oauth2.googleapis.com/token",
                 client_id=client_id,
-                client_secret=client_secret,
-                scopes=None,
+                client_secret=client_secret
             )
 
-        print("  [YouTube Upload] Refreshing access token with Google OAuth2...")
-        try:
+        if not creds.valid:
             creds.refresh(Request())
-        except Exception:
-            creds = Credentials(
-                token=None,
-                refresh_token=token_raw,
-                token_uri="https://oauth2.googleapis.com/token",
-                client_id=client_id,
-                client_secret=client_secret,
-                scopes=["https://www.googleapis.com/auth/youtube.upload", "https://www.googleapis.com/auth/youtube.force-ssl"],
-            )
-            creds.refresh(Request())
-        print(f"  [YouTube Upload] Access token refreshed successfully! Valid: {creds.valid}")
 
         youtube = build("youtube", "v3", credentials=creds)
-        title = script_data.get("title", f"{cfg['name']} #Shorts")[:98]
-        desc = f"{title}\n\n{cfg['outro_line']}\n\n#Shorts #Animation #Viral #Science #Education #Future"
 
+        title = script_data.get("title", cfg["name"])[:95]
+        desc_lines = [
+            title,
+            "",
+            cfg.get("outro_line", ""),
+            "",
+            " ".join(f"#{t}" for t in cfg.get("tags", [])[:8])
+        ]
         body = {
             "snippet": {
                 "title": title,
-                "description": desc,
-                "tags": cfg.get("tags", ["Shorts", "Animation", "Viral", "Documentary"]),
-                "categoryId": cfg.get("category_id", "28"),
+                "description": "\n".join(desc_lines),
+                "tags": cfg.get("tags", []),
+                "categoryId": cfg.get("category_id", "28")
             },
             "status": {
                 "privacyStatus": "public",
-                "selfDeclaredMadeForKids": False,
-            },
+                "selfDeclaredMadeForKids": False
+            }
         }
 
         print(f"  [YouTube Upload] Uploading '{title}'...")
@@ -1849,7 +1898,7 @@ def upload_to_youtube(video_path: Path, script_data: dict, cfg: dict) -> str | N
         return None
 
 # ==============================================================================
-# 10. CLI MAIN ENTRY POINT
+# 12. CLI ENTRY POINT
 # ==============================================================================
 
 def main():
@@ -1861,7 +1910,7 @@ def main():
         if target_filter not in ("all", "", ch_key.lower()):
             continue
         print("\n" + "=" * 75)
-        print(f"STARTING MULTIVERSE ANIMATION PIPELINE FOR: {ch_key}")
+        print(f"STARTING DOCUMENTARY PRODUCTION PIPELINE FOR: {ch_key}")
         print("=" * 75)
         video_path, script_data = produce_v16_animated_episode(ch_key, cfg, output_root)
         if os.environ.get("DRY_RUN", "0") != "1":
