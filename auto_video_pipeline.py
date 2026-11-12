@@ -1406,26 +1406,75 @@ def fetch_or_synthesize_broll_clip(
         except Exception as e:
             print(f"  [B-Roll Notice] Pexels retrieval error ({e}); using cinematic motion synthesis fallback...")
 
-    # 2. Dynamic High-Motion Cinematic Video Synthesis (Offline / Fallback)
+    # 2. Master Cinematic Camera Movement Synthesis (Guaranteed High-Motion Cinema)
     img_path = resolve_scene_artwork(visual_prompt, style_hint)
     n_frames = max(15, int(round(duration * fps)))
-    vf = f"scale=1440:2560,zoompan=z='min(zoom+0.0018,1.30)':d={n_frames}:x='iw/2-(iw/zoom/2)+sin(in/15)*15':y='ih/2-(ih/zoom/2)+cos(in/20)*10':s={target_w}x{target_h}:fps={fps},noise=c1s=4:c0f=t"
 
-    cmd = [
-        "ffmpeg", "-y", "-loop", "1", "-i", str(img_path),
+    try:
+        im = Image.open(img_path).convert("RGB")
+    except Exception:
+        im = create_dark_cinematic_procedural_backdrop(style_hint, target_w, target_h)
+
+    # Prepare oversized canvas for smooth camera glide
+    canvas_w = int(target_w * 1.35)
+    canvas_h = int(target_h * 1.35)
+    im_canvas = im.resize((canvas_w, canvas_h), Image.Resampling.LANCZOS)
+
+    # Determine camera movement direction: Vertical crane tilt vs Horizontal tracking pan
+    is_vertical_dominant = any(k in visual_prompt.lower() or k in style_hint.lower() for k in ("sub", "ocean", "submarine", "vault", "water", "tap", "depth", "tower", "abyss"))
+
+    caption_overlay = render_cinematic_caption_overlay(caption, lang, target_w=target_w, target_h=target_h) if lang != "ar" else None
+
+    ffmpeg_cmd = [
+        "ffmpeg", "-y",
+        "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{target_w}x{target_h}", "-r", str(fps),
+        "-i", "-",
         "-i", str(scene_mp3),
-        "-t", str(duration),
-        "-vf", vf,
+        "-vf", "noise=c1s=3:c0f=t",
         "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p",
         "-c:a", "aac", "-b:a", "192k", "-shortest",
         str(out_mp4)
     ]
-    subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    proc = subprocess.Popen(ffmpeg_cmd, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    if lang != "ar" and caption and out_mp4.exists():
-        apply_captions_to_video(out_mp4, caption, lang, work_dir, target_w, target_h)
+    try:
+        for f in range(n_frames):
+            t = f / float(n_frames)
 
-    return out_mp4.exists() and out_mp4.stat().st_size > 10000
+            # Continuous 35mm push-in
+            zoom = 1.04 + 0.14 * t
+            cw = int(target_w / zoom)
+            ch = int(target_h / zoom)
+            max_x = canvas_w - cw
+            max_y = canvas_h - ch
+
+            if is_vertical_dominant:
+                # Vertical Crane Sweep (top to bottom) with gentle horizontal drift
+                cx = int(max_x * (0.35 + 0.30 * t))
+                cy = int(max_y * (0.15 + 0.70 * t))
+            else:
+                # Horizontal Tracking Pan (left to right) with gentle vertical drift
+                cx = int(max_x * (0.10 + 0.80 * t))
+                cy = int(max_y * (0.35 + 0.20 * t))
+
+            cx = max(0, min(max_x, cx))
+            cy = max(0, min(max_y, cy))
+
+            frame = im_canvas.crop((cx, cy, cx + cw, cy + ch)).resize((target_w, target_h), Image.Resampling.BILINEAR)
+
+            if caption_overlay is not None:
+                frame.paste(caption_overlay, (0, 0), caption_overlay)
+
+            proc.stdin.write(frame.tobytes())
+
+        proc.stdin.close()
+        proc.wait()
+        return out_mp4.exists() and out_mp4.stat().st_size > 10000
+    except Exception as e:
+        print(f"  [B-Roll Error] Camera synthesis failed: {e}")
+        try: proc.kill()
+        except Exception: pass
+        return False
 
 
 def apply_captions_to_video(video_path: Path, caption: str, lang: str, work_dir: Path, target_w: int, target_h: int):
@@ -1529,13 +1578,18 @@ def stream_render_presenter_scene(
     duration: float,
     scene_mp3: Path,
     scene_mp4: Path,
+    visual_prompt: str = "",
+    style_hint: str = "",
     fps: int = 30,
     target_w: int = 1080,
     target_h: int = 1920,
 ) -> bool:
     """
-    Renders photorealistic anchor presenter with audio RMS-driven mouth articulation,
-    breathing drift, and cinematic push-in directly to FFmpeg pipe.
+    Renders photorealistic anchor presenter with dynamic multi-shot directing:
+    - Shot 1: Anchor studio establishing push-in with live voice articulation
+    - Shot 2: B-Roll Evidence Cutaway (camera sweeps over the evidence scene while narrator speaks)
+    - Shot 3: Anchor dramatic punchline close-up
+    This produces a true Hollywood documentary movie experience instead of a static image!
     """
     repo_root = Path(__file__).resolve().parent
     chars_dir = repo_root / "assets" / "characters"
@@ -1577,7 +1631,7 @@ def stream_render_presenter_scene(
         env = env / env.max()
     smoothed = np.convolve(env, [0.15, 0.70, 0.15], mode='same')
 
-    # 2. Load Anchor Assets
+    # 2. Load Anchor Assets & Cutaway B-Roll Artwork
     p_master = chars_dir / "anchor_master.jpg"
     p_speaking = chars_dir / "anchor_speaking.jpg"
     if not p_master.exists():
@@ -1587,18 +1641,31 @@ def stream_render_presenter_scene(
 
     im_master = Image.open(p_master).convert("RGB")
     im_speaking = Image.open(p_speaking).convert("RGB")
-    bw, bh = im_master.size
 
-    # Prepare feathered mouth/jaw mask
-    mask = Image.new("L", (bw, bh), 0)
-    d = ImageDraw.Draw(mask)
-    d.ellipse([508 - 85, 510 - 50, 508 + 85, 510 + 50], fill=255)
-    mask = mask.filter(ImageFilter.GaussianBlur(radius=8))
+    # Load B-Roll scene artwork for dynamic cutaways
+    cutaway_path = resolve_scene_artwork(visual_prompt, style_hint)
+    try:
+        im_cutaway = Image.open(cutaway_path).convert("RGB")
+    except Exception:
+        im_cutaway = im_master
 
-    # Pre-render caption overlay (Arabic: ZERO text overlays)
+    # Prepare oversized canvases for real cinematic camera moves (1512x2688)
+    canvas_w = int(target_w * 1.40)
+    canvas_h = int(target_h * 1.40)
+    anchor_canvas = im_master.resize((canvas_w, canvas_h), Image.Resampling.LANCZOS)
+    speaking_canvas = im_speaking.resize((canvas_w, canvas_h), Image.Resampling.LANCZOS)
+    cutaway_canvas = im_cutaway.resize((canvas_w, canvas_h), Image.Resampling.LANCZOS)
+
+    # Caption overlay (Arabic: ZERO text overlays)
     caption_overlay = render_cinematic_caption_overlay(caption, lang, target_w=target_w, target_h=target_h) if lang != "ar" else None
 
-    # FFmpeg Streaming process
+    # Multi-shot cutting timeline:
+    # If duration >= 5.5s: Split into 3 shots (Anchor Push -> Cutaway Evidence -> Anchor Close-up)
+    # If shorter: Continuous dramatic 35mm Push-In on Anchor
+    use_multi_shot = (duration >= 5.5)
+    f_shot1_end = int(min(2.8 * fps, n_frames * 0.35))
+    f_shot2_end = int(max(f_shot1_end + 15, n_frames - int(2.4 * fps)))
+
     ffmpeg_cmd = [
         "ffmpeg", "-y",
         "-f", "rawvideo",
@@ -1620,41 +1687,67 @@ def stream_render_presenter_scene(
 
     try:
         for f in range(n_frames):
-            t = f / float(n_frames)
             eng = float(smoothed[f]) if f < len(smoothed) else 0.0
 
-            # A. Photorealistic Face Articulation
-            frame = im_master.copy()
-            if eng >= 0.07:
-                syllable = 0.50 + 0.50 * abs(math.sin(f * 1.55))
-                alpha = min(1.0, (eng - 0.07) * 3.5) * syllable
-                if alpha > 0.08:
-                    blended = Image.blend(im_master, im_speaking, alpha)
-                    frame.paste(blended, (0, 0), mask)
+            if use_multi_shot and (f_shot1_end <= f < f_shot2_end):
+                # SHOT 2: Cinematic Evidence Cutaway (camera tracking pan)
+                shot_len = max(1, f_shot2_end - f_shot1_end)
+                t_shot = (f - f_shot1_end) / float(shot_len)
+                zoom = 1.06 + 0.10 * t_shot
+                cw = int(target_w / zoom)
+                ch = int(target_h / zoom)
+                max_x = canvas_w - cw
+                max_y = canvas_h - ch
+                cx = max(0, min(max_x, int(max_x * (0.15 + 0.70 * t_shot))))
+                cy = max(0, min(max_y, int(max_y * (0.35 + 0.20 * t_shot))))
+                frame = cutaway_canvas.crop((cx, cy, cx + cw, cy + ch)).resize((target_w, target_h), Image.Resampling.BILINEAR)
 
-            # B. Natural Breathing & Speaking Drift
-            breath_y = int(math.sin(f * 0.15) * 3)
-            head_y = int(math.sin(f * 0.45) * 4 * eng) + breath_y
-            head_x = int(math.cos(f * 0.25) * 2 * eng)
+            elif use_multi_shot and (f >= f_shot2_end):
+                # SHOT 3: Dramatic Punchline Anchor Close-up
+                shot_len = max(1, n_frames - f_shot2_end)
+                t_shot = (f - f_shot2_end) / float(shot_len)
+                zoom = 1.18 + 0.14 * t_shot
+                cw = int(target_w / zoom)
+                ch = int(target_h / zoom)
+                max_x = canvas_w - cw
+                max_y = canvas_h - ch
+                cx = max(0, min(max_x, int(max_x * 0.50)))
+                cy = max(0, min(max_y, int(max_y * (0.28 + 0.12 * t_shot))))
 
-            # C. Cinematic 35mm Push-In
-            scale = 1.0 + 0.06 * t
-            cw = int(bw / scale)
-            ch = int(cw * (target_h / target_w))
-            if ch > bh:
-                ch = bh
-                cw = int(ch * (target_w / target_h))
+                # Live mouth articulation
+                if eng >= 0.08:
+                    alpha = min(1.0, (eng - 0.08) * 3.5)
+                    active_anchor = Image.blend(anchor_canvas, speaking_canvas, alpha)
+                else:
+                    active_anchor = anchor_canvas
 
-            cx0 = max(0, min(bw - cw, (bw - cw) // 2 + head_x))
-            cy0 = max(0, min(bh - ch, (bh - ch) // 2 + head_y))
+                frame = active_anchor.crop((cx, cy, cx + cw, cy + ch)).resize((target_w, target_h), Image.Resampling.BILINEAR)
 
-            frame_crop = frame.crop((cx0, cy0, cx0 + cw, cy0 + ch)).resize((target_w, target_h), Image.Resampling.BILINEAR)
+            else:
+                # SHOT 1: Establishing Anchor Studio Push-In
+                shot_len = f_shot1_end if use_multi_shot else n_frames
+                t_shot = f / float(max(1, shot_len))
+                zoom = 1.04 + 0.12 * t_shot
+                cw = int(target_w / zoom)
+                ch = int(target_h / zoom)
+                max_x = canvas_w - cw
+                max_y = canvas_h - ch
+                cx = max(0, min(max_x, int(max_x * (0.50 + 0.04 * t_shot))))
+                cy = max(0, min(max_y, int(max_y * (0.32 + 0.10 * t_shot))))
 
-            # D. Subtitles (Only if enabled)
+                if eng >= 0.08:
+                    alpha = min(1.0, (eng - 0.08) * 3.5)
+                    active_anchor = Image.blend(anchor_canvas, speaking_canvas, alpha)
+                else:
+                    active_anchor = anchor_canvas
+
+                frame = active_anchor.crop((cx, cy, cx + cw, cy + ch)).resize((target_w, target_h), Image.Resampling.BILINEAR)
+
+            # Apply English Subtitles if enabled
             if caption_overlay is not None:
-                frame_crop.paste(caption_overlay, (0, 0), caption_overlay)
+                frame.paste(caption_overlay, (0, 0), caption_overlay)
 
-            proc.stdin.write(frame_crop.tobytes())
+            proc.stdin.write(frame.tobytes())
 
         proc.stdin.close()
         proc.wait()
@@ -1733,6 +1826,8 @@ def produce_v16_animated_episode(channel_key: str, cfg: dict, output_root: Path)
                 duration=duration,
                 scene_mp3=scene_mp3,
                 scene_mp4=scene_mp4,
+                visual_prompt=scene.get("visual_prompt", ""),
+                style_hint=scene.get("visual_style", ""),
                 fps=FPS,
                 target_w=W,
                 target_h=H
