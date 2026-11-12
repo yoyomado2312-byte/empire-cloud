@@ -958,24 +958,33 @@ CRITICAL REQUIREMENTS:
   ]
 }}"""
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+    models_to_try = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
     req_body = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode("utf-8")
-    req = urllib.request.Request(url, data=req_body, headers={"Content-Type": "application/json"})
 
-    try:
-        with urllib.request.urlopen(req, timeout=25) as resp:
-            data = json.loads(resp.read().decode())
-            candidates = data.get("candidates", [])
-            if candidates:
-                raw_text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
-                raw_text = raw_text.replace("```json", "").replace("```", "").strip()
-                script = json.loads(raw_text)
-                if "scenes" in script and len(script["scenes"]) >= 5:
-                    print(f"  [Gemini AI] Successfully generated dynamic unique episode: '{script.get('title')}'")
-                    return script
-    except Exception as e:
-        print(f"  [Gemini AI Notice] Dynamic generation error ({e}); using season bank fallback...")
+    for model_name in models_to_try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+        req = urllib.request.Request(url, data=req_body, headers={"Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=25) as resp:
+                data = json.loads(resp.read().decode())
+                candidates = data.get("candidates", [])
+                if candidates:
+                    raw_text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                    raw_text = raw_text.replace("```json", "").replace("```", "").strip()
+                    script = json.loads(raw_text)
+                    if "scenes" in script and len(script["scenes"]) >= 5:
+                        print(f"  [Gemini AI] Successfully generated dynamic unique episode via {model_name}: '{script.get('title')}'")
+                        return script
+        except Exception as e:
+            err_msg = str(e)
+            if hasattr(e, "read"):
+                try:
+                    err_msg += " " + e.read().decode("utf-8", errors="replace")[:150]
+                except Exception:
+                    pass
+            print(f"  [Gemini AI Notice] Model '{model_name}' attempt error: {err_msg}")
 
+    print("  [Gemini AI Notice] All dynamic Gemini models failed; activating curated documentary season bank fallback...")
     return None
 
 
