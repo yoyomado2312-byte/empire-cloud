@@ -958,11 +958,41 @@ CRITICAL REQUIREMENTS:
   ]
 }}"""
 
-    models_to_try = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
+    discovered_endpoints = []
+    # 1. Dynamically discover supported models for this specific API key
+    for ver in ["v1beta", "v1"]:
+        try:
+            m_url = f"https://generativelanguage.googleapis.com/{ver}/models?key={api_key}"
+            req_m = urllib.request.Request(m_url)
+            with urllib.request.urlopen(req_m, timeout=10) as m_resp:
+                m_data = json.loads(m_resp.read().decode())
+                for item in m_data.get("models", []):
+                    m_name = item.get("name", "")
+                    methods = item.get("supportedGenerationMethods", [])
+                    if "generateContent" in methods:
+                        ep = f"https://generativelanguage.googleapis.com/{ver}/{m_name}:generateContent?key={api_key}"
+                        if ep not in discovered_endpoints:
+                            discovered_endpoints.append(ep)
+        except Exception as e:
+            err_m = str(e)
+            if hasattr(e, "read"):
+                try:
+                    err_m += " " + e.read().decode("utf-8", errors="replace")[:120]
+                except Exception:
+                    pass
+            print(f"  [Gemini AI Notice] Model discovery ({ver}) error: {err_m}")
+
+    if not discovered_endpoints:
+        discovered_endpoints = [
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}",
+            f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}",
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}",
+        ]
+
     req_body = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode("utf-8")
 
-    for model_name in models_to_try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+    for url in discovered_endpoints[:4]:
+        model_tag = url.split("models/")[1].split(":")[0] if "models/" in url else "unknown"
         req = urllib.request.Request(url, data=req_body, headers={"Content-Type": "application/json"})
         try:
             with urllib.request.urlopen(req, timeout=25) as resp:
@@ -973,7 +1003,7 @@ CRITICAL REQUIREMENTS:
                     raw_text = raw_text.replace("```json", "").replace("```", "").strip()
                     script = json.loads(raw_text)
                     if "scenes" in script and len(script["scenes"]) >= 5:
-                        print(f"  [Gemini AI] Successfully generated dynamic unique episode via {model_name}: '{script.get('title')}'")
+                        print(f"  [Gemini AI] Successfully generated dynamic unique episode via {model_tag}: '{script.get('title')}'")
                         return script
         except Exception as e:
             err_msg = str(e)
@@ -982,7 +1012,7 @@ CRITICAL REQUIREMENTS:
                     err_msg += " " + e.read().decode("utf-8", errors="replace")[:150]
                 except Exception:
                     pass
-            print(f"  [Gemini AI Notice] Model '{model_name}' attempt error: {err_msg}")
+            print(f"  [Gemini AI Notice] Model '{model_tag}' attempt error: {err_msg}")
 
     print("  [Gemini AI Notice] All dynamic Gemini models failed; activating curated documentary season bank fallback...")
     return None
