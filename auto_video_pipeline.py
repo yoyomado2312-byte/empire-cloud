@@ -927,16 +927,22 @@ def generate_dynamic_gemini_script(channel_key: str, lang: str) -> dict | None:
     lang_desc = "Modern Standard Arabic (الفصحى السلسة الراقية بأسلوب الدحيح)" if lang == "ar" else "Sophisticated English (Investigative Documentary style)"
     channel_niche = "AI, science, and mysterious technology history" if channel_key == "ch02_ar_ai_tech" else "Cold War heists, corporate deceptions, and hidden wealth monopolies"
 
-    prompt = f"""You are the lead director of an elite, viral vertical documentary show (similar to Vox, National Geographic, and Johnny Harris).
+    prompt = f"""You are the lead director of an elite, viral vertical documentary show (similar to Vox, ColdFusion, National Geographic, and Johnny Harris).
 Write an entirely UNIQUE, captivating documentary script in {lang_desc} based on a real dramatic historical, scientific, or mystery event in {channel_niche}.
 
-CRITICAL REQUIREMENTS:
+CRITICAL PRODUCTION FORMAT (100% CINEMATIC B-ROLL DOCUMENTARY):
 1. Pacing: 130 to 150 words per minute.
-2. Structure: 6 to 8 sequential scenes strictly alternating between:
-   - "presenter": Host speaks directly to camera in studio, explaining the core concept in clear, simple, conversational yet intellectual language.
-   - "b_roll": Cinematic real-world visual evidence or historical reenactment.
-3. Every b_roll scene MUST include a short English "broll_search" query for Pexels Video (e.g. "ocean dark waves", "supercomputer servers", "bank vault lasers", "diamonds glittering").
-4. If language is Arabic, leave "caption" as an empty string ("") because Arabic videos have zero text overlays. If English, provide a punchy 2-line auto-wrapped caption.
+2. ALL scenes are 100% visual B-Roll evidence, real archival footage, diagrams, maps, or dramatic reenactments.
+   The host speaks ONLY as an authoritative Voiceover (VO) narrator. There is NEVER an on-camera presenter speaking to camera.
+3. Structure: 6 to 8 sequential dramatic scenes. Every scene has:
+   - "speaker": "narrator"
+   - "scene_type": "b_roll"
+   - "character_focus": "broll_evidence"
+   - "broll_search": A specific, short English search query for real video/archival footage (e.g. "supercomputer server room", "deep sea submarine", "microchip wafer fabrication", "vault security laser", "redacted classified documents", "satellite earth night").
+   - "visual_prompt": Detailed visual description of the archival footage or reenactment.
+   - "visual_style": Short descriptor (e.g. "cyber_matrix", "submarine_abyss", "bank_vault", "quantum_silicon", "vintage_archive").
+4. Arabic Channel: Leave "caption" as an empty string ("") because Arabic videos have zero text overlays (100% clean full-screen footage).
+   English Channel: Provide a punchy 2-line auto-wrapped subtitle in "caption".
 5. Return STRICTLY valid JSON with no markdown formatting or intro prose:
 {{
   "series_title": "...",
@@ -944,15 +950,15 @@ CRITICAL REQUIREMENTS:
   "title": "...",
   "scenes": [
     {{
-      "speaker": "presenter" or "narrator",
-      "scene_type": "presenter" or "b_roll",
-      "character_focus": "anchor_hook" or "broll_evidence" or "anchor_explain" or "anchor_outro",
-      "narration": "Spoken text here...",
-      "broll_search": "search query for video footage",
-      "caption": "short subtitle or empty if Arabic",
+      "speaker": "narrator",
+      "scene_type": "b_roll",
+      "character_focus": "broll_evidence",
+      "narration": "Spoken voiceover text here...",
+      "broll_search": "short english video search query",
+      "caption": "" if Arabic else "English subtitle",
       "sfx_cue": "sfx_whoosh" or "sfx_heartbeat" or "sfx_scratch" or "sfx_subdrop" or "sfx_register",
       "visual_prompt": "Cinematic visual description, 9:16 vertical",
-      "visual_style": "anchor_hook"
+      "visual_style": "vintage_archive"
     }}
   ]
 }}"""
@@ -1404,21 +1410,39 @@ def fetch_or_synthesize_broll_clip(
     lang: str,
     target_w: int = 1080,
     target_h: int = 1920,
-    fps: int = 30
+    fps: int = 30,
+    scene_idx: int = 0
 ) -> bool:
     """
     Produces real full-motion vertical B-roll video:
     1. Downloads genuine 1080p vertical video from Pexels Videos API if key exists.
-    2. Fallback: Dynamic high-motion cinematic video synthesis using continuous Ken Burns zoompan + film grain.
+    2. Downloads public domain archival footage from Wikimedia Commons (WebM/MP4).
+    3. Downloads public archival documentary photos/diagrams from Wikimedia Commons.
+    4. Curated local artwork with Hollywood multi-axis Ken Burns camera choreography (4 alternating modes).
+    5. Always applies 35mm procedural film grain. Zero text on Arabic videos.
     """
     pexels_key = os.environ.get("PEXELS_API_KEY", "").strip()
 
+    # 0. Clean and infer search keywords if empty
+    q_search = (broll_query or "").strip()
+    if not q_search or q_search.lower() in ("none", "null", ""):
+        raw_words = re.findall(r'[a-zA-Z0-9]+', f"{visual_prompt} {style_hint}".lower())
+        stopwords = {
+            "cinematic", "visual", "description", "vertical", "ultra", "realistic",
+            "studio", "leaning", "forward", "explaining", "passionately", "gesturing",
+            "host", "documentary", "anchor", "scene", "the", "and", "with", "for",
+            "shot", "lighting", "dramatic", "camera", "style", "dark", "in", "of",
+            "close", "up", "showing", "talking", "presentation"
+        }
+        kw = [w for w in raw_words if w not in stopwords and len(w) > 2]
+        q_search = " ".join(kw[:3]) if kw else "cinematic technology"
+
     # 1. Pexels Real Video Retrieval (if key exists)
-    if pexels_key and broll_query:
+    if pexels_key and q_search:
         try:
-            q_clean = broll_query.strip()
+            q_clean = q_search.strip()
             url = f"https://api.pexels.com/videos/search?query={urllib.parse.quote(q_clean)}&orientation=portrait&per_page=3"
-            req = urllib.request.Request(url, headers={"Authorization": pexels_key, "User-Agent": "EmpireDocPipeline/1.0"})
+            req = urllib.request.Request(url, headers={"Authorization": pexels_key, "User-Agent": "EmpireDocPipeline/2.0"})
             with urllib.request.urlopen(req, timeout=12) as resp:
                 data = json.loads(resp.read().decode())
                 videos = data.get("videos", [])
@@ -1433,11 +1457,13 @@ def fetch_or_synthesize_broll_clip(
                         best_file = max(video_files, key=lambda x: x.get("width", 0) * x.get("height", 0))
 
                     if best_file and "link" in best_file:
-                        raw_vid = work_dir / f"raw_broll_{abs(hash(broll_query)) % 10000}.mp4"
+                        raw_vid = work_dir / f"raw_broll_{abs(hash(q_search)) % 10000}.mp4"
                         urllib.request.urlretrieve(best_file["link"], str(raw_vid))
 
                         cmd = [
-                            "ffmpeg", "-y", "-ss", "0", "-i", str(raw_vid),
+                            "ffmpeg", "-y",
+                            "-stream_loop", "-1",
+                            "-ss", "0", "-i", str(raw_vid),
                             "-i", str(scene_mp3),
                             "-t", str(duration),
                             "-vf", f"scale={target_w}:{target_h}:force_original_aspect_ratio=increase,crop={target_w}:{target_h},fps={fps},noise=c1s=3:c0f=t",
@@ -1447,17 +1473,17 @@ def fetch_or_synthesize_broll_clip(
                         ]
                         subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                         if out_mp4.exists() and out_mp4.stat().st_size > 10000:
-                            print(f"  [B-Roll Engine] Successfully deployed real Pexels video: '{q_clean}' ({out_mp4.stat().st_size // 1024} KB)")
+                            print(f"  [B-Roll Engine] Deployed real Pexels video: '{q_clean}' ({out_mp4.stat().st_size // 1024} KB)")
                             if lang != "ar" and caption:
                                 apply_captions_to_video(out_mp4, caption, lang, work_dir, target_w, target_h)
                             return True
         except Exception as e:
-            print(f"  [B-Roll Notice] Pexels retrieval error ({e}); checking archival video commons...")
+            print(f"  [B-Roll Notice] Pexels retrieval error ({e}); checking archival commons...")
 
     # 1b. Public Archival Video Search (Zero API Key Required)
-    if broll_query:
+    if q_search:
         try:
-            q_terms = broll_query.strip().split()[:2]
+            q_terms = q_search.strip().split()[:2]
             q_clean = " ".join(q_terms)
             clean_enc = urllib.parse.quote(f"{q_clean} filetype:video")
             wiki_url = f"https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch={clean_enc}&gsrnamespace=6&prop=imageinfo&iiprop=url|size|mime&gsrlimit=3"
@@ -1470,10 +1496,12 @@ def fetch_or_synthesize_broll_clip(
                     v_url = info.get("url", "")
                     size_bytes = info.get("size", 0)
                     if v_url.endswith((".webm", ".mp4", ".ogv")) and 0 < size_bytes < 35 * 1024 * 1024:
-                        raw_wiki = work_dir / f"wiki_broll_{abs(hash(broll_query)) % 10000}.webm"
+                        raw_wiki = work_dir / f"wiki_broll_{abs(hash(q_search)) % 10000}.webm"
                         urllib.request.urlretrieve(v_url, str(raw_wiki))
                         cmd = [
-                            "ffmpeg", "-y", "-ss", "0", "-i", str(raw_wiki),
+                            "ffmpeg", "-y",
+                            "-stream_loop", "-1",
+                            "-ss", "0", "-i", str(raw_wiki),
                             "-i", str(scene_mp3),
                             "-t", str(duration),
                             "-vf", f"scale={target_w}:{target_h}:force_original_aspect_ratio=increase,crop={target_w}:{target_h},fps={fps},noise=c1s=3:c0f=t",
@@ -1483,31 +1511,62 @@ def fetch_or_synthesize_broll_clip(
                         ]
                         subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                         if out_mp4.exists() and out_mp4.stat().st_size > 10000:
-                            print(f"  [B-Roll Engine] Successfully deployed real archival video: '{q_clean}' ({out_mp4.stat().st_size // 1024} KB)")
+                            print(f"  [B-Roll Engine] Deployed real archival video: '{q_clean}' ({out_mp4.stat().st_size // 1024} KB)")
                             if lang != "ar" and caption:
                                 apply_captions_to_video(out_mp4, caption, lang, work_dir, target_w, target_h)
                             return True
-        except Exception as e:
+        except Exception:
+            pass
+
+    # 1c. Public Archival Photo Search (Zero API Key Required)
+    im = None
+    if q_search:
+        try:
+            q_terms = q_search.strip().split()[:2]
+            q_clean = " ".join(q_terms)
+            clean_enc = urllib.parse.quote(f"{q_clean} filetype:bitmap")
+            w_img_url = f"https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch={clean_enc}&gsrnamespace=6&prop=imageinfo&iiprop=url|size|mime&gsrlimit=2"
+            w_req = urllib.request.Request(w_img_url, headers={"User-Agent": "EmpireDocDirector/2.0 (mailto:admin@empire.tv)"})
+            with urllib.request.urlopen(w_req, timeout=8) as w_resp:
+                w_data = json.loads(w_resp.read().decode())
+                pages = w_data.get("query", {}).get("pages", {})
+                for pid, p in pages.items():
+                    info = p.get("imageinfo", [{}])[0]
+                    img_url = info.get("url", "")
+                    size_bytes = info.get("size", 0)
+                    if img_url.endswith((".jpg", ".jpeg", ".png")) and 20000 < size_bytes < 15 * 1024 * 1024:
+                        raw_wiki_img = work_dir / f"wiki_photo_{abs(hash(q_search)) % 10000}.jpg"
+                        urllib.request.urlretrieve(img_url, str(raw_wiki_img))
+                        try:
+                            im_test = Image.open(raw_wiki_img).convert("RGB")
+                            if im_test.width >= 400 and im_test.height >= 400:
+                                im = im_test
+                                print(f"  [B-Roll Engine] Deployed archival photo: '{q_clean}' ({im.size})")
+                                break
+                        except Exception:
+                            pass
+        except Exception:
             pass
 
     # 2. Master Cinematic Camera Movement Synthesis (Guaranteed High-Motion Cinema)
-    img_path = resolve_scene_artwork(visual_prompt, style_hint)
-    n_frames = max(15, int(round(duration * fps)))
+    if im is None:
+        img_path = resolve_scene_artwork(visual_prompt or q_search, style_hint)
+        try:
+            im = Image.open(img_path).convert("RGB")
+        except Exception:
+            im = create_dark_cinematic_procedural_backdrop(style_hint, target_w, target_h)
 
-    try:
-        im = Image.open(img_path).convert("RGB")
-    except Exception:
-        im = create_dark_cinematic_procedural_backdrop(style_hint, target_w, target_h)
+    n_frames = max(15, int(round(duration * fps)))
 
     # Prepare oversized canvas for smooth camera glide
     canvas_w = int(target_w * 1.35)
     canvas_h = int(target_h * 1.35)
     im_canvas = im.resize((canvas_w, canvas_h), Image.Resampling.LANCZOS)
 
-    # Determine camera movement direction: Vertical crane tilt vs Horizontal tracking pan
-    is_vertical_dominant = any(k in visual_prompt.lower() or k in style_hint.lower() for k in ("sub", "ocean", "submarine", "vault", "water", "tap", "depth", "tower", "abyss"))
-
     caption_overlay = render_cinematic_caption_overlay(caption, lang, target_w=target_w, target_h=target_h) if lang != "ar" else None
+
+    # Alternating 4-Mode Cinematic Camera Choreography
+    move_mode = scene_idx % 4
 
     ffmpeg_cmd = [
         "ffmpeg", "-y",
@@ -1525,21 +1584,42 @@ def fetch_or_synthesize_broll_clip(
         for f in range(n_frames):
             t = f / float(n_frames)
 
-            # Continuous 35mm push-in
-            zoom = 1.04 + 0.14 * t
-            cw = int(target_w / zoom)
-            ch = int(target_h / zoom)
-            max_x = canvas_w - cw
-            max_y = canvas_h - ch
-
-            if is_vertical_dominant:
-                # Vertical Crane Sweep (top to bottom) with gentle horizontal drift
-                cx = int(max_x * (0.35 + 0.30 * t))
-                cy = int(max_y * (0.15 + 0.70 * t))
-            else:
-                # Horizontal Tracking Pan (left to right) with gentle vertical drift
+            if move_mode == 0:
+                # Mode 0: Center Dramatic 35mm Push-In (zoom 1.04 -> 1.22)
+                zoom = 1.04 + 0.18 * t
+                cw = int(target_w / zoom)
+                ch = int(target_h / zoom)
+                max_x = canvas_w - cw
+                max_y = canvas_h - ch
+                cx = int(max_x * 0.50)
+                cy = int(max_y * (0.35 + 0.15 * t))
+            elif move_mode == 1:
+                # Mode 1: Vertical Crane Sweep (top to bottom glide)
+                zoom = 1.06 + 0.10 * t
+                cw = int(target_w / zoom)
+                ch = int(target_h / zoom)
+                max_x = canvas_w - cw
+                max_y = canvas_h - ch
+                cx = int(max_x * (0.30 + 0.20 * t))
+                cy = int(max_y * (0.12 + 0.76 * t))
+            elif move_mode == 2:
+                # Mode 2: Cinematic Horizontal Tracking Pan (left to right)
+                zoom = 1.06 + 0.12 * t
+                cw = int(target_w / zoom)
+                ch = int(target_h / zoom)
+                max_x = canvas_w - cw
+                max_y = canvas_h - ch
                 cx = int(max_x * (0.10 + 0.80 * t))
-                cy = int(max_y * (0.35 + 0.20 * t))
+                cy = int(max_y * (0.35 + 0.15 * t))
+            else:
+                # Mode 3: Dramatic Wide Reveal (pull back from 1.24 to 1.05)
+                zoom = 1.24 - 0.18 * t
+                cw = int(target_w / zoom)
+                ch = int(target_h / zoom)
+                max_x = canvas_w - cw
+                max_y = canvas_h - ch
+                cx = int(max_x * (0.50 + 0.15 * (1.0 - t)))
+                cy = int(max_y * 0.45)
 
             cx = max(0, min(max_x, cx))
             cy = max(0, min(max_y, cy))
@@ -1668,230 +1748,31 @@ def stream_render_presenter_scene(
     target_w: int = 1080,
     target_h: int = 1920,
 ) -> bool:
-    """
-    Renders photorealistic anchor presenter with dynamic multi-shot directing:
-    - Shot 1: Anchor studio establishing push-in with live voice articulation
-    - Shot 2: B-Roll Evidence Cutaway (camera sweeps over the evidence scene while narrator speaks)
-    - Shot 3: Anchor dramatic punchline close-up
-    This produces a true Hollywood documentary movie experience instead of a static image!
-    """
-    repo_root = Path(__file__).resolve().parent
-    chars_dir = repo_root / "assets" / "characters"
+    """Option 1 Legacy Redirect: 100% Cinematic B-Roll Documentary (No talking-head cutout)."""
+    work_dir = scene_mp4.parent
+    return fetch_or_synthesize_broll_clip(
+        broll_query=visual_prompt,
+        style_hint=style_hint,
+        visual_prompt=visual_prompt,
+        duration=duration,
+        scene_mp3=scene_mp3,
+        out_mp4=scene_mp4,
+        work_dir=work_dir,
+        caption=caption,
+        lang=lang,
+        target_w=target_w,
+        target_h=target_h,
+        fps=fps,
+        scene_idx=scene_idx
+    )
 
-    n_frames = max(15, int(round(duration * fps)))
-
-    # 1. Extract audio RMS envelope frame-by-frame for lip-sync
-    wav_temp = scene_mp3.with_suffix(".tmp.wav")
-    try:
-        subprocess.run(
-            ["ffmpeg", "-y", "-i", str(scene_mp3), "-ar", "24000", "-ac", "1", str(wav_temp)],
-            check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-        )
-        with wave.open(str(wav_temp), 'rb') as wf:
-            sr = wf.getframerate()
-            n_samples = wf.getnframes()
-            raw_bytes = wf.readframes(n_samples)
-            audio = np.frombuffer(raw_bytes, dtype=np.int16).astype(np.float32) / 32768.0
-    except Exception:
-        sr = 24000
-        n_samples = int(duration * sr)
-        audio = np.zeros(n_samples, dtype=np.float32)
-    finally:
-        if wav_temp.exists():
-            try: os.remove(wav_temp)
-            except Exception: pass
-
-    samples_per_frame = max(1, int(sr / fps))
-    envelope = []
-    for f in range(n_frames):
-        start = f * samples_per_frame
-        end = min(len(audio), start + samples_per_frame)
-        chunk = audio[start:end]
-        rms = np.sqrt(np.mean(chunk**2)) if len(chunk) > 0 else 0.0
-        envelope.append(rms)
-
-    env = np.array(envelope)
-    if env.max() > 0:
-        env = env / env.max()
-    smoothed = np.convolve(env, [0.15, 0.70, 0.15], mode='same')
-
-    # 2. Load Master Anchor & Mouth Open Assets
-    p_master = chars_dir / "anchor_master.jpg"
-    p_mouth_open = chars_dir / "anchor_mouth_open.jpg"
-    if not p_master.exists():
-        p_master = chars_dir / "rayan_hook.jpg"
-
-    im_master = Image.open(p_master).convert("RGB")
-    im_mouth_open = Image.open(p_mouth_open).convert("RGB") if p_mouth_open.exists() else None
-
-    # Prepare feathered mouth mask for isolated mouth modulation (zero ghosting)
-    mouth_mask = None
-    if im_mouth_open is not None:
-        mw, mh = im_mouth_open.size
-        m_img = Image.new("L", (mw, mh), 0)
-        for y_idx in range(mh):
-            for x_idx in range(mw):
-                nx = (x_idx - mw / 2.0) / (mw / 2.0)
-                ny = (y_idx - mh / 2.0) / (mh / 2.0)
-                d = math.sqrt(nx**2 + ny**2)
-                v = int(255 * max(0.0, min(1.0, (1.0 - d) * 2.2)))
-                m_img.putpixel((x_idx, y_idx), v)
-        mouth_mask = m_img.filter(ImageFilter.GaussianBlur(radius=3))
-
-    # Pre-render open mouth anchor frame (mouth open composited on master at 440, 460)
-    if im_mouth_open is not None and mouth_mask is not None:
-        im_speaking_anchor = im_master.copy()
-        im_speaking_anchor.paste(im_mouth_open, (440, 460), mouth_mask)
-    else:
-        im_speaking_anchor = im_master
-
-    # Pre-render natural eye blink anchor frame
-    im_blink_anchor = im_master.copy()
-    d_blink = ImageDraw.Draw(im_blink_anchor, "RGBA")
-    d_blink.ellipse([455, 322, 495, 332], fill=(155, 118, 98, 220))
-    d_blink.ellipse([540, 322, 580, 332], fill=(155, 118, 98, 220))
-    d_blink.line([(455, 327), (495, 327)], fill=(45, 35, 30, 240), width=2)
-    d_blink.line([(540, 327), (580, 327)], fill=(45, 35, 30, 240), width=2)
-
-    # Load B-Roll scene artwork for dynamic cutaways
-    cutaway_path = resolve_scene_artwork(visual_prompt, style_hint)
-    try:
-        im_cutaway = Image.open(cutaway_path).convert("RGB")
-    except Exception:
-        im_cutaway = im_master
-
-    # Prepare oversized canvases for real cinematic camera moves (1512x2688)
-    canvas_w = int(target_w * 1.40)
-    canvas_h = int(target_h * 1.40)
-    anchor_canvas = im_master.resize((canvas_w, canvas_h), Image.Resampling.LANCZOS)
-    speaking_canvas = im_speaking_anchor.resize((canvas_w, canvas_h), Image.Resampling.LANCZOS)
-    blink_canvas = im_blink_anchor.resize((canvas_w, canvas_h), Image.Resampling.LANCZOS)
-    cutaway_canvas = im_cutaway.resize((canvas_w, canvas_h), Image.Resampling.LANCZOS)
-
-    # Caption overlay (Arabic: ZERO text overlays)
-    caption_overlay = render_cinematic_caption_overlay(caption, lang, target_w=target_w, target_h=target_h) if lang != "ar" else None
-
-    # Multi-shot cutting timeline:
-    # If duration >= 4.8s: Split into 3 shots (Anchor Push -> Cutaway Evidence -> Anchor Close-up)
-    # If shorter: Continuous dramatic 35mm Push-In on Anchor
-    use_multi_shot = (duration >= 4.8)
-    f_shot1_end = int(min(2.5 * fps, n_frames * 0.35))
-    f_shot2_end = int(max(f_shot1_end + 15, n_frames - int(2.2 * fps)))
-
-    ffmpeg_cmd = [
-        "ffmpeg", "-y",
-        "-f", "rawvideo",
-        "-pix_fmt", "rgb24",
-        "-s", f"{target_w}x{target_h}",
-        "-r", str(fps),
-        "-i", "-",
-        "-i", str(scene_mp3),
-        "-vf", "noise=c1s=3:c0f=t",
-        "-c:v", "libx264",
-        "-preset", "veryfast",
-        "-pix_fmt", "yuv420p",
-        "-c:a", "aac",
-        "-b:a", "192k",
-        "-shortest",
-        str(scene_mp4)
-    ]
-    proc = subprocess.Popen(ffmpeg_cmd, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-    try:
-        for f in range(n_frames):
-            eng = float(smoothed[f]) if f < len(smoothed) else 0.0
-
-            # Natural blinking: blink cycle every ~100 frames (~3.3s), lasts 4 frames
-            blink_cycle = (f + scene_idx * 23) % 105
-            is_blinking = (blink_cycle in [0, 1, 2, 3])
-
-            # Micro-breathing kinematics (0.28 Hz gentle sine drift)
-            breath_offset = math.sin(2.0 * math.pi * f / (fps * 3.6)) * 4.0
-
-            # Speaking nod: on loud audio emphasis (eng > 0.55), head tilts slightly down
-            nod_offset = max(0.0, (eng - 0.55) * 6.0)
-
-            if use_multi_shot and (f_shot1_end <= f < f_shot2_end):
-                # SHOT 2: Cinematic Evidence Cutaway (camera tracking pan)
-                shot_len = max(1, f_shot2_end - f_shot1_end)
-                t_shot = (f - f_shot1_end) / float(shot_len)
-                zoom = 1.06 + 0.10 * t_shot
-                cw = int(target_w / zoom)
-                ch = int(target_h / zoom)
-                max_x = canvas_w - cw
-                max_y = canvas_h - ch
-                cx = max(0, min(max_x, int(max_x * (0.15 + 0.70 * t_shot))))
-                cy = max(0, min(max_y, int(max_y * (0.35 + 0.20 * t_shot))))
-                frame = cutaway_canvas.crop((cx, cy, cx + cw, cy + ch)).resize((target_w, target_h), Image.Resampling.BILINEAR)
-
-            elif use_multi_shot and (f >= f_shot2_end):
-                # SHOT 3: Dramatic Punchline Anchor Close-up
-                shot_len = max(1, n_frames - f_shot2_end)
-                t_shot = (f - f_shot2_end) / float(shot_len)
-                zoom = 1.20 + 0.14 * t_shot
-                cw = int(target_w / zoom)
-                ch = int(target_h / zoom)
-                max_x = canvas_w - cw
-                max_y = canvas_h - ch
-                cx = max(0, min(max_x, int(max_x * 0.50)))
-                cy = max(0, min(max_y, int(max_y * (0.26 + 0.12 * t_shot) + breath_offset + nod_offset)))
-
-                # Lifelike expression selection
-                if is_blinking:
-                    active_anchor = blink_canvas
-                elif eng >= 0.08:
-                    syllable_pulse = 0.65 + 0.35 * math.sin(f * 0.90)
-                    alpha = min(1.0, (eng - 0.08) * 4.0 * syllable_pulse)
-                    active_anchor = Image.blend(anchor_canvas, speaking_canvas, alpha)
-                else:
-                    active_anchor = anchor_canvas
-
-                frame = active_anchor.crop((cx, cy, cx + cw, cy + ch)).resize((target_w, target_h), Image.Resampling.BILINEAR)
-
-            else:
-                # SHOT 1: Establishing Anchor Studio Push-In
-                shot_len = f_shot1_end if use_multi_shot else n_frames
-                t_shot = f / float(max(1, shot_len))
-                zoom = 1.04 + 0.12 * t_shot
-                cw = int(target_w / zoom)
-                ch = int(target_h / zoom)
-                max_x = canvas_w - cw
-                max_y = canvas_h - ch
-                cx = max(0, min(max_x, int(max_x * (0.50 + 0.04 * t_shot))))
-                cy = max(0, min(max_y, int(max_y * (0.30 + 0.10 * t_shot) + breath_offset + nod_offset)))
-
-                if is_blinking:
-                    active_anchor = blink_canvas
-                elif eng >= 0.08:
-                    syllable_pulse = 0.65 + 0.35 * math.sin(f * 0.90)
-                    alpha = min(1.0, (eng - 0.08) * 4.0 * syllable_pulse)
-                    active_anchor = Image.blend(anchor_canvas, speaking_canvas, alpha)
-                else:
-                    active_anchor = anchor_canvas
-
-                frame = active_anchor.crop((cx, cy, cx + cw, cy + ch)).resize((target_w, target_h), Image.Resampling.BILINEAR)
-
-            # Apply English Subtitles if enabled
-            if caption_overlay is not None:
-                frame.paste(caption_overlay, (0, 0), caption_overlay)
-
-            proc.stdin.write(frame.tobytes())
-
-        proc.stdin.close()
-        proc.wait()
-        return scene_mp4.exists() and scene_mp4.stat().st_size > 10000
-    except Exception as e:
-        print(f"  [Render Error] Presenter scene streaming failed: {e}")
-        try: proc.kill()
-        except Exception: pass
-        return False
 
 # ==============================================================================
 # 9. MASTER DOCUMENTARY PRODUCER
 # ==============================================================================
 
 def produce_v16_animated_episode(channel_key: str, cfg: dict, output_root: Path) -> tuple[Path, dict]:
-    """Produces an elite cinematic vertical documentary short alternating between presenter and real video."""
+    """Produces an elite 100% cinematic vertical documentary short with dynamic B-Roll footage and voiceover."""
     W, H, FPS = 1080, 1920, 30
     lang = cfg["lang"]
     work_dir = output_root / f"work_{channel_key}"
@@ -1902,19 +1783,19 @@ def produce_v16_animated_episode(channel_key: str, cfg: dict, output_root: Path)
     title = script_data.get("title", "Documentary Short")
     scenes = script_data.get("scenes", [])
 
-    print(f"\n[{channel_key}] Producing Documentary Short: '{title}' ({len(scenes)} scenes)")
+    print(f"\n[{channel_key}] Producing 100% Cinematic B-Roll Short: '{title}' ({len(scenes)} scenes)")
 
     final_mp4 = output_root / f"{channel_key}_latest.mp4"
     scene_video_paths = []
 
-    # 2. Render Each Scene (Alternating Presenter vs Real B-Roll Video)
+    # 2. Render Each Scene (100% Full-Screen Cinematic Documentary B-Roll with Voiceover)
     for s_idx, scene in enumerate(scenes):
-        speaker = scene.get("speaker", "presenter")
-        scene_type = scene.get("scene_type", "presenter")
+        speaker = scene.get("speaker", "narrator")
+        scene_type = scene.get("scene_type", "b_roll")
         sfx_cue = scene.get("sfx_cue")
         broll_search = scene.get("broll_search")
 
-        print(f"  --- Scene {s_idx + 1}/{len(scenes)} [{scene_type.upper()}]: {scene.get('narration', '')[:45]}... (SFX: {sfx_cue}) ---")
+        print(f"  --- Scene {s_idx + 1}/{len(scenes)} [CINEMATIC B-ROLL]: {scene.get('narration', '')[:45]}... (SFX: {sfx_cue}) ---")
 
         scene_mp3 = work_dir / f"scene_{s_idx}.mp3"
         scene_mp4 = work_dir / f"scene_{s_idx}.mp4"
@@ -1930,36 +1811,22 @@ def produce_v16_animated_episode(channel_key: str, cfg: dict, output_root: Path)
             work_dir=work_dir
         )
 
-        # B. Render according to scene type: Real B-roll vs Photorealistic Anchor
-        if scene_type == "b_roll" or "broll" in scene.get("character_focus", "").lower():
-            ok = fetch_or_synthesize_broll_clip(
-                broll_query=broll_search,
-                style_hint=scene.get("visual_style", "dark"),
-                visual_prompt=scene.get("visual_prompt", ""),
-                duration=duration,
-                scene_mp3=scene_mp3,
-                out_mp4=scene_mp4,
-                work_dir=work_dir,
-                caption=scene.get("caption", ""),
-                lang=lang,
-                target_w=W,
-                target_h=H,
-                fps=FPS
-            )
-        else:
-            ok = stream_render_presenter_scene(
-                scene_idx=s_idx,
-                caption=scene.get("caption", ""),
-                lang=lang,
-                duration=duration,
-                scene_mp3=scene_mp3,
-                scene_mp4=scene_mp4,
-                visual_prompt=scene.get("visual_prompt", ""),
-                style_hint=scene.get("visual_style", ""),
-                fps=FPS,
-                target_w=W,
-                target_h=H
-            )
+        # B. Render 100% Cinematic Full-Screen Documentary B-Roll Video (Option 1)
+        ok = fetch_or_synthesize_broll_clip(
+            broll_query=broll_search,
+            style_hint=scene.get("visual_style", "dark"),
+            visual_prompt=scene.get("visual_prompt", ""),
+            duration=duration,
+            scene_mp3=scene_mp3,
+            out_mp4=scene_mp4,
+            work_dir=work_dir,
+            caption=scene.get("caption", ""),
+            lang=lang,
+            target_w=W,
+            target_h=H,
+            fps=FPS,
+            scene_idx=s_idx
+        )
 
         if ok and scene_mp4.exists():
             scene_video_paths.append(scene_mp4)
