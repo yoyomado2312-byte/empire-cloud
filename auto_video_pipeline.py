@@ -19,6 +19,7 @@ Automated High-Performance Viral Documentary Director:
 
 import os
 import sys
+import re
 import json
 import math
 import time
@@ -1160,7 +1161,7 @@ def shape_text(text: str, lang: str = "ar") -> str:
         text = text.replace("$", " دولار").replace("  ", " ")
         if HAS_ARABIC_SHAPER:
             try:
-                config = {'delete_harakat': True, 'support_ligatures': False}
+                config = {'delete_harakat': True, 'support_ligatures': True, 'RIAL SIGN': True}
                 reshaper = arabic_reshaper.ArabicReshaper(configuration=config)
                 reshaped = reshaper.reshape(text)
                 return get_display(reshaped)
@@ -1572,10 +1573,7 @@ def render_kinetic_keyword_overlay(
     text = keyword.strip()
     is_arabic = HAS_ARABIC_SHAPER and any('\u0600' <= c <= '\u06ff' for c in text)
     if is_arabic:
-        try:
-            text = get_display(arabic_reshaper.reshape(text))
-        except Exception:
-            pass
+        text = shape_text(text, lang="ar")
 
     font_size = int(64 * scale)
     font = get_font(font_size, lang="ar" if is_arabic else "en", bold=True)
