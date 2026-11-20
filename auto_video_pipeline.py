@@ -934,12 +934,14 @@ CRITICAL PRODUCTION FORMAT (100% CINEMATIC B-ROLL DOCUMENTARY):
 1. Pacing: 130 to 150 words per minute.
 2. ALL scenes are 100% visual B-Roll evidence, real archival footage, diagrams, maps, or dramatic reenactments.
    The host speaks ONLY as an authoritative Voiceover (VO) narrator. There is NEVER an on-camera presenter speaking to camera.
-3. Structure: 6 to 8 sequential dramatic scenes. Every scene has:
+3. Structure: EXACTLY 10 to 12 sequential dramatic scenes (each ~4.0 to 5.5 seconds long, total duration ~50-55 seconds).
+   EVERY single scene MUST have its own unique, script-specific visual evidence:
    - "speaker": "narrator"
    - "scene_type": "b_roll"
    - "character_focus": "broll_evidence"
+   - "narration": Spoken voiceover text here (short, punchy, 10-18 words per scene)...
    - "broll_search": A specific, short English search query for real video/archival footage (e.g. "supercomputer server room", "deep sea submarine", "microchip wafer fabrication", "vault security laser", "redacted classified documents", "satellite earth night").
-   - "visual_prompt": Detailed visual description of the archival footage or reenactment.
+   - "visual_prompt": A highly specific, photographic prompt for AI image generation illustrating this exact moment in the story (e.g. "1962 IBM 7090 magnetic tape computer with Arthur Samuel inspecting punch cards, 9:16 vertical", "declassified top secret telegram with redacted ink and CIA seal").
    - "visual_style": Short descriptor (e.g. "cyber_matrix", "submarine_abyss", "bank_vault", "quantum_silicon", "vintage_archive").
 4. Arabic Channel: Leave "caption" as an empty string ("") because Arabic videos have zero text overlays (100% clean full-screen footage).
    English Channel: Provide a punchy 2-line auto-wrapped subtitle in "caption".
@@ -1018,7 +1020,7 @@ CRITICAL PRODUCTION FORMAT (100% CINEMATIC B-ROLL DOCUMENTARY):
                         raw_text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
                         raw_text = raw_text.replace("```json", "").replace("```", "").strip()
                         script = json.loads(raw_text)
-                        if "scenes" in script and len(script["scenes"]) >= 5:
+                        if "scenes" in script and len(script["scenes"]) >= 8:
                             print(f"  [Gemini AI] Successfully generated dynamic unique episode via {model_tag}: '{script.get('title')}'")
                             return script
             except Exception as e:
@@ -1063,7 +1065,7 @@ CRITICAL PRODUCTION FORMAT (100% CINEMATIC B-ROLL DOCUMENTARY):
                     hf_text = hf_data.get("choices", [{}])[0].get("message", {}).get("content", "")
                     hf_text = hf_text.replace("```json", "").replace("```", "").strip()
                     script = json.loads(hf_text)
-                    if "scenes" in script and len(script["scenes"]) >= 5:
+                    if "scenes" in script and len(script["scenes"]) >= 8:
                         print(f"  [HuggingFace AI] Successfully generated dynamic unique episode via {hf_m}: '{script.get('title')}'")
                         return script
             except Exception as e:
@@ -1073,12 +1075,54 @@ CRITICAL PRODUCTION FORMAT (100% CINEMATIC B-ROLL DOCUMENTARY):
     return None
 
 
+def ensure_minimum_10_scenes(scenes: list[dict]) -> list[dict]:
+    """Guarantees at least 10 cinematic script-related scenes per episode for maximum visual density."""
+    if len(scenes) >= 10:
+        return scenes
+    expanded = []
+    needed = 10 - len(scenes)
+    for s in scenes:
+        narration = s.get("narration", "")
+        parts = [p.strip() for p in narration.replace("!", ".").replace("؟", ".").replace("?", ".").split(".") if p.strip()]
+        if len(parts) >= 2 and needed > 0:
+            mid = len(parts) // 2
+            p1 = ". ".join(parts[:mid]) + "."
+            p2 = ". ".join(parts[mid:]) + "."
+            s1 = dict(s)
+            s1["narration"] = p1
+            s2 = dict(s)
+            s2["narration"] = p2
+            s2["visual_prompt"] = s.get("visual_prompt", "") + ", cinematic evidence close-up detail"
+            s2["broll_search"] = (s.get("broll_search") or "") + " detail"
+            expanded.append(s1)
+            expanded.append(s2)
+            needed -= 1
+        else:
+            expanded.append(s)
+    while len(expanded) < 10:
+        longest_idx = max(range(len(expanded)), key=lambda i: len(expanded[i]["narration"]))
+        target = expanded[longest_idx]
+        words = target["narration"].split()
+        if len(words) < 6:
+            break
+        mid = len(words) // 2
+        s1 = dict(target)
+        s1["narration"] = " ".join(words[:mid]) + "..."
+        s2 = dict(target)
+        s2["narration"] = "..." + " ".join(words[mid:])
+        s2["visual_prompt"] = target.get("visual_prompt", "") + ", alternate perspective angle"
+        expanded[longest_idx] = s1
+        expanded.insert(longest_idx + 1, s2)
+    return expanded
+
+
 def get_or_generate_documentary_script(channel_key: str, cfg: dict) -> dict:
     """Selects or dynamically generates the master episode script."""
     lang = cfg["lang"]
     # 1. Attempt dynamic generation if GEMINI_API_KEY is available
     dyn_script = generate_dynamic_gemini_script(channel_key, lang)
     if dyn_script:
+        dyn_script["scenes"] = ensure_minimum_10_scenes(dyn_script.get("scenes", []))
         return dyn_script
 
     # 2. Season Bank Fallback: Select episode via rotation to guarantee 100% zero spam
@@ -1097,8 +1141,9 @@ def get_or_generate_documentary_script(channel_key: str, cfg: dict) -> dict:
         time_slot = int(time.time()) // (6 * 3600)
         ep_idx = (run_num + time_slot) % len(bank)
 
-    selected = bank[ep_idx]
-    print(f"  [Season Bank] Selected Episode {ep_idx + 1}/{len(bank)}: '{selected['title']}'")
+    selected = dict(bank[ep_idx])
+    selected["scenes"] = ensure_minimum_10_scenes(selected.get("scenes", []))
+    print(f"  [Season Bank] Selected Episode {ep_idx + 1}/{len(bank)}: '{selected['title']}' ({len(selected['scenes'])} scenes)")
     return selected
 
 # ==============================================================================
@@ -1518,35 +1563,73 @@ def fetch_or_synthesize_broll_clip(
         except Exception:
             pass
 
-    # 1c. Public Archival Photo Search (Zero API Key Required)
+    # 1c. Script-Specific AI Image Generation (Hugging Face Serverless FLUX/SDXL)
     im = None
-    if q_search:
-        try:
-            q_terms = q_search.strip().split()[:2]
-            q_clean = " ".join(q_terms)
-            clean_enc = urllib.parse.quote(f"{q_clean} filetype:bitmap")
-            w_img_url = f"https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch={clean_enc}&gsrnamespace=6&prop=imageinfo&iiprop=url|size|mime&gsrlimit=2"
-            w_req = urllib.request.Request(w_img_url, headers={"User-Agent": "EmpireDocDirector/2.0 (mailto:admin@empire.tv)"})
-            with urllib.request.urlopen(w_req, timeout=8) as w_resp:
-                w_data = json.loads(w_resp.read().decode())
-                pages = w_data.get("query", {}).get("pages", {})
-                for pid, p in pages.items():
-                    info = p.get("imageinfo", [{}])[0]
-                    img_url = info.get("url", "")
-                    size_bytes = info.get("size", 0)
-                    if img_url.endswith((".jpg", ".jpeg", ".png")) and 20000 < size_bytes < 15 * 1024 * 1024:
-                        raw_wiki_img = work_dir / f"wiki_photo_{abs(hash(q_search)) % 10000}.jpg"
-                        urllib.request.urlretrieve(img_url, str(raw_wiki_img))
-                        try:
-                            im_test = Image.open(raw_wiki_img).convert("RGB")
-                            if im_test.width >= 400 and im_test.height >= 400:
+    hf_token = os.environ.get("HF_TOKEN", "").strip()
+    if hf_token and visual_prompt:
+        hf_models = [
+            "black-forest-labs/FLUX.1-schnell",
+            "stabilityai/stable-diffusion-xl-base-1.0",
+            "ByteDance/SDXL-Lightning"
+        ]
+        ai_prompt = f"Cinematic vertical documentary photograph, 9:16 portrait, {visual_prompt}, historical archival details, dramatic 35mm lighting, photorealistic, 8k"
+        for m_id in hf_models:
+            try:
+                hf_url = f"https://router.huggingface.co/hf-inference/models/{m_id}"
+                hf_payload = json.dumps({"inputs": ai_prompt}).encode("utf-8")
+                hf_req = urllib.request.Request(
+                    hf_url,
+                    data=hf_payload,
+                    headers={
+                        "Authorization": f"Bearer {hf_token}",
+                        "Content-Type": "application/json",
+                        "User-Agent": "EmpireDocDirector/2.0"
+                    }
+                )
+                with urllib.request.urlopen(hf_req, timeout=18) as hf_resp:
+                    if hf_resp.status == 200:
+                        img_bytes = hf_resp.read()
+                        if len(img_bytes) > 15000:
+                            raw_ai_img = work_dir / f"ai_gen_{abs(hash(visual_prompt)) % 10000}.jpg"
+                            with open(raw_ai_img, "wb") as f_out:
+                                f_out.write(img_bytes)
+                            im_test = Image.open(raw_ai_img).convert("RGB")
+                            if im_test.width >= 350 and im_test.height >= 350:
                                 im = im_test
-                                print(f"  [B-Roll Engine] Deployed archival photo: '{q_clean}' ({im.size})")
+                                print(f"  [AI Image Generator] Generated script-specific AI image via {m_id} for Scene {scene_idx + 1}: '{visual_prompt[:40]}...' ({im.size})")
                                 break
-                        except Exception:
-                            pass
-        except Exception:
-            pass
+            except Exception:
+                pass
+
+    # 1d. Public Archival Historical & Museum Photo Search (Zero API Key Required)
+    if im is None and q_search:
+        for term_variant in [q_search, " ".join(q_search.split()[:2])]:
+            if im is not None:
+                break
+            try:
+                clean_enc = urllib.parse.quote(f"{term_variant} filetype:bitmap")
+                w_img_url = f"https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch={clean_enc}&gsrnamespace=6&prop=imageinfo&iiprop=url|size|mime&gsrlimit=3"
+                w_req = urllib.request.Request(w_img_url, headers={"User-Agent": "EmpireDocDirector/2.0 (mailto:admin@empire.tv)"})
+                with urllib.request.urlopen(w_req, timeout=8) as w_resp:
+                    w_data = json.loads(w_resp.read().decode())
+                    pages = w_data.get("query", {}).get("pages", {})
+                    for pid, p in pages.items():
+                        info = p.get("imageinfo", [{}])[0]
+                        img_url = info.get("url", "")
+                        size_bytes = info.get("size", 0)
+                        if img_url.endswith((".jpg", ".jpeg", ".png")) and 20000 < size_bytes < 15 * 1024 * 1024:
+                            raw_wiki_img = work_dir / f"wiki_photo_{abs(hash(term_variant)) % 10000}.jpg"
+                            urllib.request.urlretrieve(img_url, str(raw_wiki_img))
+                            try:
+                                im_test = Image.open(raw_wiki_img).convert("RGB")
+                                if im_test.width >= 350 and im_test.height >= 350:
+                                    im = im_test
+                                    print(f"  [B-Roll Engine] Deployed script-matched archival photo: '{term_variant}' ({im.size})")
+                                    break
+                            except Exception:
+                                pass
+            except Exception:
+                pass
 
     # 2. Master Cinematic Camera Movement Synthesis (Guaranteed High-Motion Cinema)
     if im is None:
