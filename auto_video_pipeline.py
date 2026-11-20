@@ -916,14 +916,13 @@ EPISODE_BANK_AR = EPISODE_BANK_AR_AI
 EPISODE_BANK_EN = EPISODE_BANK_EN_WEALTH
 
 # ==============================================================================
-# 3. DYNAMIC SCRIPT ENGINE (GEMINI API WITH SMART RETRY)
+# 3. DYNAMIC SCRIPT ENGINE (GEMINI API + HUGGINGFACE LLM FALLBACK)
 # ==============================================================================
 
 def generate_dynamic_gemini_script(channel_key: str, lang: str) -> dict | None:
-    """Dynamically creates a brand new unique documentary script using Gemini API if key exists."""
+    """Dynamically creates a brand new unique documentary script using Gemini API or Hugging Face LLM."""
     api_key = os.environ.get("GEMINI_API_KEY", "").strip()
-    if not api_key:
-        return None
+    hf_token = os.environ.get("HF_TOKEN", "").strip()
 
     lang_desc = "Modern Standard Arabic (الفصحى السلسة الراقية بأسلوب الدحيح)" if lang == "ar" else "Sophisticated English (Investigative Documentary style)"
     channel_niche = "AI, science, and mysterious technology history" if channel_key == "ch02_ar_ai_tech" else "Cold War heists, corporate deceptions, and hidden wealth monopolies"
@@ -958,63 +957,113 @@ CRITICAL REQUIREMENTS:
   ]
 }}"""
 
-    discovered_endpoints = []
-    # 1. Dynamically discover supported models for this specific API key
-    for ver in ["v1beta", "v1"]:
-        try:
-            m_url = f"https://generativelanguage.googleapis.com/{ver}/models?key={api_key}"
-            req_m = urllib.request.Request(m_url)
-            with urllib.request.urlopen(req_m, timeout=10) as m_resp:
-                m_data = json.loads(m_resp.read().decode())
-                for item in m_data.get("models", []):
-                    m_name = item.get("name", "")
-                    methods = item.get("supportedGenerationMethods", [])
-                    if "generateContent" in methods:
-                        ep = f"https://generativelanguage.googleapis.com/{ver}/{m_name}:generateContent?key={api_key}"
-                        if ep not in discovered_endpoints:
-                            discovered_endpoints.append(ep)
-        except Exception as e:
-            err_m = str(e)
-            if hasattr(e, "read"):
-                try:
-                    err_m += " " + e.read().decode("utf-8", errors="replace")[:120]
-                except Exception:
-                    pass
-            print(f"  [Gemini AI Notice] Model discovery ({ver}) error: {err_m}")
+    # 1. Attempt Gemini API with Smart Model Prioritization
+    if api_key:
+        raw_candidates = []
+        for ver in ["v1beta", "v1"]:
+            try:
+                m_url = f"https://generativelanguage.googleapis.com/{ver}/models?key={api_key}"
+                req_m = urllib.request.Request(m_url)
+                with urllib.request.urlopen(req_m, timeout=10) as m_resp:
+                    m_data = json.loads(m_resp.read().decode())
+                    for item in m_data.get("models", []):
+                        m_name = item.get("name", "").replace("models/", "")
+                        methods = item.get("supportedGenerationMethods", [])
+                        if "generateContent" in methods:
+                            # Filter out audio-only, embedding, or text-to-speech models
+                            if any(bad in m_name.lower() for bad in ["-tts", "preview-tts", "embedding", "aqa", "imagen"]):
+                                continue
+                            ep = f"https://generativelanguage.googleapis.com/{ver}/models/{m_name}:generateContent?key={api_key}"
+                            if ep not in raw_candidates:
+                                raw_candidates.append(ep)
+            except Exception as e:
+                pass
 
-    if not discovered_endpoints:
-        discovered_endpoints = [
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}",
-            f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}",
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}",
+        # Smart priority ranking: standard production models first!
+        def score_model(url: str) -> int:
+            u = url.lower()
+            if "gemini-1.5-flash" in u: return 100
+            if "gemini-2.0-flash" in u: return 90
+            if "gemini-1.5-pro" in u: return 80
+            if "gemini-pro" in u: return 70
+            if "flash" in u and "2.5" not in u: return 60
+            if "pro" in u and "2.5" not in u: return 50
+            return 10
+
+        ranked_endpoints = sorted(raw_candidates, key=score_model, reverse=True)
+        if not ranked_endpoints:
+            ranked_endpoints = [
+                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}",
+                f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}",
+                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}",
+                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}",
+            ]
+
+        req_body = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode("utf-8")
+
+        for url in ranked_endpoints:
+            model_tag = url.split("models/")[1].split(":")[0] if "models/" in url else "unknown"
+            req = urllib.request.Request(url, data=req_body, headers={"Content-Type": "application/json"})
+            try:
+                with urllib.request.urlopen(req, timeout=25) as resp:
+                    data = json.loads(resp.read().decode())
+                    candidates = data.get("candidates", [])
+                    if candidates:
+                        raw_text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                        raw_text = raw_text.replace("```json", "").replace("```", "").strip()
+                        script = json.loads(raw_text)
+                        if "scenes" in script and len(script["scenes"]) >= 5:
+                            print(f"  [Gemini AI] Successfully generated dynamic unique episode via {model_tag}: '{script.get('title')}'")
+                            return script
+            except Exception as e:
+                err_msg = str(e)
+                if hasattr(e, "read"):
+                    try:
+                        err_msg += " " + e.read().decode("utf-8", errors="replace")[:120]
+                    except Exception:
+                        pass
+                print(f"  [Gemini AI Notice] Model '{model_tag}' attempt error: {err_msg}")
+
+    # 2. Attempt Hugging Face Serverless LLM Fallback (Zero Quota Failure)
+    if hf_token:
+        hf_models = [
+            "Qwen/Qwen2.5-72B-Instruct",
+            "meta-llama/Llama-3.1-70B-Instruct",
+            "mistralai/Mistral-7B-Instruct-v0.3"
         ]
-
-    req_body = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode("utf-8")
-
-    for url in discovered_endpoints[:4]:
-        model_tag = url.split("models/")[1].split(":")[0] if "models/" in url else "unknown"
-        req = urllib.request.Request(url, data=req_body, headers={"Content-Type": "application/json"})
-        try:
-            with urllib.request.urlopen(req, timeout=25) as resp:
-                data = json.loads(resp.read().decode())
-                candidates = data.get("candidates", [])
-                if candidates:
-                    raw_text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
-                    raw_text = raw_text.replace("```json", "").replace("```", "").strip()
-                    script = json.loads(raw_text)
+        for hf_m in hf_models:
+            try:
+                hf_url = "https://router.huggingface.co/v1/chat/completions"
+                hf_payload = json.dumps({
+                    "model": hf_m,
+                    "messages": [
+                        {"role": "system", "content": "You are a professional documentary script director. Output strictly valid JSON."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    "temperature": 0.7,
+                    "max_tokens": 2048
+                }).encode("utf-8")
+                hf_req = urllib.request.Request(
+                    hf_url,
+                    data=hf_payload,
+                    headers={
+                        "Authorization": f"Bearer {hf_token}",
+                        "Content-Type": "application/json",
+                        "User-Agent": "EmpireDocPipeline/2.0"
+                    }
+                )
+                with urllib.request.urlopen(hf_req, timeout=30) as hf_resp:
+                    hf_data = json.loads(hf_resp.read().decode())
+                    hf_text = hf_data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                    hf_text = hf_text.replace("```json", "").replace("```", "").strip()
+                    script = json.loads(hf_text)
                     if "scenes" in script and len(script["scenes"]) >= 5:
-                        print(f"  [Gemini AI] Successfully generated dynamic unique episode via {model_tag}: '{script.get('title')}'")
+                        print(f"  [HuggingFace AI] Successfully generated dynamic unique episode via {hf_m}: '{script.get('title')}'")
                         return script
-        except Exception as e:
-            err_msg = str(e)
-            if hasattr(e, "read"):
-                try:
-                    err_msg += " " + e.read().decode("utf-8", errors="replace")[:150]
-                except Exception:
-                    pass
-            print(f"  [Gemini AI Notice] Model '{model_tag}' attempt error: {err_msg}")
+            except Exception as e:
+                print(f"  [HuggingFace AI Notice] Fallback '{hf_m}' error: {e}")
 
-    print("  [Gemini AI Notice] All dynamic Gemini models failed; activating curated documentary season bank fallback...")
+    print("  [Dynamic Script Notice] Cloud AI dynamic generation unavailable; activating curated documentary season bank fallback...")
     return None
 
 
@@ -1364,7 +1413,7 @@ def fetch_or_synthesize_broll_clip(
     """
     pexels_key = os.environ.get("PEXELS_API_KEY", "").strip()
 
-    # 1. Pexels Real Video Retrieval
+    # 1. Pexels Real Video Retrieval (if key exists)
     if pexels_key and broll_query:
         try:
             q_clean = broll_query.strip()
@@ -1399,12 +1448,47 @@ def fetch_or_synthesize_broll_clip(
                         subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                         if out_mp4.exists() and out_mp4.stat().st_size > 10000:
                             print(f"  [B-Roll Engine] Successfully deployed real Pexels video: '{q_clean}' ({out_mp4.stat().st_size // 1024} KB)")
-                            # Apply English captions if enabled
                             if lang != "ar" and caption:
                                 apply_captions_to_video(out_mp4, caption, lang, work_dir, target_w, target_h)
                             return True
         except Exception as e:
-            print(f"  [B-Roll Notice] Pexels retrieval error ({e}); using cinematic motion synthesis fallback...")
+            print(f"  [B-Roll Notice] Pexels retrieval error ({e}); checking archival video commons...")
+
+    # 1b. Public Archival Video Search (Zero API Key Required)
+    if broll_query:
+        try:
+            q_terms = broll_query.strip().split()[:2]
+            q_clean = " ".join(q_terms)
+            clean_enc = urllib.parse.quote(f"{q_clean} filetype:video")
+            wiki_url = f"https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch={clean_enc}&gsrnamespace=6&prop=imageinfo&iiprop=url|size|mime&gsrlimit=3"
+            w_req = urllib.request.Request(wiki_url, headers={"User-Agent": "EmpireDocDirector/2.0 (mailto:admin@empire.tv)"})
+            with urllib.request.urlopen(w_req, timeout=10) as w_resp:
+                w_data = json.loads(w_resp.read().decode())
+                pages = w_data.get("query", {}).get("pages", {})
+                for pid, p in pages.items():
+                    info = p.get("imageinfo", [{}])[0]
+                    v_url = info.get("url", "")
+                    size_bytes = info.get("size", 0)
+                    if v_url.endswith((".webm", ".mp4", ".ogv")) and 0 < size_bytes < 35 * 1024 * 1024:
+                        raw_wiki = work_dir / f"wiki_broll_{abs(hash(broll_query)) % 10000}.webm"
+                        urllib.request.urlretrieve(v_url, str(raw_wiki))
+                        cmd = [
+                            "ffmpeg", "-y", "-ss", "0", "-i", str(raw_wiki),
+                            "-i", str(scene_mp3),
+                            "-t", str(duration),
+                            "-vf", f"scale={target_w}:{target_h}:force_original_aspect_ratio=increase,crop={target_w}:{target_h},fps={fps},noise=c1s=3:c0f=t",
+                            "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p",
+                            "-c:a", "aac", "-b:a", "192k", "-shortest",
+                            str(out_mp4)
+                        ]
+                        subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        if out_mp4.exists() and out_mp4.stat().st_size > 10000:
+                            print(f"  [B-Roll Engine] Successfully deployed real archival video: '{q_clean}' ({out_mp4.stat().st_size // 1024} KB)")
+                            if lang != "ar" and caption:
+                                apply_captions_to_video(out_mp4, caption, lang, work_dir, target_w, target_h)
+                            return True
+        except Exception as e:
+            pass
 
     # 2. Master Cinematic Camera Movement Synthesis (Guaranteed High-Motion Cinema)
     img_path = resolve_scene_artwork(visual_prompt, style_hint)
@@ -1631,16 +1715,43 @@ def stream_render_presenter_scene(
         env = env / env.max()
     smoothed = np.convolve(env, [0.15, 0.70, 0.15], mode='same')
 
-    # 2. Load Anchor Assets & Cutaway B-Roll Artwork
+    # 2. Load Master Anchor & Mouth Open Assets
     p_master = chars_dir / "anchor_master.jpg"
-    p_speaking = chars_dir / "anchor_speaking.jpg"
+    p_mouth_open = chars_dir / "anchor_mouth_open.jpg"
     if not p_master.exists():
         p_master = chars_dir / "rayan_hook.jpg"
-    if not p_speaking.exists():
-        p_speaking = p_master
 
     im_master = Image.open(p_master).convert("RGB")
-    im_speaking = Image.open(p_speaking).convert("RGB")
+    im_mouth_open = Image.open(p_mouth_open).convert("RGB") if p_mouth_open.exists() else None
+
+    # Prepare feathered mouth mask for isolated mouth modulation (zero ghosting)
+    mouth_mask = None
+    if im_mouth_open is not None:
+        mw, mh = im_mouth_open.size
+        m_img = Image.new("L", (mw, mh), 0)
+        for y_idx in range(mh):
+            for x_idx in range(mw):
+                nx = (x_idx - mw / 2.0) / (mw / 2.0)
+                ny = (y_idx - mh / 2.0) / (mh / 2.0)
+                d = math.sqrt(nx**2 + ny**2)
+                v = int(255 * max(0.0, min(1.0, (1.0 - d) * 2.2)))
+                m_img.putpixel((x_idx, y_idx), v)
+        mouth_mask = m_img.filter(ImageFilter.GaussianBlur(radius=3))
+
+    # Pre-render open mouth anchor frame (mouth open composited on master at 440, 460)
+    if im_mouth_open is not None and mouth_mask is not None:
+        im_speaking_anchor = im_master.copy()
+        im_speaking_anchor.paste(im_mouth_open, (440, 460), mouth_mask)
+    else:
+        im_speaking_anchor = im_master
+
+    # Pre-render natural eye blink anchor frame
+    im_blink_anchor = im_master.copy()
+    d_blink = ImageDraw.Draw(im_blink_anchor, "RGBA")
+    d_blink.ellipse([455, 322, 495, 332], fill=(155, 118, 98, 220))
+    d_blink.ellipse([540, 322, 580, 332], fill=(155, 118, 98, 220))
+    d_blink.line([(455, 327), (495, 327)], fill=(45, 35, 30, 240), width=2)
+    d_blink.line([(540, 327), (580, 327)], fill=(45, 35, 30, 240), width=2)
 
     # Load B-Roll scene artwork for dynamic cutaways
     cutaway_path = resolve_scene_artwork(visual_prompt, style_hint)
@@ -1653,18 +1764,19 @@ def stream_render_presenter_scene(
     canvas_w = int(target_w * 1.40)
     canvas_h = int(target_h * 1.40)
     anchor_canvas = im_master.resize((canvas_w, canvas_h), Image.Resampling.LANCZOS)
-    speaking_canvas = im_speaking.resize((canvas_w, canvas_h), Image.Resampling.LANCZOS)
+    speaking_canvas = im_speaking_anchor.resize((canvas_w, canvas_h), Image.Resampling.LANCZOS)
+    blink_canvas = im_blink_anchor.resize((canvas_w, canvas_h), Image.Resampling.LANCZOS)
     cutaway_canvas = im_cutaway.resize((canvas_w, canvas_h), Image.Resampling.LANCZOS)
 
     # Caption overlay (Arabic: ZERO text overlays)
     caption_overlay = render_cinematic_caption_overlay(caption, lang, target_w=target_w, target_h=target_h) if lang != "ar" else None
 
     # Multi-shot cutting timeline:
-    # If duration >= 5.5s: Split into 3 shots (Anchor Push -> Cutaway Evidence -> Anchor Close-up)
+    # If duration >= 4.8s: Split into 3 shots (Anchor Push -> Cutaway Evidence -> Anchor Close-up)
     # If shorter: Continuous dramatic 35mm Push-In on Anchor
-    use_multi_shot = (duration >= 5.5)
-    f_shot1_end = int(min(2.8 * fps, n_frames * 0.35))
-    f_shot2_end = int(max(f_shot1_end + 15, n_frames - int(2.4 * fps)))
+    use_multi_shot = (duration >= 4.8)
+    f_shot1_end = int(min(2.5 * fps, n_frames * 0.35))
+    f_shot2_end = int(max(f_shot1_end + 15, n_frames - int(2.2 * fps)))
 
     ffmpeg_cmd = [
         "ffmpeg", "-y",
@@ -1689,6 +1801,16 @@ def stream_render_presenter_scene(
         for f in range(n_frames):
             eng = float(smoothed[f]) if f < len(smoothed) else 0.0
 
+            # Natural blinking: blink cycle every ~100 frames (~3.3s), lasts 4 frames
+            blink_cycle = (f + scene_idx * 23) % 105
+            is_blinking = (blink_cycle in [0, 1, 2, 3])
+
+            # Micro-breathing kinematics (0.28 Hz gentle sine drift)
+            breath_offset = math.sin(2.0 * math.pi * f / (fps * 3.6)) * 4.0
+
+            # Speaking nod: on loud audio emphasis (eng > 0.55), head tilts slightly down
+            nod_offset = max(0.0, (eng - 0.55) * 6.0)
+
             if use_multi_shot and (f_shot1_end <= f < f_shot2_end):
                 # SHOT 2: Cinematic Evidence Cutaway (camera tracking pan)
                 shot_len = max(1, f_shot2_end - f_shot1_end)
@@ -1706,17 +1828,20 @@ def stream_render_presenter_scene(
                 # SHOT 3: Dramatic Punchline Anchor Close-up
                 shot_len = max(1, n_frames - f_shot2_end)
                 t_shot = (f - f_shot2_end) / float(shot_len)
-                zoom = 1.18 + 0.14 * t_shot
+                zoom = 1.20 + 0.14 * t_shot
                 cw = int(target_w / zoom)
                 ch = int(target_h / zoom)
                 max_x = canvas_w - cw
                 max_y = canvas_h - ch
                 cx = max(0, min(max_x, int(max_x * 0.50)))
-                cy = max(0, min(max_y, int(max_y * (0.28 + 0.12 * t_shot))))
+                cy = max(0, min(max_y, int(max_y * (0.26 + 0.12 * t_shot) + breath_offset + nod_offset)))
 
-                # Live mouth articulation
-                if eng >= 0.08:
-                    alpha = min(1.0, (eng - 0.08) * 3.5)
+                # Lifelike expression selection
+                if is_blinking:
+                    active_anchor = blink_canvas
+                elif eng >= 0.08:
+                    syllable_pulse = 0.65 + 0.35 * math.sin(f * 0.90)
+                    alpha = min(1.0, (eng - 0.08) * 4.0 * syllable_pulse)
                     active_anchor = Image.blend(anchor_canvas, speaking_canvas, alpha)
                 else:
                     active_anchor = anchor_canvas
@@ -1733,10 +1858,13 @@ def stream_render_presenter_scene(
                 max_x = canvas_w - cw
                 max_y = canvas_h - ch
                 cx = max(0, min(max_x, int(max_x * (0.50 + 0.04 * t_shot))))
-                cy = max(0, min(max_y, int(max_y * (0.32 + 0.10 * t_shot))))
+                cy = max(0, min(max_y, int(max_y * (0.30 + 0.10 * t_shot) + breath_offset + nod_offset)))
 
-                if eng >= 0.08:
-                    alpha = min(1.0, (eng - 0.08) * 3.5)
+                if is_blinking:
+                    active_anchor = blink_canvas
+                elif eng >= 0.08:
+                    syllable_pulse = 0.65 + 0.35 * math.sin(f * 0.90)
+                    alpha = min(1.0, (eng - 0.08) * 4.0 * syllable_pulse)
                     active_anchor = Image.blend(anchor_canvas, speaking_canvas, alpha)
                 else:
                     active_anchor = anchor_canvas
@@ -2026,9 +2154,21 @@ def upload_to_youtube(video_path: Path, script_data: dict, cfg: dict) -> str | N
         print(f"  [YouTube Upload] SUCCESS! Video published: https://youtu.be/{vid_id}")
         return vid_id
     except Exception as e:
-        print(f"  [YouTube Upload] ERROR during YouTube upload: {e}")
-        import traceback
-        traceback.print_exc()
+        err_str = str(e)
+        print(f"  [YouTube Upload] ERROR during YouTube upload: {err_str}")
+        if "invalid_grant" in err_str.lower():
+            print("\n" + "!" * 75)
+            print("  CRITICAL ACTION REQUIRED: YOUTUBE REFRESH TOKEN EXPIRED / REVOKED")
+            print("!" * 75)
+            print(f"  The token for {secret_env} has expired (Google invalid_grant).")
+            print("  HOW TO FIX:")
+            print("  1. Run 'python refresh_yt_token.py' on your local terminal.")
+            print("  2. In Google Cloud Console, ensure your OAuth Consent Screen is 'In Production'.")
+            print(f"  3. Update GitHub Secret '{secret_env}' with the new refresh token.")
+            print("!" * 75 + "\n")
+        else:
+            import traceback
+            traceback.print_exc()
         return None
 
 # ==============================================================================
