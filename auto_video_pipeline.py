@@ -112,807 +112,13 @@ CHANNELS = {
 }
 
 # ==============================================================================
-# 2. MASTER 8-EPISODE DOCUMENTARY SEASONS (100% DISTINCT TOPICS)
+# 2. MASTER VIRAL DOCUMENTARY SEASONS (100% DISTINCT TOPICS, 10 SCENES, HOOK & LOOP)
 # ==============================================================================
 
-# Arabic Channel: The Tech Daheeh Style (Conversational, Engaging, 130-150 WPM)
-EPISODE_BANK_AR_AI = [
-    # Episode 1: Project Azorian Submarine Heist
-    {
-        "series_title": "الدحيح التكنولوجي | ألغاز التاريخ السري",
-        "part": "الحلقة 1",
-        "title": "سر سرقة الغواصة السوفيتية K-129: أغرب عملية مخابرات في التاريخ #Shorts",
-        "scenes": [
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_hook",
-                "narration": "في يوليو 1974، الملياردير هوارد هيوز أعلن للعالم إنه بيبني سفينة عملاقة عشان يعدّن معادن من قاع المحيط الهادئ... بس الحقيقة الصادمة؟ كانت كذبة متقنة خططت لها الـ CIA عشان تسرق غواصة نووية سوفيتية غارقة على عمق خمسة كيلومترات!",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Documentary anchor in cinematic studio leaning forward explaining passionately, 9:16 vertical",
-                "visual_style": "anchor_hook"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_sub",
-                "narration": "الغواصة السوفيتية K-129 اختفت فجأة سنة 1968 ومعاها صواريخ نووية حربية. الاتحاد السوفيتي قلب المحيط وما لقاش أي أثر، لكن مجسات البحرية الأمريكية سجلت صوت الانفجار وحددت مكانها بالمليمتر.",
-                "broll_search": "ocean dark storm waves underwater",
-                "caption": "",
-                "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Soviet submarine in deep dark ocean abyss illuminated by submersible searchlights, 9:16 vertical",
-                "visual_style": "soviet_submarine_abyss"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_explain",
-                "narration": "بس انت متخيل يعني إيه تسحب تلاتة آلاف طن حديد من عمق 16 ألف قدم تحت ضغط مائي يسحق الحديد؟ مستحيل هندسي بكل المقاييس! عشان كدة صرفوا 4 مليار دولار بمقاييس النهاردة عشان يصنعوا مخلب هيدروليكي سري اسمه كليمنتاين.",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_scratch",
-                "visual_prompt": "Documentary host gesturing with hands explaining complex engineering problem, 9:16 vertical",
-                "visual_style": "anchor_explain"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_heist",
-                "narration": "سفينة جلومار إكسبلورر نزلت للموقع، وسفن التجسس السوفيتية كانت بتلف حواليها على بعد أمتار من غير ما يشكوا لحظة إن في مخلب جبار بينزل تحتهم مباشرة في الظلام الدامس.",
-                "broll_search": "huge cargo ship ocean industrial derrick",
-                "caption": "",
-                "sfx_cue": None,
-                "visual_prompt": "Colossal deep sea recovery ship at sea with industrial derrick tower, 9:16 vertical",
-                "visual_style": "factory_production"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_turning",
-                "narration": "المخلب مسك الغواصة وبدأ يرفعها ببطء شديد... لكن على عمق تسعة آلاف قدم، حصلت كارثة غير متوقعة: أصابع المخلب اتكسرت من الضغط، وتلتين الغواصة انفصل وسقط تاني في القاع مع الصواريخ!",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Documentary host showing dramatic tension and shock, 9:16 vertical",
-                "visual_style": "anchor_turning"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_wreck",
-                "narration": "رغم ده، الجزء الأمامي طلع وفيه أجهزة الشيفرة وجثث ستة بحارة سوفيت. وفي لفتة غريبة جداً، الأمريكان عملوا للبحارة جنازة عسكرية رسمية في عرض البحر وغطوا توابيتهم بالعلم السوفيتي احتراما ليهم.",
-                "broll_search": "ocean waves burial navy flag solemn",
-                "caption": "",
-                "sfx_cue": None,
-                "visual_prompt": "Ceremonial naval flags at sea under dramatic golden sunset clouds, 9:16 vertical",
-                "visual_style": "soviet_submarine_abyss"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_outro",
-                "narration": "ولما الصحافة كشفت القصة سنة 1975، الـ CIA اخترعت أشهر جملة قانونية في التاريخ: 'لا نؤكد ولا ننفي'. التاريخ مش مجرد كتب... التاريخ أسرار مستخبية تحت أقدامنا! اشترك واستعد للحلقة الجاية.",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_register",
-                "visual_prompt": "Documentary host leaning back with knowing smile and closing thought, 9:16 vertical",
-                "visual_style": "anchor_outro"
-            }
-        ]
-    },
-    # Episode 2: The Antwerp Vault Heist
-    {
-        "series_title": "الدحيح التكنولوجي | ألغاز التاريخ السري",
-        "part": "الحلقة 2",
-        "title": "سرقة خزنة أنتويرب: كيف سرقوا 100 مليون دولار بدون إطلاق رصاصة واحدة؟ #Shorts",
-        "scenes": [
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_hook",
-                "narration": "تخيل خزنة تحت الأرض محمية بأجهزة ليزر تحت الحمراء، مجسات حرارة، أقفال مغناطيسية، وأبواب فولاذية بتتحمل تفجير نووي... ومع ذلك، في ليلة واحدة اتسرق منها مئة مليون دولار ألماس من غير صوت إنذار واحد!",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Documentary anchor speaking with intense intrigue into lens, 9:16 vertical",
-                "visual_style": "anchor_hook"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_vault",
-                "narration": "مركز ألماظ أنتويرب في بلجيكا بيعدي منه تمانين في المية من ألماظ العالم الخام. ليوناردو نوتاربارتولو استأجر مكتب هناك وفضل سنتين يدرس كل سنتيمتر في نظام الحماية بكاميرا خفية في قلمه.",
-                "broll_search": "bank vault laser security diamonds jewelry",
-                "caption": "",
-                "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Subterranean bank vault interior with red laser security grid and looted diamond boxes, 9:16 vertical",
-                "visual_style": "antwerp_bank_vault"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_explain",
-                "narration": "اللي عمله كان عبقرية خالصة: استخدم بخاخ مثبت شعر نسائي عادي جداً عشان يعمي مجسات الحركة الحرارية! ووضع لوح ألومنيوم يعزل المجسات المغناطيسية، وغطى كاميرات المراقبة بأكياس بوليستر سوداء في ثواني.",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_scratch",
-                "visual_prompt": "Documentary host smiling with intellectual fascination at clever hack, 9:16 vertical",
-                "visual_style": "anchor_explain"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_heist",
-                "narration": "فتحوا أكتر من مئة صندوق أمانات، وملأوا حقائبهم بأندر ألماظ وذهب في أوروبا، وخرجوا بكل هدوء مع شروق الشمس من الباب الرئيسي كأنهم موظفين عاديين.",
-                "broll_search": "diamonds shining luxury wealth cash vault",
-                "caption": "",
-                "sfx_cue": "sfx_register",
-                "visual_prompt": "Scattered glittering diamonds and gold bars inside stainless steel safe drawers, 9:16 vertical",
-                "visual_style": "diamond_vault"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_outro",
-                "narration": "لكن الغريب؟ الألماس المسروق ما حدش لقاه لحد النهاردة! الشرطة قبضت على ليوناردو بس السر اختفى معاه للأبد. مهما بلغت قوة التكنولوجيا، أذكى نظام أمان له نقطة ضعف بشرية! اشترك للمزيد.",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Documentary host concluding with thoughtful gaze into camera, 9:16 vertical",
-                "visual_style": "anchor_outro"
-            }
-        ]
-    },
-    # Episode 3: The Phoebus Cartel (Lightbulb Conspiracy)
-    {
-        "series_title": "الدحيح التكنولوجي | أسرار الاقتصاد الخفي",
-        "part": "الحلقة 3",
-        "title": "مؤامرة المصباح الكهربائي: كيف اتفقت الشركات على تقليل عمر منتجاتك عمداً؟ #Shorts",
-        "scenes": [
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_hook",
-                "narration": "في محطة إطفاء في كاليفورنيا، في مصباح كهربائي شغال ليل نهار بقاله أكتر من 120 سنة بدون انقطاع! طب فكرت قبل كدة ليه المصابيح اللي في بيتك بتتحرق كل سنة أو سنتين؟ الإجابة مش عيب صناعة... الإجابة مؤامرة تجارية موثقة!",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Host holding attention with mystery question in studio, 9:16 vertical",
-                "visual_style": "anchor_hook"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_lab",
-                "narration": "سنة 1924، اجتمع كبار مصنعي الكهرباء في العالم في جنيف وأسسوا كارتل فيبوس. لاحظوا إن المصابيح بتعيش 2500 ساعة، وده معناه إن المبيعات هتقل والناس مش هتشتري تاني.",
-                "broll_search": "vintage lightbulb glowing filament dark room",
-                "caption": "",
-                "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "1920s vintage boardroom executives signing cartel documents under glowing carbon filament bulb, 9:16 vertical",
-                "visual_style": "madison_boardroom"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_explain",
-                "narration": "فاتفقوا رسمياً على تقليص عمر المصباح عمداً إلى ألف ساعة فقط! وفرضوا غرامات مالية قاسية على أي مهندس يصنع مصباح يعيش أطول! ومن هنا اتولدت سياسة 'التقادم المخطط' اللي لسه بنعاني منها في كل أجهزتنا لحد النهاردة.",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_scratch",
-                "visual_prompt": "Host explaining corporate strategy with energetic conviction, 9:16 vertical",
-                "visual_style": "anchor_explain"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_factory",
-                "narration": "المبدأ ده انتقل لكل شيء: لهواتفك الذكية، لسياراتك، ولأجهزتك المنزلية. النظام الاقتصادي لا يريد منتجاً يعيش معك للأبد؛ هو يريدك أن تشتري باستمرار.",
-                "broll_search": "smartphone assembly line factory technology",
-                "caption": "",
-                "sfx_cue": None,
-                "visual_prompt": "Modern robotic factory floor assembling sleek consumer electronics at high speed, 9:16 vertical",
-                "visual_style": "factory_production"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_outro",
-                "narration": "السؤال الحقيقي: هل تشتري المنتجات لحاجتك إليها... أم لأنهم برمجوا موعد موتها مسبقاً؟ لا تكن مستهلكاً غافلاً، افهم اللعبة! اشترك للحلقة القادمة.",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Host delivering punchline with engaging eye contact, 9:16 vertical",
-                "visual_style": "anchor_outro"
-            }
-        ]
-    },
-    # Episode 4: Alan Turing & Origins of AI
-    {
-        "series_title": "الدحيح التكنولوجي | أسرار الذكاء الاصطناعي",
-        "part": "الحلقة 4",
-        "title": "كيف بدأت فكرة الذكاء الاصطناعي؟ من لغز آلان تورينج إلى عصر الوكلاء الأذكياء #Shorts",
-        "scenes": [
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_hook",
-                "narration": "هل يمكن للآلة أن تفكّر حقاً؟ في خريف عام 1950، طرح عالم عبقري سؤالاً واحداً... أحدث زلزالاً غيّر تاريخ البشرية إلى الأبد!",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Documentary anchor in dark studio leaning forward excitedly, 9:16 vertical",
-                "visual_style": "anchor_hook"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_bombe",
-                "narration": "كان صاحب السؤال هو آلان تورينج، الرجل الذي فكك شيفرة إنيجما المعقدة بآلته الكهروميكانيكية، واقترح لعبة المحاكاة التي نعرفها اليوم باسم اختبار تورينج.",
-                "broll_search": "vintage codebreaking enigma machine gears",
-                "caption": "",
-                "sfx_cue": None,
-                "visual_prompt": "1940 Turing Bombe codebreaking machine rotating drums, 9:16 vertical",
-                "visual_style": "turing_bombe_1940"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_explain",
-                "narration": "الفكرة كانت ثورية: محاكاة الخلايا العصبية في الدماغ البشري، وبناء شبكات رياضية تتعلّم وتتحسّن ذاتياً بالتجربة والخطأ بدون تدخل مسبق.",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Host explaining neural network concepts, 9:16 vertical",
-                "visual_style": "anchor_explain"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_neural",
-                "narration": "انتقلنا من صمامات مفرغة ضخمة تملأ غرفاً كاملة، إلى رقائق سيليكون نانوية فائقة القوة تتدفق عبرها مليارات العمليات الحسابية في الثانية.",
-                "broll_search": "neural network glowing brain synapses ai data",
-                "caption": "",
-                "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Glowing neural synapse connections evolving into computer microchips, 9:16 vertical",
-                "visual_style": "neural_network_synapse"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_outro",
-                "narration": "السؤال الحقيقي اليوم لم يعد هل يمكن للآلة أن تفكّر، بل هل أنت مستعد للتعامل مع عالم يفوق فيه ذكاء الآلة قدرة استيعابك؟ اشترك وتابع المستقبل!",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_register",
-                "visual_prompt": "Host closing statement with intense clarity, 9:16 vertical",
-                "visual_style": "anchor_outro"
-            }
-        ]
-    },
-    # Episode 5: Neuralink & The BCI Revolution
-    {
-        "series_title": "الدحيح التكنولوجي | أسرار التكنولوجيا القادمة",
-        "part": "الحلقة 5",
-        "title": "شريحة نيورالينك وإيلون ماسك: هل سنقرأ أفكار البشر قريباً؟ #Shorts",
-        "scenes": [
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_hook",
-                "narration": "تخيّل إنك تتحكم في حاسوب كامل بمجرد فكرة تدور في عقلك... بدون ما تحرك صباع واحد أو تنطق بكلمة! ده مش خيال علمي، ده الواقع اللي بتبنيه شريحة نيورالينك حالياً.",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Host pointing to temple with intellectual wonder, 9:16 vertical",
-                "visual_style": "anchor_hook"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_bci",
-                "narration": "كل فكرة أو حركة بتولد نبضة كهربائية بين المشابك العصبية. الشريحة بتحتوي على أكثر من ألف قطب ميكروسكوبي، أرق من شعرة الإنسان، بتقرأ الشحنات وتحولها لبرمجة فورية.",
-                "broll_search": "cybernetic brain microchip neuron impulses futuristic",
-                "caption": "",
-                "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "High-tech cybernetic brain implant with golden microthreads merging into bioluminescent neurons, 9:16 vertical",
-                "visual_style": "neuralink_bci_chip"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_explain",
-                "narration": "مرضى الشلل الرباعي أصبحوا الآن بيلعبوا شطرنج ويتصفحوا الإنترنت بسرعة مذهلة فقط بالتفكير التلقائي! لكن ماسك مش عاوز يقف هنا؛ هدفه دمج العقل بالذكاء الاصطناعي لإنقاذ البشرية من التهميش.",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_scratch",
-                "visual_prompt": "Host leaning in explaining high-stakes future, 9:16 vertical",
-                "visual_style": "anchor_explain"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_matrix",
-                "narration": "التحدي الحقيقي ليس في الهاردوير، بل في الأمان: إذا اتصل دماغك بالشبكة، فهل تصبح أفكارك وذكرياتك قابلة للقرصنة؟",
-                "broll_search": "digital matrix code cyber security dark data",
-                "caption": "",
-                "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Holographic human brain surrounded by streams of encrypting binary code, 9:16 vertical",
-                "visual_style": "autonomous_agent_matrix"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_outro",
-                "narration": "المستقبل يقترب أسرع مما تتخيل... هل ستوافق على زرع شريحة في رأسك يوماً ما؟ شاركني رأيك في التعليقات واشترك للمزيد!",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_register",
-                "visual_prompt": "Host looking directly into lens asking provoking question, 9:16 vertical",
-                "visual_style": "anchor_outro"
-            }
-        ]
-    },
-    # Episode 6: The NVIDIA Silicon Monopoly
-    {
-        "series_title": "الدحيح التكنولوجي | عمالقة وادي السيليكون",
-        "part": "الحلقة 6",
-        "title": "سر معالجات إنفيديا: كيف تحولت شركة ألعاب إلى إمبراطورية بـ 3 تريليون دولار؟ #Shorts",
-        "scenes": [
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_hook",
-                "narration": "سنة 1993، تلات مهندسين قعدوا في مطعم وجبات سريعة في كاليفورنيا عشان يأسسوا شركة بطاقات ألعاب للكمبيوتر. النهاردة، الشركة دي قيمتها تخطت 3 تريليون دولار، وكل نموذج ذكاء اصطناعي على كوكب الأرض بيتنفس من خلال معالجاتها!",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Host explaining meteoric business rise with excitement, 9:16 vertical",
-                "visual_style": "anchor_hook"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_gpu",
-                "narration": "السر ما كنش بس تصنيع معالجات الجرافيكس؛ السر كان رهان عبقري من جينسن هوانغ سنة 2006 لما أطلق منصة كودا البرمجية اللي حوّلت كروت الشاشة لمحركات حسابية عملاقة للتعلم العميق.",
-                "broll_search": "microchip silicon wafer cleanroom glowing circuits",
-                "caption": "",
-                "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Close-up of glowing NVIDIA AI silicon processor on black circuit board, 9:16 vertical",
-                "visual_style": "nvidia_gpu_silicon"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_explain",
-                "narration": "لما انفجرت ثورة الذكاء الاصطناعي، شركات العالم كلها: جوجل، مايكروسوفت، وميتا، لقوا نفسهم مضطرين يشتروا رقاقات H100 بعشرات الآلاف من الدولارات للقطعة الواحدة، لأن ما فيش بديل جاهز في السوق!",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_scratch",
-                "visual_prompt": "Host breaking down the monopoly dynamics clearly, 9:16 vertical",
-                "visual_style": "anchor_explain"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_server",
-                "narration": "في عصر حمى الذهب، الرابح الأكبر لم يكن من يحفر بحثاً عن الذهب، بل من كان يبيع الفؤوس ومعدات الحفر. وإنفيديا هي التي تبيع فؤوس الذكاء الاصطناعي للعالم بأسره.",
-                "broll_search": "data center server racks blinking lights futuristic",
-                "caption": "",
-                "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Massive AI supercomputer data center with endless rows of humming server racks, 9:16 vertical",
-                "visual_style": "autonomous_agent_matrix"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_outro",
-                "narration": "من كان يظن أن ألعاب الفيديو ستبني إمبراطورية تحكم عقل العالم الرقمي؟ اشترك لتتعلم كيف تقتنص الفرص القادمة قبل الجميع!",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_register",
-                "visual_prompt": "Host smiling with closing wisdom, 9:16 vertical",
-                "visual_style": "anchor_outro"
-            }
-        ]
-    },
-    # Episode 7: The Era of AI Agents
-    {
-        "series_title": "الدحيح التكنولوجي | ثورة الوكلاء الأذكياء",
-        "part": "الحلقة 7",
-        "title": "عصر الوكلاء الأذكياء (AI Agents): كيف يدير برنامج واحد شركة كاملة بدون موظفين؟ #Shorts",
-        "scenes": [
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_hook",
-                "narration": "انسَ الشات بوت اللي بترد عليه ويرد عليك بكلمتين... العالم دخل رسمياً عصر 'الوكلاء الأذكياء'؛ برامج ما بتكتفيش بالإجابة، دي بتاخد قرار، بتنفذ، وبتصحح أخطاءها بنفسها!",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Host leaning forward with vision of autonomous software, 9:16 vertical",
-                "visual_style": "anchor_hook"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_matrix",
-                "narration": "وكيل يبحث في السوق، وكيل يكتب كود الموقع، وكيل يدير الحملات الإعلانية، وكلهم بيتواصلوا مع بعض في أجزاء من الثانية لإطلاق مشروع كامل بدون تدخل بشري.",
-                "broll_search": "artificial intelligence multi agent networking code data",
-                "caption": "",
-                "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Network of interconnected autonomous AI agents exchanging real-time digital tasks, 9:16 vertical",
-                "visual_style": "autonomous_agent_matrix"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_explain",
-                "narration": "ده معناه إنك قريباً مش هتحتاج فريق عمل من عشرين شخص عشان تبدأ شركتك الناشئة؛ جهازك الشخصي هيكون هو الشركة بالكامل!",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_scratch",
-                "visual_prompt": "Host gesturing toward camera explaining solo entrepreneur revolution, 9:16 vertical",
-                "visual_style": "anchor_explain"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_future",
-                "narration": "المستقبل لا ينتظر أحداً؛ من يتعلم قيادة الوكلاء الأذكياء اليوم، سيبني إمبراطوريته غداً بأقل تكلفة وأعلى كفاءة.",
-                "broll_search": "holographic digital workspace coding futuristic tech",
-                "caption": "",
-                "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Futuristic workstation glowing with multi-agent orchestration code, 9:16 vertical",
-                "visual_style": "neuralink_bci_chip"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_outro",
-                "narration": "هل وظيفتك مهددة بالوكلاء الأذكياء... أم ستكون أنت من يقودهم؟ اشترك الآن لتتعلم كيف تسيطر على أدوات المستقبل!",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_register",
-                "visual_prompt": "Host delivering punchy empowering conclusion, 9:16 vertical",
-                "visual_style": "anchor_outro"
-            }
-        ]
-    },
-    # Episode 8: The Bottled Water Illusion
-    {
-        "series_title": "الدحيح التكنولوجي | أسرار الاقتصاد الخفي",
-        "part": "الحلقة 8",
-        "title": "خدعة المياه المعبأة: كيف أقنعوا العالم بشراء ماء الصنبور بهامش ربح 4000%؟ #Shorts",
-        "scenes": [
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_hook",
-                "narration": "الماء مجاني تقريباً ويصل إلى بيتك بضغطة زر... فكيف استطاعت شركات المشروبات تحويله إلى صناعة بـ 300 مليار دولار يشتريها الناس بأربعة آلاف ضعف ثمنها الأصلي؟",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Host holding attention with shocking economic reality, 9:16 vertical",
-                "visual_style": "anchor_hook"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_water",
-                "narration": "في السبعينيات واجهت شركات المشروبات ركوداً، فأطلقت حملة تسويقية عبقرية: زرع الخوف من مياه الصنبور وتصوير زجاجات البلاستيك كرمز للصحة والرفاهية.",
-                "broll_search": "bottled water plastic conveyor belt factory industrial",
-                "caption": "",
-                "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Corporate bottling assembly line churning out thousands of identical plastic water bottles, 9:16 vertical",
-                "visual_style": "bottled_water_tap_heist"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_explain",
-                "narration": "الحقيقة الصادمة؟ أكثر من 60% من ماركات المياه المعبأة تأتي مباشرة من نفس شبكات المياه البلدية، يعيدون تصفيتها وبيعها لك في زجاجة بترولية رخيصة!",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_scratch",
-                "visual_prompt": "Host revealing the corporate trick with expressive gestures, 9:16 vertical",
-                "visual_style": "anchor_explain"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_luxury",
-                "narration": "أنت في الحقيقة لا تشتري الماء؛ الماء مجاني... أنت تشتري زجاجة بلاستيكية وصورة جبل جليدي مرسومة على الغلاف.",
-                "broll_search": "glacier mountain pristine water nature luxury marketing",
-                "caption": "",
-                "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Luxury cafe counter showing overpriced water bottles glowing under neon lights, 9:16 vertical",
-                "visual_style": "luxury_cafe_pricing"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_outro",
-                "narration": "أقوى الإمبراطوريات لا تخترع احتياجات جديدة، بل تخصخص الأساسيات وتعيد تغليفها كرفاهية! اشترك لتكشف أسرار التجارة الخفية.",
-                "broll_search": None,
-                "caption": "",
-                "sfx_cue": "sfx_register",
-                "visual_prompt": "Host smiling with closing insight, 9:16 vertical",
-                "visual_style": "anchor_outro"
-            }
-        ]
-    }
-]
+from documentary_seasons import VIRAL_TOPIC_SEEDS_AR, VIRAL_TOPIC_SEEDS_EN, get_viral_topic_seed
 
-# English Channel: Investigative Mystery & Empires (Julian Vance Host, 2-line Gold Captions)
-EPISODE_BANK_EN_WEALTH = [
-    # Episode 1: Project Azorian Submarine Heist
-    {
-        "series_title": "Investigative Cold War Files",
-        "part": "Episode 1",
-        "title": "Project Azorian: The $4 Billion Cold War Submarine Heist #Shorts",
-        "scenes": [
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_hook",
-                "narration": "In July 1974, billionaire Howard Hughes told the world he was mining the ocean floor for manganese nodules. It was a massive lie. Three miles beneath his ship lay a sunken Soviet nuclear submarine—and the CIA was about to steal it.",
-                "broll_search": None,
-                "caption": "Howard Hughes claimed to mine the ocean... It was a lie!",
-                "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Julian Vance in charcoal blazer speaking intensely into lens in dark studio, 9:16 vertical",
-                "visual_style": "anchor_hook"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_sub",
-                "narration": "March 1968. Soviet submarine K-129 vanished in the Pacific with three nuclear ballistic missiles. Moscow searched for months with dozens of ships and found nothing. But American underwater acoustic hydrophones caught the exact blast coordinates.",
-                "broll_search": "ocean stormy waves dark water naval submarine",
-                "caption": "Soviet submarine K-129 vanished with nuclear missiles!",
-                "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Derelict Soviet submarine resting on dark ocean floor illuminated by submersible lights, 9:16 vertical",
-                "visual_style": "soviet_submarine_abyss"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_explain",
-                "narration": "Pulling three thousand tons of steel from sixteen thousand feet was considered an engineering impossibility. So the CIA spent four billion modern dollars constructing a colossal six-hundred-foot ship with a secret mechanical claw named Clementine.",
-                "broll_search": None,
-                "caption": "16,000 feet deep: An engineering impossibility!",
-                "sfx_cue": "sfx_scratch",
-                "visual_prompt": "Julian Vance explaining the engineering marvel with sharp analytical focus, 9:16 vertical",
-                "visual_style": "anchor_explain"
-            },
-            {
-                "narrator": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_ship",
-                "narration": "Soviet naval surveillance ships circled only fathoms away, completely unaware that directly beneath them, a mechanical leviathan was descending into the pitch-black abyss.",
-                "broll_search": "massive industrial ship ocean derrick tower fog",
-                "caption": "Soviet spy ships circled... completely unaware!",
-                "sfx_cue": None,
-                "visual_prompt": "Colossal deep-sea salvage vessel in ocean swells at dawn, 9:16 vertical",
-                "visual_style": "factory_production"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_turning",
-                "narration": "Nine thousand feet up, disaster struck. Three steel claws fractured under immense pressure, and two-thirds of the submarine plunged back into the trench. Yet, the bow section remained secured inside the ship's secret interior well.",
-                "broll_search": None,
-                "caption": "At 9,000 feet... catastrophic structural failure struck!",
-                "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Julian Vance conveying high-stakes catastrophe, 9:16 vertical",
-                "visual_style": "anchor_turning"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_outro",
-                "narration": "When reporters exposed the mission in 1975, the CIA coined the iconic phrase: 'We can neither confirm nor deny.' Project Azorian proved that even the bottom of the ocean was no sanctuary from the Cold War. Subscribe for the next file.",
-                "broll_search": None,
-                "caption": "'We can neither confirm nor deny!'",
-                "sfx_cue": "sfx_register",
-                "visual_prompt": "Julian Vance leaning back with resolute closing expression, 9:16 vertical",
-                "visual_style": "anchor_outro"
-            }
-        ]
-    },
-    # Episode 2: The Antwerp Vault Heist
-    {
-        "series_title": "Investigative Cold War Files",
-        "part": "Episode 2",
-        "title": "The Antwerp Vault: How They Stole $100 Million in Diamonds Without a Shot #Shorts",
-        "scenes": [
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_hook",
-                "narration": "A subterranean vault protected by infrared lasers, seismic sensors, magnetic door contacts, and a three-ton steel door. Yet, in 2003, Italian thieves walked in and cleared one hundred million dollars in diamonds without triggering a single alarm.",
-                "broll_search": None,
-                "caption": "A vault with 10 layers of security... looted without an alarm!",
-                "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Julian Vance leaning forward in studio explaining impossible heist, 9:16 vertical",
-                "visual_style": "anchor_hook"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_vault",
-                "narration": "The Antwerp Diamond Center handled eighty percent of the world's rough diamonds. Leonardo Notarbartolo rented an office inside for two years, filming the vault mechanisms with a covert pen camera.",
-                "broll_search": "bank vault laser security diamonds safe deposit boxes",
-                "caption": "Leonardo cased the vault for 2 years with a pen camera!",
-                "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Subterranean bank vault interior with red laser security grid and opened safe deposit boxes, 9:16 vertical",
-                "visual_style": "antwerp_bank_vault"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_explain",
-                "narration": "His hacks were brilliantly analog: ordinary women's hairspray to blind the thermal sensors, aluminum tape to bypass the magnetic field, and black polyester bags taped over the surveillance cameras.",
-                "broll_search": None,
-                "caption": "Ordinary hairspray... to blind thermal motion sensors!",
-                "sfx_cue": "sfx_scratch",
-                "visual_prompt": "Julian Vance demonstrating analog genius hacks with clinical amusement, 9:16 vertical",
-                "visual_style": "anchor_explain"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_diamonds",
-                "narration": "They cracked over one hundred safety deposit boxes, packed duffel bags with uncut gems, and walked out the front doors at sunrise like regular janitors.",
-                "broll_search": "diamonds glittering gold bars vault cash wealth",
-                "caption": "Over 100 safe boxes cleared before sunrise!",
-                "sfx_cue": "sfx_register",
-                "visual_prompt": "Glittering cut diamonds scattered over safe deposit drawers, 9:16 vertical",
-                "visual_style": "diamond_vault"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_outro",
-                "narration": "The craziest part? The diamonds were never recovered. Notarbartolo served his prison sentence, but the loot vanished forever. The most impenetrable security system is only as strong as human error. Subscribe for Part 3.",
-                "broll_search": None,
-                "caption": "$100M in diamonds... vanished forever!",
-                "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Julian Vance closing with enigmatic smile into lens, 9:16 vertical",
-                "visual_style": "anchor_outro"
-            }
-        ]
-    },
-    # Episode 3: The Phoebus Cartel Lightbulb Plot
-    {
-        "series_title": "Corporate Illusions & Wealth Architecture",
-        "part": "Episode 3",
-        "title": "The Lightbulb Conspiracy: How Corporations Engineered Products to Break #Shorts",
-        "scenes": [
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_hook",
-                "narration": "In a California fire station, a lightbulb has been burning continuously for over one hundred and twenty years without burning out. So why does every lightbulb in your house die after a year? It isn't bad luck; it was a deliberate corporate conspiracy.",
-                "broll_search": None,
-                "caption": "A lightbulb burning for 120 years... Why do yours break?",
-                "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Julian Vance addressing viewer with provocative mystery in studio, 9:16 vertical",
-                "visual_style": "anchor_hook"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_boardroom",
-                "narration": "In 1924, the world's largest lighting manufacturers met secretly in Geneva and formed the Phoebus Cartel. They realized bulbs were lasting twenty-five hundred hours—meaning customers would stop buying new ones.",
-                "broll_search": "vintage lightbulb glowing filament dark room warm",
-                "caption": "1924: The Phoebus Cartel met secretly in Geneva!",
-                "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "1920s vintage boardroom executives signing cartel documents under glowing carbon filament bulb, 9:16 vertical",
-                "visual_style": "madison_boardroom"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_explain",
-                "narration": "So they strictly engineered bulbs to fail after exactly one thousand hours, imposing severe financial fines on any company whose filaments lasted longer. This gave birth to 'Planned Obsolescence'—the foundational lie of modern consumer technology.",
-                "broll_search": None,
-                "caption": "They engineered products to fail... Planned Obsolescence!",
-                "sfx_cue": "sfx_scratch",
-                "visual_prompt": "Julian Vance breaking down the economic architecture, 9:16 vertical",
-                "visual_style": "anchor_explain"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_factory",
-                "narration": "The economic machine does not want a product that lasts forever; it wants you trapped in an endless loop of debt, replacement, and consumption.",
-                "broll_search": "robotic assembly line factory high speed consumer electronics",
-                "caption": "Trapped in an endless loop of replacement and debt!",
-                "sfx_cue": None,
-                "visual_prompt": "Modern robotic assembly line churning out electronic gadgets, 9:16 vertical",
-                "visual_style": "factory_production"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_outro",
-                "narration": "You don't buy products because you need them; you buy them because their death was programmed before you opened the box. Evolve quietly until you control the board. Subscribe for more.",
-                "broll_search": None,
-                "caption": "Evolve quietly... until you control the board!",
-                "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Julian Vance concluding with stoic authority, 9:16 vertical",
-                "visual_style": "anchor_outro"
-            }
-        ]
-    },
-    # Episode 4: The Coffee Trap
-    {
-        "series_title": "Corporate Illusions & Wealth Architecture",
-        "part": "Episode 4",
-        "title": "The Coffee Trap: How Madison Avenue Monetized Your Exhaustion #Shorts",
-        "scenes": [
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_hook",
-                "narration": "Eight hours on the grind, and you pay eight dollars for an iced latte to keep your sanity intact. Who convinced you that you need a 'coffee break' just to serve their machine harder?",
-                "broll_search": None,
-                "caption": "Who convinced you that you need a 'Coffee Break'?",
-                "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Julian Vance speaking with piercing insight in studio, 9:16 vertical",
-                "visual_style": "anchor_hook"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_madison",
-                "narration": "In 1952, post-war coffee sales collapsed. So Madison Avenue advertising cartels met in Manhattan and launched two words: 'Coffee Break'. They convinced factory owners that a caffeine hit boosts worker throughput by twenty percent.",
-                "broll_search": "1950s madison avenue vintage advertising boardroom smoky",
-                "caption": "1952: Madison Avenue invented the 'Coffee Break'!",
-                "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "1952 Madison Avenue vintage boardroom executives pointing at coffee sketches, 9:16 vertical",
-                "visual_style": "madison_boardroom"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_explain",
-                "narration": "The break was never for your rest; it was to grease the gears of the factory. Then they rebranded factory fuel into a luxury lifestyle badge—a beverage brewed for thirty cents sold to you for eight dollars.",
-                "broll_search": None,
-                "caption": "Brewed for 30 cents... Sold to you for $8!",
-                "sfx_cue": "sfx_register",
-                "visual_prompt": "Julian Vance revealing the financial arithmetic, 9:16 vertical",
-                "visual_style": "anchor_explain"
-            },
-            {
-                "speaker": "narrator",
-                "scene_type": "b_roll",
-                "character_focus": "broll_cafe",
-                "narration": "The consumer pays for his rest twice: once with his health, and once with his wallet, borrowing energy today to build a company he doesn't even own.",
-                "broll_search": "modern luxury coffee shop counter neon lights barista",
-                "caption": "Borrowing energy today... for a company you don't own!",
-                "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Sleek modern luxury cafe counter with gold coins spilling over counter, 9:16 vertical",
-                "visual_style": "luxury_cafe_pricing"
-            },
-            {
-                "speaker": "presenter",
-                "scene_type": "presenter",
-                "character_focus": "anchor_outro",
-                "narration": "The wise never drink to escape reality; they architect the systems that harvest the crowd's labor. The noise is for the crowd. Subscribe for Episode 5.",
-                "broll_search": None,
-                "caption": "Architect the systems that harvest the crowd's labor!",
-                "sfx_cue": None,
-                "visual_prompt": "Julian Vance turning toward camera with closing stoic axiom, 9:16 vertical",
-                "visual_style": "anchor_outro"
-            }
-        ]
-    }
-]
-
-# Legacy backward aliases
+EPISODE_BANK_AR_AI = VIRAL_TOPIC_SEEDS_AR
+EPISODE_BANK_EN_WEALTH = VIRAL_TOPIC_SEEDS_EN
 EPISODE_BANK_AR = EPISODE_BANK_AR_AI
 EPISODE_BANK_EN = EPISODE_BANK_EN_WEALTH
 
@@ -925,43 +131,44 @@ def generate_dynamic_gemini_script(channel_key: str, lang: str) -> dict | None:
     api_key = os.environ.get("GEMINI_API_KEY", "").strip()
     hf_token = os.environ.get("HF_TOKEN", "").strip()
 
+    run_num = int(os.environ.get("GITHUB_RUN_NUMBER", "1") or 1)
+    hour_slot = int(time.time() // 3600)
+    topic_seed = get_viral_topic_seed(channel_key, lang, run_num, hour_slot)
+
     lang_desc = "Modern Standard Arabic (الفصحى السلسة الراقية بأسلوب الدحيح)" if lang == "ar" else "Sophisticated English (Investigative Documentary style)"
     channel_niche = "AI, science, and mysterious technology history" if channel_key == "ch02_ar_ai_tech" else "Cold War heists, corporate deceptions, and hidden wealth monopolies"
 
     prompt = f"""You are the lead director of an elite, viral vertical documentary show (similar to Vox, ColdFusion, National Geographic, and Johnny Harris).
-Write an entirely UNIQUE, captivating documentary script in {lang_desc} based on a real dramatic historical, scientific, or mystery event in {channel_niche}.
+Write an entirely UNIQUE, captivating documentary script in {lang_desc} based on this specific real historical event:
+TOPIC: {topic_seed['title']}
+CORE EVENT: {topic_seed['core_mystery']}
+MANDATORY SCENE 1 HOOK: Must begin with "{topic_seed['hook']}" (strictly 6 to 8 words, sfx_cue: "sfx_impact").
+MANDATORY SCENE 10 LOOP: Must end with "{topic_seed['loop']}" so it loops seamlessly right back into Scene 1!
 
 CRITICAL VIRAL PRODUCTION FORMAT (ENGINEERED FOR 100M MONTHLY VIEWS):
-1. SEAMLESS INFINITE LOOP (خدعة اللوب اللانهائي الذكي):
-   - Scene 1 (THE 2-SECOND SHOCK HOOK): Must open with an explosive high-stakes hook (strictly 6 to 8 words).
-     Example Arabic: "هزم الذكاء الاصطناعي أذكى عقل بشري في التاريخ!"
-     Example English: "A single computer algorithm broke the world's greatest chess master."
-     MUST set "sfx_cue": "sfx_impact" on Scene 1 for immediate auditory shock.
-   - Scene 10 (THE LOOP CONNECTOR): The VERY LAST sentence of Scene 10 MUST end with an open connector phrase that grammatically leads directly into Scene 1!
-     Example Arabic: "...ولهذا السبب الصادم بالتحديد،"
-     Example English: "...which brings us right back to the shocking reality that:"
-     When looped on YouTube Shorts, the re-watch feels completely seamless and boosts retention over 115%!
+1. SEAMLESS INFINITE LOOP:
+   - Scene 1: Must open with the explosive hook: "{topic_seed['hook']}" (sfx_cue: "sfx_impact").
+   - Scene 10: The very last sentence MUST end with: "{topic_seed['loop']}"
 2. Structure: EXACTLY 10 sequential dramatic scenes (target total duration 45 to 50 seconds for Shorts).
-   Narration: short, punchy, 7 to 10 words per scene (TOTAL SCRIPT UNDER 100 WORDS).
-3. Kinetic Keyword Popups: Every single scene MUST include a "keyword_popup" field with 1 to 3 high-impact words or numbers (e.g. "1997", "$400,000,000", "كارثة", "الماتريكس", "ديب بلو", "سري للغاية").
-4. "sfx_cue": Choose from "sfx_impact" (Scene 1), "sfx_riser", "sfx_subdrop", "sfx_whoosh", "sfx_heartbeat".
-5. Arabic Channel: Leave "caption" as an empty string ("").
+   Narration: short, punchy, 7 to 10 words per scene. Total script under 100 words.
+3. Every scene must have speaker "narrator", scene_type "b_roll", and character_focus "broll_evidence".
+4. Arabic Channel: Leave "caption" as an empty string ("").
    English Channel: Provide punchy 2-line auto-wrapped subtitle in "caption".
-6. Return STRICTLY valid JSON with no markdown formatting or intro prose:
+5. Return STRICTLY valid JSON with no markdown formatting or intro prose:
 {{
-  "series_title": "...",
-  "part": "Special Episode",
-  "title": "...",
+  "series_title": "{topic_seed.get('series_title', 'Documentary Files')}",
+  "part": "{topic_seed.get('part', 'Special Episode')}",
+  "title": "{topic_seed['title']}",
   "scenes": [
     {{
       "speaker": "narrator",
       "scene_type": "b_roll",
       "character_focus": "broll_evidence",
-      "narration": "Spoken voiceover text here...",
-      "keyword_popup": "1997" or "الماتريكس" or "كارثة",
+      "narration": "...",
+      "keyword_popup": "...",
       "broll_search": "short english video search query",
-      "caption": "" if Arabic else "English subtitle",
-      "sfx_cue": "sfx_impact" or "sfx_riser" or "sfx_whoosh" or "sfx_subdrop",
+      "caption": "",
+      "sfx_cue": "sfx_impact" or "sfx_whoosh" or "sfx_riser" or "sfx_subdrop" or "sfx_heartbeat",
       "visual_prompt": "Cinematic visual description, 9:16 vertical",
       "visual_style": "vintage_archive"
     }}
@@ -981,24 +188,22 @@ CRITICAL VIRAL PRODUCTION FORMAT (ENGINEERED FOR 100M MONTHLY VIEWS):
                         m_name = item.get("name", "").replace("models/", "")
                         methods = item.get("supportedGenerationMethods", [])
                         if "generateContent" in methods:
-                            # Filter out audio-only, embedding, or text-to-speech models
                             if any(bad in m_name.lower() for bad in ["-tts", "preview-tts", "embedding", "aqa", "imagen"]):
                                 continue
                             ep = f"https://generativelanguage.googleapis.com/{ver}/models/{m_name}:generateContent?key={api_key}"
                             if ep not in raw_candidates:
                                 raw_candidates.append(ep)
-            except Exception as e:
+            except Exception:
                 pass
 
-        # Smart priority ranking: standard production models first!
         def score_model(url: str) -> int:
             u = url.lower()
             if "gemini-1.5-flash" in u: return 100
-            if "gemini-2.0-flash" in u: return 90
+            if "gemini-2.0-flash" in u: return 95
+            if "gemini-flash-lite-latest" in u: return 90
             if "gemini-1.5-pro" in u: return 80
             if "gemini-pro" in u: return 70
             if "flash" in u and "2.5" not in u: return 60
-            if "pro" in u and "2.5" not in u: return 50
             return 10
 
         ranked_endpoints = sorted(raw_candidates, key=score_model, reverse=True)
@@ -1007,7 +212,7 @@ CRITICAL VIRAL PRODUCTION FORMAT (ENGINEERED FOR 100M MONTHLY VIEWS):
                 f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}",
                 f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}",
                 f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}",
-                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}",
+                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key={api_key}",
             ]
 
         req_body = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode("utf-8")
@@ -1024,15 +229,18 @@ CRITICAL VIRAL PRODUCTION FORMAT (ENGINEERED FOR 100M MONTHLY VIEWS):
                         raw_text = raw_text.replace("```json", "").replace("```", "").strip()
                         script = json.loads(raw_text)
                         if "scenes" in script and len(script["scenes"]) >= 8:
+                            # Enforce hook on Scene 1 and loop on Scene 10
+                            script["scenes"][0]["sfx_cue"] = "sfx_impact"
+                            s10_n = script["scenes"][-1].get("narration", "").strip()
+                            if not s10_n.endswith(topic_seed["loop"]):
+                                script["scenes"][-1]["narration"] = s10_n.rstrip("!.,") + "، " + topic_seed["loop"]
                             print(f"  [Gemini AI] Successfully generated dynamic unique episode via {model_tag}: '{script.get('title')}'")
                             return script
             except Exception as e:
                 err_msg = str(e)
                 if hasattr(e, "read"):
-                    try:
-                        err_msg += " " + e.read().decode("utf-8", errors="replace")[:120]
-                    except Exception:
-                        pass
+                    try: err_msg += " " + e.read().decode("utf-8", errors="replace")[:120]
+                    except Exception: pass
                 print(f"  [Gemini AI Notice] Model '{model_tag}' attempt error: {err_msg}")
 
     # 2. Attempt Hugging Face Serverless LLM Fallback (Zero Quota Failure)
@@ -1069,14 +277,17 @@ CRITICAL VIRAL PRODUCTION FORMAT (ENGINEERED FOR 100M MONTHLY VIEWS):
                     hf_text = hf_text.replace("```json", "").replace("```", "").strip()
                     script = json.loads(hf_text)
                     if "scenes" in script and len(script["scenes"]) >= 8:
+                        script["scenes"][0]["sfx_cue"] = "sfx_impact"
+                        s10_n = script["scenes"][-1].get("narration", "").strip()
+                        if not s10_n.endswith(topic_seed["loop"]):
+                            script["scenes"][-1]["narration"] = s10_n.rstrip("!.,") + "، " + topic_seed["loop"]
                         print(f"  [HuggingFace AI] Successfully generated dynamic unique episode via {hf_m}: '{script.get('title')}'")
                         return script
             except Exception as e:
                 print(f"  [HuggingFace AI Notice] Fallback '{hf_m}' error: {e}")
 
-    print("  [Dynamic Script Notice] Cloud AI dynamic generation unavailable; activating curated documentary season bank fallback...")
-    return None
-
+    print(f"  [Dynamic Script Notice] Cloud AI dynamic generation unavailable; deploying curated master topic: '{topic_seed['title']}'")
+    return dict(topic_seed)
 
 def ensure_minimum_10_scenes(scenes: list[dict]) -> list[dict]:
     """Guarantees at least 10 cinematic script-related scenes per episode for maximum visual density."""
@@ -1429,108 +640,116 @@ def create_dark_cinematic_procedural_backdrop(style_hint: str, target_w: int = 1
     return Image.alpha_composite(img.convert("RGBA"), overlay).convert("RGB")
 
 
-def resolve_scene_artwork(visual_prompt: str, style_hint: str, channel_key: str = "ch02_ar_ai_tech", scene_idx: int = 0) -> Path:
-    """Finds best matching high-resolution scene artwork from assets/scenes/ with zero unrelated fallbacks."""
+def resolve_scene_artwork(
+    visual_prompt: str,
+    style_hint: str,
+    channel_key: str = "ch02_ar_ai_tech",
+    scene_idx: int = 0,
+    used_images: set[str] | None = None
+) -> Path:
+    """Finds best matching high-resolution scene artwork with zero duplicate repetition across scenes."""
     repo_root = Path(__file__).resolve().parent
     scenes_dir = repo_root / "assets" / "scenes"
-    vp = visual_prompt.lower()
-    sh = style_hint.lower()
+    if used_images is None:
+        used_images = set()
 
-    # Early computing / Mainframes / MIT / Chatbots / ELIZA / Code
-    if any(k in vp or k in sh for k in ("eliza", "weizenbaum", "chatbot", "chat", "computer", "mainframe", "terminal", "1966", "1960", "vintage", "tape", "ibm", "mit", "program")):
-        p = scenes_dir / "vintage_mainframe_1960.jpg"
-        if p.exists(): return p
+    vp = (visual_prompt or "").lower()
+    sh = (style_hint or "").lower()
 
-    # AI Pioneers / Dartmouth Conference / Scientists
-    if any(k in vp or k in sh for k in ("dartmouth", "conference", "scientist", "pioneer", "1956", "research", "samuel", "turing", "father of ai")):
-        p = scenes_dir / "dartmouth_conference_1956.jpg"
-        if p.exists(): return p
+    candidates = []
 
-    # Neural networks / Machine learning / Synapses / Brain
-    if any(k in vp or k in sh for k in ("neural", "synapse", "brain", "learning", "weights", "deep learning")):
-        p = scenes_dir / "neural_network_synapse.jpg"
-        if p.exists(): return p
+    # Space & Apollo
+    if any(k in vp or k in sh for k in ("apollo", "nasa", "flight control", "mission control", "spacecraft", "astronaut")):
+        candidates.append("apollo13_mission_control.jpg")
+    if any(k in vp or k in sh for k in ("satellite", "orbit", "earth", "cosmos", "atmosphere", "cubesat", "space")):
+        candidates.append("satellite_earth_orbit.jpg")
+    if any(k in vp or k in sh for k in ("rocket", "launch pad", "liftoff", "booster", "missile launch", "cape canaveral", "ariane")):
+        candidates.append("rocket_launch_pad.jpg")
 
-    # Turing Bombe / Cryptography / Codebreaking
-    if any(k in vp or k in sh for k in ("turing", "bombe", "enigma", "code", "cipher", "decrypt")):
-        p = scenes_dir / "turing_bombe_1940.jpg"
-        if p.exists(): return p
-
-    # Autonomous agents / Cyber network / Matrix
-    if any(k in vp or k in sh for k in ("matrix", "agent", "autonomous", "network", "bot", "swarm", "cyber")):
-        p = scenes_dir / "autonomous_agent_matrix.jpg"
-        if p.exists(): return p
-
-    # Microchips / GPU / Silicon / Hardware
-    if any(k in vp or k in sh for k in ("gpu", "nvidia", "silicon", "cuda", "h100", "wafer", "hardware")):
-        p = scenes_dir / "nvidia_gpu_silicon.jpg"
-        if p.exists(): return p
-
-    # Brain computer interface / Neuralink / Biochips
-    if any(k in vp or k in sh for k in ("bci", "neuralink", "implant", "chip", "electrode", "cyborg")):
-        p = scenes_dir / "neuralink_bci_chip.jpg"
-        if p.exists(): return p
-
-    # Bank vaults / Heists / Safes / Security
-    if any(k in vp or k in sh for k in ("vault", "antwerp", "heist", "laser", "safe", "lock", "alarm", "security")):
-        p = scenes_dir / "antwerp_bank_vault.jpg"
-        if p.exists(): return p
-
-    # Diamonds / De Beers / Gold / Wealth
-    if any(k in vp or k in sh for k in ("diamond", "gem", "de beers", "carat", "gold", "bullion", "faberge", "treasure")):
-        p = scenes_dir / "diamond_debeers_vault.jpg"
-        if p.exists(): return p
-
-    # Submarines / Naval / Ocean depths / K-129
+    # Disasters & Nuclear
+    if any(k in vp or k in sh for k in ("chernobyl", "reactor", "meltdown", "radiation", "geiger", "az-5", "nuclear fire")):
+        candidates.append("chernobyl_control_room.jpg")
     if any(k in vp or k in sh for k in ("sub", "submarine", "ocean", "abyss", "naval", "k-129", "k129", "torpedo", "sonar")):
-        p = scenes_dir / "soviet_submarine_abyss.jpg"
-        if p.exists(): return p
+        candidates.append("soviet_submarine_abyss.jpg")
 
-    # Corporate boardrooms / CIA / Government / Documents
-    if any(k in vp or k in sh for k in ("boardroom", "madison", "cia", "kgb", "government", "meeting", "executive", "office")):
-        p = scenes_dir / "madison_boardroom_1952.jpg"
-        if p.exists(): return p
+    # Computing & Mainframes & Hardware
+    if any(k in vp or k in sh for k in ("cray", "supercomputer", "vector", "hpc")):
+        candidates.append("vintage_cray_supercomputer.jpg")
+    if any(k in vp or k in sh for k in ("microchip", "silicon", "die", "wafer", "semiconductor", "transistor", "cpu", "processor")):
+        candidates.append("microchip_die_wafer.jpg")
+    if any(k in vp or k in sh for k in ("gpu", "nvidia", "cuda", "h100")):
+        candidates.append("nvidia_gpu_silicon.jpg")
+    if any(k in vp or k in sh for k in ("deep blue", "kasparov", "chess", "grandmaster", "ibm")):
+        candidates.append("deep_blue_kasparov.jpg")
+    if any(k in vp or k in sh for k in ("turing", "bombe", "enigma", "cipher", "codebreaking")):
+        candidates.append("turing_bombe_1940.jpg")
+    if any(k in vp or k in sh for k in ("dartmouth", "pioneers", "1956", "conference", "scientists")):
+        candidates.append("dartmouth_conference_1956.jpg")
+    if any(k in vp or k in sh for k in ("neuralink", "bci", "implant", "biochip")):
+        candidates.append("neuralink_bci_chip.jpg")
+    if any(k in vp or k in sh for k in ("synapse", "neural network", "deep learning", "brain")):
+        candidates.append("neural_network_synapse.jpg")
+    if any(k in vp or k in sh for k in ("matrix", "cyber", "hacker", "network", "code", "terminal", "darknet", "worm", "stuxnet")):
+        candidates.append("autonomous_agent_matrix.jpg")
+    if any(k in vp or k in sh for k in ("mainframe", "tape", "terminal", "1960", "1970", "1980", "vintage computer")):
+        candidates.append("vintage_mainframe_1960.jpg")
 
-    # Industrial factory / Machinery / Production
-    if any(k in vp or k in sh for k in ("factory", "production", "machine", "gear", "assembly", "manufacture", "titanium")):
-        p = scenes_dir / "factory_production_floor.jpg"
-        if p.exists(): return p
+    # Defense & Radars
+    if any(k in vp or k in sh for k in ("radar", "norad", "surveillance", "defense", "cold war bunker", "bunker", "airspace")):
+        candidates.append("cold_war_radar_room.jpg")
 
-    # Water tap / Bottled water heist
-    if any(k in vp or k in sh for k in ("water", "bottle", "bottled", "tap")):
-        p = scenes_dir / "bottled_water_tap_heist.jpg"
-        if p.exists(): return p
+    # Finance, Heists & Wealth
+    if any(k in vp or k in sh for k in ("wall street", "stock", "crash", "trading floor", "broker", "exchange", "market")):
+        candidates.append("wall_street_trading_floor.jpg")
+    if any(k in vp or k in sh for k in ("vault door", "steel door", "circular door", "bank safe", "subterranean")):
+        candidates.append("bank_vault_steel_door.jpg")
+    if any(k in vp or k in sh for k in ("antwerp", "vault", "heist", "diamonds safe")):
+        candidates.append("antwerp_bank_vault.jpg")
+    if any(k in vp or k in sh for k in ("diamond", "de beers", "carat", "luxury monopoly")):
+        candidates.append("diamond_debeers_vault.jpg")
+    if any(k in vp or k in sh for k in ("boardroom", "madison", "executive", "cia meeting")):
+        candidates.append("madison_boardroom_1952.jpg")
+    if any(k in vp or k in sh for k in ("factory", "machinery", "assembly line", "production")):
+        candidates.append("factory_production_floor.jpg")
+    if any(k in vp or k in sh for k in ("water", "bottled", "tap")):
+        candidates.append("bottled_water_tap_heist.jpg")
+    if any(k in vp or k in sh for k in ("luxury", "cafe", "pricing", "consumer")):
+        candidates.append("luxury_cafe_pricing.jpg")
 
-    # Luxury pricing / Consumer psychology
-    if any(k in vp or k in sh for k in ("luxury", "cafe", "pricing", "cost", "consumer", "starbucks")):
-        p = scenes_dir / "luxury_cafe_pricing.jpg"
-        if p.exists(): return p
+    # 1. Select the first matching candidate that has NOT been used in this episode
+    for name in candidates:
+        p = scenes_dir / name
+        if p.exists() and name not in used_images:
+            used_images.add(name)
+            return p
 
-    # Channel-specific intelligent cycling fallback (NO unrelated cross-overs!):
+    # 2. Channel-specific intelligent pool fallback
     if "ar" in channel_key or "tech" in channel_key:
-        tech_pool = [
-            scenes_dir / "vintage_mainframe_1960.jpg",
-            scenes_dir / "dartmouth_conference_1956.jpg",
-            scenes_dir / "autonomous_agent_matrix.jpg",
-            scenes_dir / "neural_network_synapse.jpg",
-            scenes_dir / "turing_bombe_1940.jpg",
-            scenes_dir / "nvidia_gpu_silicon.jpg",
-            scenes_dir / "neuralink_bci_chip.jpg",
+        all_pool = [
+            "rocket_launch_pad.jpg", "cold_war_radar_room.jpg", "chernobyl_control_room.jpg",
+            "microchip_die_wafer.jpg", "vintage_cray_supercomputer.jpg", "apollo13_mission_control.jpg",
+            "satellite_earth_orbit.jpg", "autonomous_agent_matrix.jpg", "deep_blue_kasparov.jpg",
+            "vintage_mainframe_1960.jpg", "turing_bombe_1940.jpg", "dartmouth_conference_1956.jpg",
+            "neural_network_synapse.jpg", "nvidia_gpu_silicon.jpg", "neuralink_bci_chip.jpg",
+            "soviet_submarine_abyss.jpg", "bank_vault_steel_door.jpg"
         ]
-        available = [p for p in tech_pool if p.exists()]
-        return available[scene_idx % len(available)] if available else scenes_dir / "vintage_mainframe_1960.jpg"
     else:
-        wealth_pool = [
-            scenes_dir / "antwerp_bank_vault.jpg",
-            scenes_dir / "diamond_debeers_vault.jpg",
-            scenes_dir / "madison_boardroom_1952.jpg",
-            scenes_dir / "factory_production_floor.jpg",
-            scenes_dir / "soviet_submarine_abyss.jpg",
-            scenes_dir / "luxury_cafe_pricing.jpg",
+        all_pool = [
+            "wall_street_trading_floor.jpg", "bank_vault_steel_door.jpg", "antwerp_bank_vault.jpg",
+            "soviet_submarine_abyss.jpg", "cold_war_radar_room.jpg", "factory_production_floor.jpg",
+            "diamond_debeers_vault.jpg", "madison_boardroom_1952.jpg", "luxury_cafe_pricing.jpg",
+            "vintage_cray_supercomputer.jpg", "bottled_water_tap_heist.jpg"
         ]
-        available = [p for p in wealth_pool if p.exists()]
-        return available[scene_idx % len(available)] if available else scenes_dir / "antwerp_bank_vault.jpg"
 
+    for name in all_pool:
+        p = scenes_dir / name
+        if p.exists() and name not in used_images:
+            used_images.add(name)
+            return p
+
+    fallback_name = all_pool[scene_idx % len(all_pool)]
+    used_images.add(fallback_name)
+    return scenes_dir / fallback_name
 
 def extract_scene_keyword(narration: str) -> str:
     """Extracts high-impact numbers, dates, or striking keywords from narration text (Item 5)."""
@@ -1628,19 +847,23 @@ def fetch_or_synthesize_broll_clip(
     fps: int = 30,
     scene_idx: int = 0,
     channel_key: str = "ch02_ar_ai_tech",
-    keyword_popup: str | None = None
+    keyword_popup: str | None = None,
+    used_images: set[str] | None = None
 ) -> bool:
     """
     Produces real full-motion vertical B-roll video:
-    1. Downloads genuine 1080p vertical video from Pexels Videos API if key exists.
-    2. Downloads public domain archival footage from Wikimedia Commons (WebM/MP4).
-    3. Downloads public archival documentary photos/diagrams from Wikimedia Commons.
-    4. Curated local artwork with Hollywood multi-axis Ken Burns camera choreography (4 alternating modes).
-    5. Always applies 35mm procedural film grain. Zero text on Arabic videos.
+    1. Zero text overlays on Arabic channels to eliminate reversed/broken text rendering.
+    2. Downloads public domain archival photography from Wikimedia Commons.
+    3. Curated local artwork with Hollywood multi-axis Ken Burns camera choreography (5 alternating modes).
+    4. 35mm procedural film grain on every frame.
     """
+    if lang == "ar" or "ar" in channel_key:
+        keyword_popup = None
+        caption = ""
+
     pexels_key = os.environ.get("PEXELS_API_KEY", "").strip()
 
-    # 0. Clean and infer search keywords if empty
+    # 0. Clean and infer search keywords
     q_search = (broll_query or "").strip()
     if not q_search or q_search.lower() in ("none", "null", ""):
         raw_words = re.findall(r'[a-zA-Z0-9]+', f"{visual_prompt} {style_hint}".lower())
@@ -1654,133 +877,17 @@ def fetch_or_synthesize_broll_clip(
         kw = [w for w in raw_words if w not in stopwords and len(w) > 2]
         q_search = " ".join(kw[:3]) if kw else "cinematic technology"
 
-    # 1. Pexels Real Video Retrieval (if key exists)
-    if pexels_key and q_search:
-        try:
-            q_clean = q_search.strip()
-            url = f"https://api.pexels.com/videos/search?query={urllib.parse.quote(q_clean)}&orientation=portrait&per_page=3"
-            req = urllib.request.Request(url, headers={"Authorization": pexels_key, "User-Agent": "EmpireDocPipeline/2.0"})
-            with urllib.request.urlopen(req, timeout=12) as resp:
-                data = json.loads(resp.read().decode())
-                videos = data.get("videos", [])
-                if videos:
-                    video_files = videos[0].get("video_files", [])
-                    best_file = None
-                    for vf in video_files:
-                        if vf.get("width") == 1080 and vf.get("height") == 1920:
-                            best_file = vf
-                            break
-                    if not best_file and video_files:
-                        best_file = max(video_files, key=lambda x: x.get("width", 0) * x.get("height", 0))
-
-                    if best_file and "link" in best_file:
-                        raw_vid = work_dir / f"raw_broll_{abs(hash(q_search)) % 10000}.mp4"
-                        urllib.request.urlretrieve(best_file["link"], str(raw_vid))
-
-                        cmd = [
-                            "ffmpeg", "-y",
-                            "-stream_loop", "-1",
-                            "-ss", "0", "-i", str(raw_vid),
-                            "-i", str(scene_mp3),
-                            "-t", str(duration),
-                            "-vf", f"scale={target_w}:{target_h}:force_original_aspect_ratio=increase,crop={target_w}:{target_h},fps={fps},noise=c1s=3:c0f=t",
-                            "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p",
-                            "-c:a", "aac", "-b:a", "192k", "-shortest",
-                            str(out_mp4)
-                        ]
-                        subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                        if out_mp4.exists() and out_mp4.stat().st_size > 10000:
-                            print(f"  [B-Roll Engine] Deployed real Pexels video: '{q_clean}' ({out_mp4.stat().st_size // 1024} KB)")
-                            if lang != "ar" and caption:
-                                apply_captions_to_video(out_mp4, caption, lang, work_dir, target_w, target_h)
-                            return True
-        except Exception as e:
-            print(f"  [B-Roll Notice] Pexels retrieval error ({e}); checking archival commons...")
-
-    # 1b. Public Archival Video Search (Zero API Key Required)
-    if q_search:
-        try:
-            q_terms = q_search.strip().split()[:2]
-            q_clean = " ".join(q_terms)
-            clean_enc = urllib.parse.quote(f"{q_clean} filetype:video")
-            wiki_url = f"https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch={clean_enc}&gsrnamespace=6&prop=imageinfo&iiprop=url|size|mime&gsrlimit=3"
-            w_req = urllib.request.Request(wiki_url, headers={"User-Agent": "EmpireDocDirector/2.0 (mailto:admin@empire.tv)"})
-            with urllib.request.urlopen(w_req, timeout=10) as w_resp:
-                w_data = json.loads(w_resp.read().decode())
-                pages = w_data.get("query", {}).get("pages", {})
-                for pid, p in pages.items():
-                    info = p.get("imageinfo", [{}])[0]
-                    v_url = info.get("url", "")
-                    size_bytes = info.get("size", 0)
-                    if v_url.endswith((".webm", ".mp4", ".ogv")) and 0 < size_bytes < 35 * 1024 * 1024:
-                        raw_wiki = work_dir / f"wiki_broll_{abs(hash(q_search)) % 10000}.webm"
-                        urllib.request.urlretrieve(v_url, str(raw_wiki))
-                        cmd = [
-                            "ffmpeg", "-y",
-                            "-stream_loop", "-1",
-                            "-ss", "0", "-i", str(raw_wiki),
-                            "-i", str(scene_mp3),
-                            "-t", str(duration),
-                            "-vf", f"scale={target_w}:{target_h}:force_original_aspect_ratio=increase,crop={target_w}:{target_h},fps={fps},noise=c1s=3:c0f=t",
-                            "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p",
-                            "-c:a", "aac", "-b:a", "192k", "-shortest",
-                            str(out_mp4)
-                        ]
-                        subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                        if out_mp4.exists() and out_mp4.stat().st_size > 10000:
-                            print(f"  [B-Roll Engine] Deployed real archival video: '{q_clean}' ({out_mp4.stat().st_size // 1024} KB)")
-                            if lang != "ar" and caption:
-                                apply_captions_to_video(out_mp4, caption, lang, work_dir, target_w, target_h)
-                            return True
-        except Exception:
-            pass
-
-    # 1c. Script-Specific AI Image Generation (Hugging Face Serverless FLUX/SDXL)
     im = None
-    hf_token = os.environ.get("HF_TOKEN", "").strip()
-    if hf_token and visual_prompt:
-        hf_models = [
-            "black-forest-labs/FLUX.1-schnell",
-            "stabilityai/stable-diffusion-xl-base-1.0",
-            "ByteDance/SDXL-Lightning"
-        ]
-        ai_prompt = f"Cinematic vertical documentary photograph, 9:16 portrait, {visual_prompt}, historical archival details, dramatic 35mm lighting, photorealistic, 8k"
-        for m_id in hf_models:
-            try:
-                hf_url = f"https://router.huggingface.co/hf-inference/models/{m_id}"
-                hf_payload = json.dumps({"inputs": ai_prompt}).encode("utf-8")
-                hf_req = urllib.request.Request(
-                    hf_url,
-                    data=hf_payload,
-                    headers={
-                        "Authorization": f"Bearer {hf_token}",
-                        "Content-Type": "application/json",
-                        "User-Agent": "EmpireDocDirector/2.0"
-                    }
-                )
-                with urllib.request.urlopen(hf_req, timeout=18) as hf_resp:
-                    if hf_resp.status == 200:
-                        img_bytes = hf_resp.read()
-                        if len(img_bytes) > 15000:
-                            raw_ai_img = work_dir / f"ai_gen_{abs(hash(visual_prompt)) % 10000}.jpg"
-                            with open(raw_ai_img, "wb") as f_out:
-                                f_out.write(img_bytes)
-                            im_test = Image.open(raw_ai_img).convert("RGB")
-                            if im_test.width >= 350 and im_test.height >= 350:
-                                im = im_test
-                                print(f"  [AI Image Generator] Generated script-specific AI image via {m_id} for Scene {scene_idx + 1}: '{visual_prompt[:40]}...' ({im.size})")
-                                break
-            except Exception:
-                pass
 
-    # 1d. Public Archival Historical & Museum Photo Search (Zero API Key Required)
+    # 1. Public Archival Historical & Museum Photo Search (Zero API Key Required)
     if im is None and q_search:
-        for term_variant in [q_search, " ".join(q_search.split()[:2])]:
+        search_terms = [f"{q_search} filetype:bitmap", f"{' '.join(q_search.split()[:2])} filetype:bitmap"]
+        for term_variant in search_terms:
             if im is not None:
                 break
             try:
                 clean_enc = urllib.parse.quote(term_variant)
-                w_img_url = f"https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch={clean_enc}&gsrnamespace=6&prop=imageinfo&iiprop=url|size|mime&gsrlimit=4"
+                w_img_url = f"https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch={clean_enc}&gsrnamespace=6&prop=imageinfo&iiprop=url|size|mime&gsrlimit=5"
                 w_req = urllib.request.Request(w_img_url, headers={"User-Agent": "EmpireDocDirector/2.0 (mailto:admin@empire.tv)"})
                 with urllib.request.urlopen(w_req, timeout=8) as w_resp:
                     w_data = json.loads(w_resp.read().decode())
@@ -1789,26 +896,34 @@ def fetch_or_synthesize_broll_clip(
                         info = p.get("imageinfo", [{}])[0]
                         img_url = info.get("url", "")
                         clean_url = img_url.split("?")[0].lower()
+                        mime = info.get("mime", "")
                         size_bytes = info.get("size", 0)
-                        if clean_url.endswith((".jpg", ".jpeg", ".png", ".webp")) and 20000 < size_bytes < 15 * 1024 * 1024:
-                            raw_wiki_img = work_dir / f"wiki_photo_{abs(hash(term_variant)) % 10000}.jpg"
+                        if mime in ["image/jpeg", "image/png", "image/webp"] and not clean_url.endswith((".pdf", ".svg", ".tif")) and 20000 < size_bytes < 15 * 1024 * 1024:
+                            raw_wiki_img = work_dir / f"wiki_photo_{scene_idx}_{abs(hash(term_variant)) % 10000}.jpg"
                             urllib.request.urlretrieve(img_url, str(raw_wiki_img))
                             try:
                                 im_test = Image.open(raw_wiki_img).convert("RGB")
                                 if im_test.width >= 350 and im_test.height >= 350:
                                     im = im_test
-                                    print(f"  [B-Roll Engine] Deployed script-matched archival photo: '{term_variant}' ({im.size})")
+                                    print(f"  [Archival Discovery] Deployed authentic photo for Scene {scene_idx + 1}: '{term_variant}' ({im.size})")
                                     break
                             except Exception:
                                 pass
             except Exception:
                 pass
 
-    # 2. Master Cinematic Camera Movement Synthesis (Guaranteed High-Motion Cinema)
+    # 2. Master Cinematic Scene Artwork Selection (Guaranteed 100% Unique per Scene)
     if im is None:
-        img_path = resolve_scene_artwork(visual_prompt or q_search, style_hint, channel_key=channel_key, scene_idx=scene_idx)
+        img_path = resolve_scene_artwork(
+            visual_prompt=visual_prompt or q_search,
+            style_hint=style_hint,
+            channel_key=channel_key,
+            scene_idx=scene_idx,
+            used_images=used_images
+        )
         try:
             im = Image.open(img_path).convert("RGB")
+            print(f"  [Curated Archive] Scene {scene_idx + 1}/10 using distinct artwork: {img_path.name}")
         except Exception:
             im = create_dark_cinematic_procedural_backdrop(style_hint, target_w, target_h)
 
@@ -1819,87 +934,76 @@ def fetch_or_synthesize_broll_clip(
     canvas_h = int(target_h * 1.35)
     im_canvas = im.resize((canvas_w, canvas_h), Image.Resampling.LANCZOS)
 
-    caption_overlay = render_cinematic_caption_overlay(caption, lang, target_w=target_w, target_h=target_h) if lang != "ar" else None
+    caption_overlay = render_cinematic_caption_overlay(caption, lang, target_w=target_w, target_h=target_h) if (lang != "ar" and caption) else None
 
-    # Alternating 4-Mode Cinematic Camera Choreography
-    move_mode = scene_idx % 4
+    # Alternating 5-Mode Cinematic Camera Choreography
+    move_mode = scene_idx % 5
 
     ffmpeg_cmd = [
         "ffmpeg", "-y",
         "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{target_w}x{target_h}", "-r", str(fps),
         "-i", "-",
         "-i", str(scene_mp3),
+        "-t", str(duration),
         "-vf", "noise=c1s=3:c0f=t",
         "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p",
         "-c:a", "aac", "-b:a", "192k", "-shortest",
         str(out_mp4)
     ]
-    proc = subprocess.Popen(ffmpeg_cmd, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     try:
-        for f in range(n_frames):
-            t = f / float(n_frames)
+        proc = subprocess.Popen(ffmpeg_cmd, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        for f_idx in range(n_frames):
+            t = f_idx / max(1, n_frames - 1)
 
-            if scene_idx == 0:
-                # Mode 0 (THE 2-SECOND SHOCK HOOK): Explosive Snap Punch-In (1.02 -> 1.30 in first 0.6s)
-                if t < 0.20:
-                    t_snap = t / 0.20
-                    zoom = 1.02 + 0.28 * np.sin(t_snap * np.pi * 0.5)
-                else:
-                    zoom = 1.30 - 0.06 * (t - 0.20) / 0.80
-                cw = int(target_w / zoom)
-                ch = int(target_h / zoom)
-                max_x = canvas_w - cw
-                max_y = canvas_h - ch
-                cx = int(max_x * 0.50)
-                cy = int(max_y * (0.35 + 0.15 * t))
-            elif move_mode == 0:
-                # Mode 0: Center Dramatic 35mm Push-In (zoom 1.04 -> 1.22)
-                zoom = 1.04 + 0.18 * t
-                cw = int(target_w / zoom)
-                ch = int(target_h / zoom)
-                max_x = canvas_w - cw
-                max_y = canvas_h - ch
-                cx = int(max_x * 0.50)
-                cy = int(max_y * (0.35 + 0.15 * t))
+            if move_mode == 0:
+                # Mode 0: Center zoom in (tension build)
+                zoom = 1.0 + 0.16 * t
+                cw = int(canvas_w / zoom)
+                ch = int(canvas_h / zoom)
+                cx = int((canvas_w - cw) / 2)
+                cy = int((canvas_h - ch) / 2)
             elif move_mode == 1:
-                # Mode 1: Vertical Crane Sweep (top to bottom glide)
-                zoom = 1.06 + 0.10 * t
-                cw = int(target_w / zoom)
-                ch = int(target_h / zoom)
-                max_x = canvas_w - cw
-                max_y = canvas_h - ch
-                cx = int(max_x * (0.30 + 0.20 * t))
-                cy = int(max_y * (0.12 + 0.76 * t))
+                # Mode 1: Left to right smooth pan
+                cw = int(target_w * 1.12)
+                ch = int(target_h * 1.12)
+                max_x = max(1, canvas_w - cw)
+                max_y = max(1, canvas_h - ch)
+                cx = int(max_x * (0.15 + 0.70 * t))
+                cy = int(max_y * 0.50)
             elif move_mode == 2:
-                # Mode 2: Cinematic Horizontal Tracking Pan (left to right)
-                zoom = 1.06 + 0.12 * t
-                cw = int(target_w / zoom)
-                ch = int(target_h / zoom)
-                max_x = canvas_w - cw
-                max_y = canvas_h - ch
-                cx = int(max_x * (0.10 + 0.80 * t))
-                cy = int(max_y * (0.35 + 0.15 * t))
+                # Mode 2: Center zoom out (reveal scale)
+                zoom = 1.18 - 0.16 * t
+                cw = int(canvas_w / zoom)
+                ch = int(canvas_h / zoom)
+                cx = int((canvas_w - cw) / 2)
+                cy = int((canvas_h - ch) / 2)
+            elif move_mode == 3:
+                # Mode 3: Right to left forensic pan
+                cw = int(target_w * 1.12)
+                ch = int(target_h * 1.12)
+                max_x = max(1, canvas_w - cw)
+                max_y = max(1, canvas_h - ch)
+                cx = int(max_x * (0.85 - 0.70 * t))
+                cy = int(max_y * 0.50)
             else:
-                # Mode 3: Dramatic Wide Reveal (pull back from 1.24 to 1.05)
-                zoom = 1.24 - 0.18 * t
-                cw = int(target_w / zoom)
-                ch = int(target_h / zoom)
-                max_x = canvas_w - cw
-                max_y = canvas_h - ch
-                cx = int(max_x * (0.50 + 0.15 * (1.0 - t)))
-                cy = int(max_y * 0.45)
+                # Mode 4: Vertical upward tilt
+                cw = int(target_w * 1.12)
+                ch = int(target_h * 1.12)
+                max_x = max(1, canvas_w - cw)
+                max_y = max(1, canvas_h - ch)
+                cx = int(max_x * 0.50)
+                cy = int(max_y * (0.80 - 0.60 * t))
 
-            cx = max(0, min(max_x, cx))
-            cy = max(0, min(max_y, cy))
+            cx = max(0, min(canvas_w - cw, cx))
+            cy = max(0, min(canvas_h - ch, cy))
 
             frame = im_canvas.crop((cx, cy, cx + cw, cy + ch)).resize((target_w, target_h), Image.Resampling.BILINEAR)
 
             if caption_overlay is not None:
                 frame.paste(caption_overlay, (0, 0), caption_overlay)
 
-            if keyword_popup:
-                # Active between 15% and 65% of scene duration (~1.8-2.2 seconds)
+            if keyword_popup and (lang != "ar" and "ar" not in channel_key):
                 if 0.15 <= t <= 0.65:
                     badge_p = (t - 0.15) / 0.50
                     badge_img = render_kinetic_keyword_overlay(
@@ -1907,7 +1011,7 @@ def fetch_or_synthesize_broll_clip(
                         badge_p,
                         target_w,
                         target_h,
-                        is_tech=("tech" in channel_key or "ar" in channel_key)
+                        is_tech=False
                     )
                     if badge_img is not None:
                         frame.paste(badge_img, (0, 0), badge_img)
@@ -1922,7 +1026,6 @@ def fetch_or_synthesize_broll_clip(
         try: proc.kill()
         except Exception: pass
         return False
-
 
 def apply_captions_to_video(video_path: Path, caption: str, lang: str, work_dir: Path, target_w: int, target_h: int):
     """Composites subtitles onto video clip for English channels."""
@@ -2046,7 +1149,8 @@ def stream_render_presenter_scene(
         target_w=target_w,
         target_h=target_h,
         fps=fps,
-        scene_idx=scene_idx
+        scene_idx=scene_idx,
+        channel_key=channel_key
     )
 
 
@@ -2070,6 +1174,7 @@ def produce_v16_animated_episode(channel_key: str, cfg: dict, output_root: Path)
 
     final_mp4 = output_root / f"{channel_key}_latest.mp4"
     scene_video_paths = []
+    used_images_in_episode: set[str] = set()
 
     # 2. Render Each Scene (100% Full-Screen Cinematic Documentary B-Roll with Voiceover)
     for s_idx, scene in enumerate(scenes):
@@ -2112,7 +1217,8 @@ def produce_v16_animated_episode(channel_key: str, cfg: dict, output_root: Path)
             fps=FPS,
             scene_idx=s_idx,
             channel_key=channel_key,
-            keyword_popup=keyword_popup
+            keyword_popup=keyword_popup,
+            used_images=used_images_in_episode
         )
 
         if ok and scene_mp4.exists():
