@@ -930,22 +930,23 @@ def generate_dynamic_gemini_script(channel_key: str, lang: str) -> dict | None:
     prompt = f"""You are the lead director of an elite, viral vertical documentary show (similar to Vox, ColdFusion, National Geographic, and Johnny Harris).
 Write an entirely UNIQUE, captivating documentary script in {lang_desc} based on a real dramatic historical, scientific, or mystery event in {channel_niche}.
 
-CRITICAL PRODUCTION FORMAT (100% CINEMATIC B-ROLL DOCUMENTARY):
-1. Pacing: 130 to 150 words per minute.
-2. ALL scenes are 100% visual B-Roll evidence, real archival footage, diagrams, maps, or dramatic reenactments.
-   The host speaks ONLY as an authoritative Voiceover (VO) narrator. There is NEVER an on-camera presenter speaking to camera.
-3. Structure: EXACTLY 10 sequential dramatic scenes (target total video duration 45 to 50 seconds to STRICTLY stay within the 60-second YouTube Shorts limit).
-   EVERY single scene MUST have its own unique, script-specific visual evidence:
-   - "speaker": "narrator"
-   - "scene_type": "b_roll"
-   - "character_focus": "broll_evidence"
-   - "narration": Spoken voiceover text here (short, punchy, 8 to 12 words per scene, TOTAL SCRIPT UNDER 110 WORDS)...
-   - "broll_search": A specific, short English search query for real video/archival footage (e.g. "supercomputer server room", "deep sea submarine", "microchip wafer fabrication", "vault security laser", "redacted classified documents", "satellite earth night").
-   - "visual_prompt": A highly specific, photographic prompt for AI image generation illustrating this exact moment in the story (e.g. "1962 IBM 7090 magnetic tape computer with Arthur Samuel inspecting punch cards, 9:16 vertical", "declassified top secret telegram with redacted ink and CIA seal").
-   - "visual_style": Short descriptor (e.g. "cyber_matrix", "submarine_abyss", "bank_vault", "quantum_silicon", "vintage_archive").
-4. Arabic Channel: Leave "caption" as an empty string ("") because Arabic videos have zero text overlays (100% clean full-screen footage).
-   English Channel: Provide a punchy 2-line auto-wrapped subtitle in "caption".
-5. Return STRICTLY valid JSON with no markdown formatting or intro prose:
+CRITICAL VIRAL PRODUCTION FORMAT (ENGINEERED FOR 100M MONTHLY VIEWS):
+1. SEAMLESS INFINITE LOOP (خدعة اللوب اللانهائي الذكي):
+   - Scene 1 (THE 2-SECOND SHOCK HOOK): Must open with an explosive high-stakes hook (strictly 6 to 8 words).
+     Example Arabic: "هزم الذكاء الاصطناعي أذكى عقل بشري في التاريخ!"
+     Example English: "A single computer algorithm broke the world's greatest chess master."
+     MUST set "sfx_cue": "sfx_impact" on Scene 1 for immediate auditory shock.
+   - Scene 10 (THE LOOP CONNECTOR): The VERY LAST sentence of Scene 10 MUST end with an open connector phrase that grammatically leads directly into Scene 1!
+     Example Arabic: "...ولهذا السبب الصادم بالتحديد،"
+     Example English: "...which brings us right back to the shocking reality that:"
+     When looped on YouTube Shorts, the re-watch feels completely seamless and boosts retention over 115%!
+2. Structure: EXACTLY 10 sequential dramatic scenes (target total duration 45 to 50 seconds for Shorts).
+   Narration: short, punchy, 7 to 10 words per scene (TOTAL SCRIPT UNDER 100 WORDS).
+3. Kinetic Keyword Popups: Every single scene MUST include a "keyword_popup" field with 1 to 3 high-impact words or numbers (e.g. "1997", "$400,000,000", "كارثة", "الماتريكس", "ديب بلو", "سري للغاية").
+4. "sfx_cue": Choose from "sfx_impact" (Scene 1), "sfx_riser", "sfx_subdrop", "sfx_whoosh", "sfx_heartbeat".
+5. Arabic Channel: Leave "caption" as an empty string ("").
+   English Channel: Provide punchy 2-line auto-wrapped subtitle in "caption".
+6. Return STRICTLY valid JSON with no markdown formatting or intro prose:
 {{
   "series_title": "...",
   "part": "Special Episode",
@@ -956,9 +957,10 @@ CRITICAL PRODUCTION FORMAT (100% CINEMATIC B-ROLL DOCUMENTARY):
       "scene_type": "b_roll",
       "character_focus": "broll_evidence",
       "narration": "Spoken voiceover text here...",
+      "keyword_popup": "1997" or "الماتريكس" or "كارثة",
       "broll_search": "short english video search query",
       "caption": "" if Arabic else "English subtitle",
-      "sfx_cue": "sfx_whoosh" or "sfx_heartbeat" or "sfx_scratch" or "sfx_subdrop" or "sfx_register",
+      "sfx_cue": "sfx_impact" or "sfx_riser" or "sfx_whoosh" or "sfx_subdrop",
       "visual_prompt": "Cinematic visual description, 9:16 vertical",
       "visual_style": "vintage_archive"
     }}
@@ -1245,6 +1247,19 @@ def generate_procedural_sfx(sfx_name: str, out_wav: Path):
         scratch = np.sin(2 * np.pi * np.cumsum(f_sweep) / sr) * np.exp(-t * 5.0)
         scratch += np.random.normal(0, 0.15, len(t)) * np.exp(-t * 8.0)
         audio = scratch * 0.75
+    elif sfx_name == "sfx_impact":
+        t = np.linspace(0, 1.4, int(sr * 1.4), endpoint=False)
+        f_sweep = 125.0 * np.exp(-t * 3.5) + 38.0
+        phase = 2 * np.pi * np.cumsum(f_sweep) / sr
+        impact = np.sin(phase) * np.exp(-t * 2.5) * 0.95
+        transient = np.random.normal(0, 0.4, len(t)) * (t < 0.04) * np.exp(-t * 50.0)
+        audio = impact + transient
+    elif sfx_name == "sfx_riser":
+        t = np.linspace(0, 1.2, int(sr * 1.2), endpoint=False)
+        f_rise = 180.0 + 950.0 * (t / 1.2) ** 2
+        phase = 2 * np.pi * np.cumsum(f_rise) / sr
+        noise = np.random.normal(0, 0.25, len(t)) * (t / 1.2) ** 2
+        audio = (np.sin(phase) * 0.6 + noise) * (t / 1.2)
     else:
         t = np.linspace(0, 0.1, int(sr * 0.1), endpoint=False)
         audio = np.sin(2 * np.pi * 800 * t) * np.exp(-t * 30.0)
@@ -1257,30 +1272,51 @@ def generate_procedural_sfx(sfx_name: str, out_wav: Path):
         wf.writeframes(audio_16.tobytes())
 
 
-def synthesize_cinematic_sub_bass_drone(duration: float, out_wav: Path):
-    """Synthesizes deep cinematic atmospheric tension drone (58.27 Hz D-minor fundamental)."""
-    sample_rate = 44100
-    n_samples = int(sample_rate * duration)
-    t = np.linspace(0, duration, n_samples, endpoint=False)
+def synthesize_cinematic_tension_soundtrack(duration: float, out_wav: Path):
+    """
+    Synthesizes an escalating cinematic documentary tension score (Item 4):
+    - Deep 58Hz D-minor sub-bass foundation
+    - 120 BPM escalating heartbeat/clock percussion pulse
+    - Rising cinematic harmonic tension sweep that peaks at the climax
+    """
+    sr = 44100
+    n = int(sr * duration)
+    t = np.linspace(0, duration, n, endpoint=False)
 
+    # 1. Base atmospheric sub-drone (D-minor 58.27 Hz fundamental)
     f0 = 58.27
-    drone = 0.50 * np.sin(2 * np.pi * f0 * t)
-    drone += 0.25 * np.sin(2 * np.pi * (f0 * 1.5) * t)
-    drone += 0.15 * np.sin(2 * np.pi * (f0 * 2.0) * t)
-    drone += 0.10 * np.sin(2 * np.pi * (f0 * 3.0) * t)
-
-    lfo = 0.85 + 0.15 * np.sin(2 * np.pi * 0.18 * t)
+    drone = 0.38 * np.sin(2 * np.pi * f0 * t) + 0.22 * np.sin(2 * np.pi * (f0 * 1.5) * t)
+    lfo = 0.82 + 0.18 * np.sin(2 * np.pi * 0.15 * t)
     drone = drone * lfo
 
-    noise = np.random.normal(0, 0.012, n_samples)
-    audio = np.clip(drone + noise, -0.92, 0.92)
+    # 2. Rhythmic tension pulse (Heartbeat / Clock pulse at 120 BPM = 2 beats per sec)
+    bpm = 120.0
+    beat_interval = 60.0 / bpm
+    beat_phase = (t % beat_interval) / beat_interval
+    pulse_env = np.exp(-beat_phase * 18.0) * (beat_phase < 0.25)
+    pulse_tone = np.sin(2 * np.pi * 65.0 * t) * pulse_env
+    # Escalating intensity: subtle at start, building presence over time
+    escalation = 0.25 + 0.75 * (t / duration) ** 1.4
+    rhythm = pulse_tone * 0.30 * escalation
+
+    # 3. Rising tension harmonic (building suspense towards the climax)
+    f_rise = 110.0 + 360.0 * (t / duration) ** 2
+    rise_tone = 0.07 * np.sin(2 * np.pi * np.cumsum(f_rise) / sr) * (t / duration)
+
+    noise = np.random.normal(0, 0.008, n)
+    audio = np.clip(drone + rhythm + rise_tone + noise, -0.92, 0.92)
 
     audio_16 = (audio * 32767).astype(np.int16)
     with wave.open(str(out_wav), "w") as wf:
         wf.setnchannels(1)
         wf.setsampwidth(2)
-        wf.setframerate(sample_rate)
+        wf.setframerate(sr)
         wf.writeframes(audio_16.tobytes())
+
+
+def synthesize_cinematic_sub_bass_drone(duration: float, out_wav: Path):
+    """Backward compatibility alias for tension soundtrack."""
+    synthesize_cinematic_tension_soundtrack(duration, out_wav)
 
 
 def synthesize_dual_voice_scene(
@@ -1495,6 +1531,90 @@ def resolve_scene_artwork(visual_prompt: str, style_hint: str, channel_key: str 
         return available[scene_idx % len(available)] if available else scenes_dir / "antwerp_bank_vault.jpg"
 
 
+def extract_scene_keyword(narration: str) -> str:
+    """Extracts high-impact numbers, dates, or striking keywords from narration text (Item 5)."""
+    clean = narration.replace('"', '').replace("'", '').strip()
+    years = re.findall(r'\b(19\d{2}|20\d{2})\b', clean)
+    if years:
+        return years[0]
+    nums = re.findall(r'\b\d+[\d,.]*\s*(?:مليون|مليار|ألف|dollar|\$|%|دولار)?\b', clean)
+    if nums:
+        return nums[0].strip()
+    words = clean.split()
+    return " ".join(words[:2]) if words else ""
+
+
+def render_kinetic_keyword_overlay(
+    keyword: str,
+    progress: float,
+    target_w: int = 1080,
+    target_h: int = 1920,
+    is_tech: bool = True
+) -> Image.Image | None:
+    """Renders a sleek, high-retention kinetic keyword badge for viral Shorts engagement (Item 5)."""
+    if not keyword or progress <= 0.0 or progress >= 1.0:
+        return None
+
+    # Scale & Alpha lifecycle (fast pop-in, subtle pulse, clean fade out)
+    if progress < 0.20:
+        t_in = progress / 0.20
+        scale = 0.65 + 0.40 * np.sin(t_in * np.pi * 0.5)
+        alpha = min(1.0, t_in * 1.5)
+    elif progress > 0.80:
+        t_out = (progress - 0.80) / 0.20
+        scale = 1.0 + 0.10 * t_out
+        alpha = max(0.0, 1.0 - t_out)
+    else:
+        t_hold = (progress - 0.20) / 0.60
+        scale = 1.0 + 0.03 * np.sin(t_hold * np.pi * 2)
+        alpha = 1.0
+
+    text = keyword.strip()
+    is_arabic = HAS_ARABIC_SHAPER and any('\u0600' <= c <= '\u06ff' for c in text)
+    if is_arabic:
+        try:
+            text = get_display(arabic_reshaper.reshape(text))
+        except Exception:
+            pass
+
+    font_size = int(64 * scale)
+    font = get_font(font_size, lang="ar" if is_arabic else "en", bold=True)
+
+    dummy_img = Image.new("RGBA", (10, 10))
+    draw_dummy = ImageDraw.Draw(dummy_img)
+    bbox = draw_dummy.textbbox((0, 0), text, font=font)
+    tw = bbox[2] - bbox[0]
+    th = bbox[3] - bbox[1]
+
+    pad_x = int(45 * scale)
+    pad_y = int(22 * scale)
+    bw = tw + pad_x * 2
+    bh = th + pad_y * 2
+
+    badge = Image.new("RGBA", (target_w, target_h), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(badge, "RGBA")
+
+    cx = (target_w - bw) // 2
+    cy = int(target_h * 0.38)
+
+    accent_rgb = (56, 189, 248) if is_tech else (250, 204, 21)
+    bg_rgba = (10, 15, 26, int(225 * alpha))
+    border_rgba = (*accent_rgb, int(245 * alpha))
+    text_rgba = (255, 255, 255, int(255 * alpha))
+
+    draw.rounded_rectangle(
+        [cx, cy, cx + bw, cy + bh],
+        radius=int(18 * scale),
+        fill=bg_rgba,
+        outline=border_rgba,
+        width=int(4 * scale)
+    )
+    tx = cx + (bw - tw) // 2
+    ty = cy + (bh - th) // 2 - int(3 * scale)
+    draw.text((tx, ty), text, font=font, fill=text_rgba)
+    return badge
+
+
 def fetch_or_synthesize_broll_clip(
     broll_query: str | None,
     style_hint: str,
@@ -1509,7 +1629,8 @@ def fetch_or_synthesize_broll_clip(
     target_h: int = 1920,
     fps: int = 30,
     scene_idx: int = 0,
-    channel_key: str = "ch02_ar_ai_tech"
+    channel_key: str = "ch02_ar_ai_tech",
+    keyword_popup: str | None = None
 ) -> bool:
     """
     Produces real full-motion vertical B-roll video:
@@ -1721,7 +1842,20 @@ def fetch_or_synthesize_broll_clip(
         for f in range(n_frames):
             t = f / float(n_frames)
 
-            if move_mode == 0:
+            if scene_idx == 0:
+                # Mode 0 (THE 2-SECOND SHOCK HOOK): Explosive Snap Punch-In (1.02 -> 1.30 in first 0.6s)
+                if t < 0.20:
+                    t_snap = t / 0.20
+                    zoom = 1.02 + 0.28 * np.sin(t_snap * np.pi * 0.5)
+                else:
+                    zoom = 1.30 - 0.06 * (t - 0.20) / 0.80
+                cw = int(target_w / zoom)
+                ch = int(target_h / zoom)
+                max_x = canvas_w - cw
+                max_y = canvas_h - ch
+                cx = int(max_x * 0.50)
+                cy = int(max_y * (0.35 + 0.15 * t))
+            elif move_mode == 0:
                 # Mode 0: Center Dramatic 35mm Push-In (zoom 1.04 -> 1.22)
                 zoom = 1.04 + 0.18 * t
                 cw = int(target_w / zoom)
@@ -1765,6 +1899,20 @@ def fetch_or_synthesize_broll_clip(
 
             if caption_overlay is not None:
                 frame.paste(caption_overlay, (0, 0), caption_overlay)
+
+            if keyword_popup:
+                # Active between 15% and 65% of scene duration (~1.8-2.2 seconds)
+                if 0.15 <= t <= 0.65:
+                    badge_p = (t - 0.15) / 0.50
+                    badge_img = render_kinetic_keyword_overlay(
+                        keyword_popup,
+                        badge_p,
+                        target_w,
+                        target_h,
+                        is_tech=("tech" in channel_key or "ar" in channel_key)
+                    )
+                    if badge_img is not None:
+                        frame.paste(badge_img, (0, 0), badge_img)
 
             proc.stdin.write(frame.tobytes())
 
@@ -1948,6 +2096,8 @@ def produce_v16_animated_episode(channel_key: str, cfg: dict, output_root: Path)
             work_dir=work_dir
         )
 
+        keyword_popup = scene.get("keyword_popup") or extract_scene_keyword(scene.get("narration", ""))
+
         # B. Render 100% Cinematic Full-Screen Documentary B-Roll Video (Option 1)
         ok = fetch_or_synthesize_broll_clip(
             broll_query=broll_search,
@@ -1963,7 +2113,8 @@ def produce_v16_animated_episode(channel_key: str, cfg: dict, output_root: Path)
             target_h=H,
             fps=FPS,
             scene_idx=s_idx,
-            channel_key=channel_key
+            channel_key=channel_key,
+            keyword_popup=keyword_popup
         )
 
         if ok and scene_mp4.exists():
@@ -1981,7 +2132,7 @@ def produce_v16_animated_episode(channel_key: str, cfg: dict, output_root: Path)
         check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
     )
 
-    # 4. Layer procedural D-minor sub-bass tension drone under full audio
+    # 4. Layer procedural escalating cinematic tension soundtrack under dialogue (Item 4)
     total_duration = len(scenes) * 7.5
     try:
         res = subprocess.run(
@@ -1992,15 +2143,15 @@ def produce_v16_animated_episode(channel_key: str, cfg: dict, output_root: Path)
     except Exception:
         pass
 
-    drone_wav = work_dir / "ambient_sub_bass_drone.wav"
-    synthesize_cinematic_sub_bass_drone(total_duration + 2.0, drone_wav)
+    soundtrack_wav = work_dir / "cinematic_tension_score.wav"
+    synthesize_cinematic_tension_soundtrack(total_duration + 2.0, soundtrack_wav)
 
-    # Final audio mix: Dialogue (1.0) + Sub-bass drone (0.15) with EBU R128 broadcast loudnorm (-14 LUFS)
+    # Final audio mix: Dialogue (1.0) + Escalating Tension Score (0.18) with EBU R128 broadcast loudnorm (-14 LUFS)
     final_cmd = [
         "ffmpeg", "-y",
         "-i", str(combined_dry_mp4),
-        "-i", str(drone_wav),
-        "-filter_complex", "[0:a]volume=1.0[v];[1:a]volume=0.15[d];[v][d]amix=inputs=2:duration=first:normalize=0,loudnorm=I=-14:LRA=7:tp=-1.5[a]",
+        "-i", str(soundtrack_wav),
+        "-filter_complex", "[0:a]volume=1.0[v];[1:a]volume=0.18[d];[v][d]amix=inputs=2:duration=first:normalize=0,loudnorm=I=-14:LRA=7:tp=-1.5[a]",
         "-map", "0:v",
         "-map", "[a]",
         "-c:v", "copy",
@@ -2107,9 +2258,9 @@ def audit_and_certify_episode(video_path: Path, script_data: dict, cfg: dict) ->
 
 def upload_to_youtube(video_path: Path, script_data: dict, cfg: dict) -> str | None:
     secret_env = cfg["secret_env"]
-    token_raw = os.environ.get(secret_env, "").strip()
-    client_id = os.environ.get("YT_CLIENT_ID", "").strip()
-    client_secret = os.environ.get("YT_CLIENT_SECRET", "").strip()
+    token_raw = re.sub(r'[\s"\'\r\n]', '', os.environ.get(secret_env, "").strip())
+    client_id = re.sub(r'[\s"\'\r\n]', '', os.environ.get("YT_CLIENT_ID", "").strip())
+    client_secret = re.sub(r'[\s"\'\r\n]', '', os.environ.get("YT_CLIENT_SECRET", "").strip())
 
     if not token_raw:
         print(f"  [YouTube Upload] {secret_env} is empty or not set in environment; skipping upload.")
@@ -2120,75 +2271,118 @@ def upload_to_youtube(video_path: Path, script_data: dict, cfg: dict) -> str | N
     print(f"  [YouTube Upload] Video file: {video_path} ({video_path.stat().st_size / (1024*1024):.2f} MB)")
     print("=" * 70)
 
+    title = script_data.get("title", cfg["name"])[:95]
+    desc_lines = [
+        title,
+        "",
+        cfg.get("outro_line", ""),
+        "",
+        " ".join(f"#{t}" for t in cfg.get("tags", [])[:8])
+    ]
+    description = "\n".join(desc_lines)
+    tags = cfg.get("tags", ["Shorts"])
+    category_id = cfg.get("category_id", "28")
+
+    # 1. Obtain Fresh Access Token via rock-solid direct oauth2 endpoint
+    access_token = None
+    try:
+        ref_payload = urllib.parse.urlencode({
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "refresh_token": token_raw,
+            "grant_type": "refresh_token"
+        }).encode("utf-8")
+        ref_req = urllib.request.Request(
+            "https://oauth2.googleapis.com/token",
+            data=ref_payload,
+            headers={"Content-Type": "application/x-www-form-urlencoded", "User-Agent": "Mozilla/5.0"}
+        )
+        with urllib.request.urlopen(ref_req, timeout=18) as ref_resp:
+            tok_res = json.loads(ref_resp.read().decode())
+            access_token = tok_res.get("access_token")
+    except Exception as e_tok:
+        print(f"  [YouTube Auth Notice] Direct oauth2 error: {e_tok}")
+
+    # 2. Resumable Upload via Direct HTTP or googleapiclient
+    if access_token:
+        try:
+            print(f"  [YouTube Upload] Using zero-dependency Resumable API to upload '{title}'...")
+            file_size = video_path.stat().st_size
+            meta_body = {
+                "snippet": {
+                    "title": title,
+                    "description": description,
+                    "tags": tags,
+                    "categoryId": category_id
+                },
+                "status": {
+                    "privacyStatus": "public",
+                    "selfDeclaredMadeForKids": False
+                }
+            }
+            init_url = "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status"
+            init_req = urllib.request.Request(
+                init_url,
+                data=json.dumps(meta_body).encode("utf-8"),
+                headers={
+                    "Authorization": f"Bearer {access_token}",
+                    "Content-Type": "application/json; charset=UTF-8",
+                    "X-Upload-Content-Length": str(file_size),
+                    "X-Upload-Content-Type": "video/mp4"
+                },
+                method="POST"
+            )
+            with urllib.request.urlopen(init_req, timeout=25) as init_resp:
+                upload_url = init_resp.headers.get("Location")
+
+            if upload_url:
+                with open(video_path, "rb") as f_vid:
+                    vid_bytes = f_vid.read()
+                up_req = urllib.request.Request(
+                    upload_url,
+                    data=vid_bytes,
+                    headers={
+                        "Content-Type": "video/mp4",
+                        "Content-Length": str(file_size)
+                    },
+                    method="PUT"
+                )
+                with urllib.request.urlopen(up_req, timeout=120) as up_resp:
+                    res_data = json.loads(up_resp.read().decode())
+                    vid_id = res_data.get("id")
+                    if vid_id:
+                        print(f"  [YouTube Upload] SUCCESS! Video published: https://youtu.be/{vid_id}")
+                        return vid_id
+        except Exception as e_up:
+            print(f"  [YouTube Upload Notice] Direct upload issue ({e_up}); trying standard client...")
+
+    # 3. Fallback to standard Google API Client
     try:
         from google.oauth2.credentials import Credentials
-        from google.auth.transport.requests import Request
         from googleapiclient.discovery import build
         from googleapiclient.http import MediaFileUpload
 
-        creds = None
-        if token_raw.startswith("{"):
-            tok_dict = json.loads(token_raw)
-            creds = Credentials.from_authorized_user_info(tok_dict)
-        else:
-            creds = Credentials(
-                token=None,
-                refresh_token=token_raw,
-                token_uri="https://oauth2.googleapis.com/token",
-                client_id=client_id,
-                client_secret=client_secret
-            )
-
-        if not creds.valid:
-            try:
-                creds.refresh(Request())
-            except Exception as e_ref:
-                print(f"  [YouTube Auth] google-auth refresh notice ({e_ref}); using direct oauth2 refresh...")
-                ref_payload = urllib.parse.urlencode({
-                    "client_id": client_id,
-                    "client_secret": client_secret,
-                    "refresh_token": token_raw,
-                    "grant_type": "refresh_token"
-                }).encode("utf-8")
-                ref_req = urllib.request.Request(
-                    "https://oauth2.googleapis.com/token",
-                    data=ref_payload,
-                    headers={"Content-Type": "application/x-www-form-urlencoded", "User-Agent": "Mozilla/5.0"}
-                )
-                with urllib.request.urlopen(ref_req, timeout=15) as ref_resp:
-                    tok_res = json.loads(ref_resp.read().decode())
-                    creds = Credentials(
-                        token=tok_res["access_token"],
-                        refresh_token=token_raw,
-                        token_uri="https://oauth2.googleapis.com/token",
-                        client_id=client_id,
-                        client_secret=client_secret
-                    )
-
+        creds = Credentials(
+            token=access_token,
+            refresh_token=token_raw,
+            token_uri="https://oauth2.googleapis.com/token",
+            client_id=client_id,
+            client_secret=client_secret
+        )
         youtube = build("youtube", "v3", credentials=creds)
 
-        title = script_data.get("title", cfg["name"])[:95]
-        desc_lines = [
-            title,
-            "",
-            cfg.get("outro_line", ""),
-            "",
-            " ".join(f"#{t}" for t in cfg.get("tags", [])[:8])
-        ]
         body = {
             "snippet": {
                 "title": title,
-                "description": "\n".join(desc_lines),
-                "tags": cfg.get("tags", []),
-                "categoryId": cfg.get("category_id", "28")
+                "description": description,
+                "tags": tags,
+                "categoryId": category_id
             },
             "status": {
                 "privacyStatus": "public",
                 "selfDeclaredMadeForKids": False
             }
         }
-
-        print(f"  [YouTube Upload] Uploading '{title}'...")
         media = MediaFileUpload(str(video_path), chunksize=1024 * 1024, resumable=True, mimetype="video/mp4")
         req = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
 
@@ -2204,19 +2398,6 @@ def upload_to_youtube(video_path: Path, script_data: dict, cfg: dict) -> str | N
     except Exception as e:
         err_str = str(e)
         print(f"  [YouTube Upload] ERROR during YouTube upload: {err_str}")
-        if "invalid_grant" in err_str.lower():
-            print("\n" + "!" * 75)
-            print("  CRITICAL ACTION REQUIRED: YOUTUBE REFRESH TOKEN EXPIRED / REVOKED")
-            print("!" * 75)
-            print(f"  The token for {secret_env} has expired (Google invalid_grant).")
-            print("  HOW TO FIX:")
-            print("  1. Run 'python refresh_yt_token.py' on your local terminal.")
-            print("  2. In Google Cloud Console, ensure your OAuth Consent Screen is 'In Production'.")
-            print(f"  3. Update GitHub Secret '{secret_env}' with the new refresh token.")
-            print("!" * 75 + "\n")
-        else:
-            import traceback
-            traceback.print_exc()
         return None
 
 # ==============================================================================
