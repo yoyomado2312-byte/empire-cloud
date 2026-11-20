@@ -2140,7 +2140,30 @@ def upload_to_youtube(video_path: Path, script_data: dict, cfg: dict) -> str | N
             )
 
         if not creds.valid:
-            creds.refresh(Request())
+            try:
+                creds.refresh(Request())
+            except Exception as e_ref:
+                print(f"  [YouTube Auth] google-auth refresh notice ({e_ref}); using direct oauth2 refresh...")
+                ref_payload = urllib.parse.urlencode({
+                    "client_id": client_id,
+                    "client_secret": client_secret,
+                    "refresh_token": token_raw,
+                    "grant_type": "refresh_token"
+                }).encode("utf-8")
+                ref_req = urllib.request.Request(
+                    "https://oauth2.googleapis.com/token",
+                    data=ref_payload,
+                    headers={"Content-Type": "application/x-www-form-urlencoded", "User-Agent": "Mozilla/5.0"}
+                )
+                with urllib.request.urlopen(ref_req, timeout=15) as ref_resp:
+                    tok_res = json.loads(ref_resp.read().decode())
+                    creds = Credentials(
+                        token=tok_res["access_token"],
+                        refresh_token=token_raw,
+                        token_uri="https://oauth2.googleapis.com/token",
+                        client_id=client_id,
+                        client_secret=client_secret
+                    )
 
         youtube = build("youtube", "v3", credentials=creds)
 
