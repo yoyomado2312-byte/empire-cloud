@@ -20,6 +20,7 @@ Automated High-Performance Viral Documentary Director:
 import os
 import sys
 import re
+import io
 import json
 import math
 import time
@@ -27,6 +28,7 @@ import glob
 import random
 import shutil
 import wave
+import base64
 import urllib.parse
 import urllib.request
 import subprocess
@@ -152,9 +154,20 @@ CRITICAL VIRAL PRODUCTION FORMAT (ENGINEERED FOR 100M MONTHLY VIEWS):
 2. Structure: EXACTLY 10 sequential dramatic scenes (target total duration 45 to 50 seconds for Shorts).
    Narration: short, punchy, 7 to 10 words per scene. Total script under 100 words.
 3. Every scene must have speaker "narrator", scene_type "b_roll", and character_focus "broll_evidence".
-4. Arabic Channel: Leave "caption" as an empty string ("").
+4. STRICT INFERENTIAL VISUAL EVIDENCE (CRITICAL REQUIREMENT):
+   - Every single scene represents a 3 to 5 second visual window.
+   - The visual image MUST be direct physical evidence of what the narration states at that exact second:
+     * If narration mentions a software glitch -> visual_prompt & broll_search must depict the terminal crash dump or corrupted registers.
+     * If narration mentions an electrical test -> visual_prompt & broll_search must depict the analog voltmeter dials and needles.
+     * If narration mentions an emergency button -> visual_prompt & broll_search must depict the operator slamming the red button.
+     * If narration mentions control rods -> visual_prompt & broll_search must depict the nuclear control rod mechanism.
+     * If narration mentions a catastrophic explosion -> visual_prompt & broll_search must depict the explosion blast.
+     * If narration mentions a state cover-up -> visual_prompt & broll_search must depict the classified folder stamped Top Secret.
+   - Formulate 'visual_prompt' as a photorealistic, 9:16 vertical ratio documentary photograph description (8k, cinematic lighting).
+   - Formulate 'broll_search' as specific historical and technical photo search keywords.
+5. Arabic Channel: Leave "caption" as an empty string ("") to ensure 100% clean full-screen footage.
    English Channel: Provide punchy 2-line auto-wrapped subtitle in "caption".
-5. Return STRICTLY valid JSON with no markdown formatting or intro prose:
+6. Return STRICTLY valid JSON with no markdown formatting or intro prose:
 {{
   "series_title": "{topic_seed.get('series_title', 'Documentary Files')}",
   "part": "{topic_seed.get('part', 'Special Episode')}",
@@ -646,8 +659,8 @@ def resolve_scene_artwork(
     channel_key: str = "ch02_ar_ai_tech",
     scene_idx: int = 0,
     used_images: set[str] | None = None
-) -> Path:
-    """Finds best matching high-resolution scene artwork with zero duplicate repetition across scenes."""
+) -> Path | None:
+    """Finds strictly matching high-resolution scene artwork. Returns None if no strict semantic match exists."""
     repo_root = Path(__file__).resolve().parent
     scenes_dir = repo_root / "assets" / "scenes"
     if used_images is None:
@@ -658,98 +671,73 @@ def resolve_scene_artwork(
 
     candidates = []
 
-    # Space & Apollo
-    if any(k in vp or k in sh for k in ("apollo", "nasa", "flight control", "mission control", "spacecraft", "astronaut")):
+    # Space & Apollo (Only if specifically about Apollo/rockets)
+    if any(k in vp or k in sh for k in ("apollo", "nasa", "flight control", "mission control", "spacecraft")):
         candidates.append("apollo13_mission_control.jpg")
-    if any(k in vp or k in sh for k in ("satellite", "orbit", "earth", "cosmos", "atmosphere", "cubesat", "space")):
+    if any(k in vp or k in sh for k in ("satellite", "orbit", "earth from space", "cubesat in orbit")):
         candidates.append("satellite_earth_orbit.jpg")
-    if any(k in vp or k in sh for k in ("rocket", "launch pad", "liftoff", "booster", "missile launch", "cape canaveral", "ariane")):
+    if any(k in vp or k in sh for k in ("rocket liftoff", "launch pad", "ariane liftoff", "cape canaveral")):
         candidates.append("rocket_launch_pad.jpg")
 
     # Disasters & Nuclear
-    if any(k in vp or k in sh for k in ("chernobyl", "reactor", "meltdown", "radiation", "geiger", "az-5", "nuclear fire")):
+    if any(k in vp or k in sh for k in ("chernobyl", "reactor 4", "rmbk", "az-5 scram")):
         candidates.append("chernobyl_control_room.jpg")
-    if any(k in vp or k in sh for k in ("sub", "submarine", "ocean", "abyss", "naval", "k-129", "k129", "torpedo", "sonar")):
+    if any(k in vp or k in sh for k in ("k-129", "k129", "azorian submarine", "sunken submarine", "torpedo room")):
         candidates.append("soviet_submarine_abyss.jpg")
 
     # Computing & Mainframes & Hardware
-    if any(k in vp or k in sh for k in ("cray", "supercomputer", "vector", "hpc")):
+    if any(k in vp or k in sh for k in ("cray", "cray-1", "supercomputer rack")):
         candidates.append("vintage_cray_supercomputer.jpg")
-    if any(k in vp or k in sh for k in ("microchip", "silicon", "die", "wafer", "semiconductor", "transistor", "cpu", "processor")):
+    if any(k in vp or k in sh for k in ("silicon wafer", "microchip die", "processor die")):
         candidates.append("microchip_die_wafer.jpg")
-    if any(k in vp or k in sh for k in ("gpu", "nvidia", "cuda", "h100")):
+    if any(k in vp or k in sh for k in ("nvidia gpu", "h100 die", "cuda chip")):
         candidates.append("nvidia_gpu_silicon.jpg")
-    if any(k in vp or k in sh for k in ("deep blue", "kasparov", "chess", "grandmaster", "ibm")):
+    if any(k in vp or k in sh for k in ("deep blue", "kasparov", "chess tournament")):
         candidates.append("deep_blue_kasparov.jpg")
-    if any(k in vp or k in sh for k in ("turing", "bombe", "enigma", "cipher", "codebreaking")):
+    if any(k in vp or k in sh for k in ("turing bombe", "bletchley", "enigma code")):
         candidates.append("turing_bombe_1940.jpg")
-    if any(k in vp or k in sh for k in ("dartmouth", "pioneers", "1956", "conference", "scientists")):
+    if any(k in vp or k in sh for k in ("dartmouth 1956", "dartmouth conference")):
         candidates.append("dartmouth_conference_1956.jpg")
-    if any(k in vp or k in sh for k in ("neuralink", "bci", "implant", "biochip")):
+    if any(k in vp or k in sh for k in ("neuralink chip", "bci implant")):
         candidates.append("neuralink_bci_chip.jpg")
-    if any(k in vp or k in sh for k in ("synapse", "neural network", "deep learning", "brain")):
+    if any(k in vp or k in sh for k in ("neural network synapse", "synaptic transmission")):
         candidates.append("neural_network_synapse.jpg")
-    if any(k in vp or k in sh for k in ("matrix", "cyber", "hacker", "network", "code", "terminal", "darknet", "worm", "stuxnet")):
+    if any(k in vp or k in sh for k in ("stuxnet code", "cyber matrix terminal", "worm terminal")):
         candidates.append("autonomous_agent_matrix.jpg")
-    if any(k in vp or k in sh for k in ("mainframe", "tape", "terminal", "1960", "1970", "1980", "vintage computer")):
+    if any(k in vp or k in sh for k in ("vintage mainframe 1960", "magnetic tape drive")):
         candidates.append("vintage_mainframe_1960.jpg")
 
     # Defense & Radars
-    if any(k in vp or k in sh for k in ("radar", "norad", "surveillance", "defense", "cold war bunker", "bunker", "airspace")):
+    if any(k in vp or k in sh for k in ("cold war radar room", "norad bunker radar")):
         candidates.append("cold_war_radar_room.jpg")
 
     # Finance, Heists & Wealth
-    if any(k in vp or k in sh for k in ("wall street", "stock", "crash", "trading floor", "broker", "exchange", "market")):
+    if any(k in vp or k in sh for k in ("wall street trading floor", "stock market floor panic")):
         candidates.append("wall_street_trading_floor.jpg")
-    if any(k in vp or k in sh for k in ("vault door", "steel door", "circular door", "bank safe", "subterranean")):
+    if any(k in vp or k in sh for k in ("bank vault steel door", "circular safe door")):
         candidates.append("bank_vault_steel_door.jpg")
-    if any(k in vp or k in sh for k in ("antwerp", "vault", "heist", "diamonds safe")):
+    if any(k in vp or k in sh for k in ("antwerp vault", "antwerp diamond center")):
         candidates.append("antwerp_bank_vault.jpg")
-    if any(k in vp or k in sh for k in ("diamond", "de beers", "carat", "luxury monopoly")):
+    if any(k in vp or k in sh for k in ("de beers diamonds", "rough diamond vault")):
         candidates.append("diamond_debeers_vault.jpg")
-    if any(k in vp or k in sh for k in ("boardroom", "madison", "executive", "cia meeting")):
+    if any(k in vp or k in sh for k in ("cia meeting boardroom", "executive boardroom 1950")):
         candidates.append("madison_boardroom_1952.jpg")
-    if any(k in vp or k in sh for k in ("factory", "machinery", "assembly line", "production")):
+    if any(k in vp or k in sh for k in ("factory assembly line floor", "industrial manufacturing")):
         candidates.append("factory_production_floor.jpg")
-    if any(k in vp or k in sh for k in ("water", "bottled", "tap")):
+    if any(k in vp or k in sh for k in ("bottled tap water", "water bottling line")):
         candidates.append("bottled_water_tap_heist.jpg")
-    if any(k in vp or k in sh for k in ("luxury", "cafe", "pricing", "consumer")):
+    if any(k in vp or k in sh for k in ("luxury coffee pricing", "expensive cafe menu")):
         candidates.append("luxury_cafe_pricing.jpg")
 
-    # 1. Select the first matching candidate that has NOT been used in this episode
+    # Strictly return the first semantic candidate not yet used in this episode
     for name in candidates:
         p = scenes_dir / name
         if p.exists() and name not in used_images:
             used_images.add(name)
             return p
 
-    # 2. Channel-specific intelligent pool fallback
-    if "ar" in channel_key or "tech" in channel_key:
-        all_pool = [
-            "rocket_launch_pad.jpg", "cold_war_radar_room.jpg", "chernobyl_control_room.jpg",
-            "microchip_die_wafer.jpg", "vintage_cray_supercomputer.jpg", "apollo13_mission_control.jpg",
-            "satellite_earth_orbit.jpg", "autonomous_agent_matrix.jpg", "deep_blue_kasparov.jpg",
-            "vintage_mainframe_1960.jpg", "turing_bombe_1940.jpg", "dartmouth_conference_1956.jpg",
-            "neural_network_synapse.jpg", "nvidia_gpu_silicon.jpg", "neuralink_bci_chip.jpg",
-            "soviet_submarine_abyss.jpg", "bank_vault_steel_door.jpg"
-        ]
-    else:
-        all_pool = [
-            "wall_street_trading_floor.jpg", "bank_vault_steel_door.jpg", "antwerp_bank_vault.jpg",
-            "soviet_submarine_abyss.jpg", "cold_war_radar_room.jpg", "factory_production_floor.jpg",
-            "diamond_debeers_vault.jpg", "madison_boardroom_1952.jpg", "luxury_cafe_pricing.jpg",
-            "vintage_cray_supercomputer.jpg", "bottled_water_tap_heist.jpg"
-        ]
-
-    for name in all_pool:
-        p = scenes_dir / name
-        if p.exists() and name not in used_images:
-            used_images.add(name)
-            return p
-
-    fallback_name = all_pool[scene_idx % len(all_pool)]
-    used_images.add(fallback_name)
-    return scenes_dir / fallback_name
+    # Never use an arbitrary fallback pool: return None so caller uses AI generation or forensic slate
+    return None
 
 def extract_scene_keyword(narration: str) -> str:
     """Extracts high-impact numbers, dates, or striking keywords from narration text (Item 5)."""
@@ -832,6 +820,356 @@ def render_kinetic_keyword_overlay(
     return badge
 
 
+# ==============================================================================
+# INFERENTIAL SCENE IMAGE ENGINE (AI GENERATION + ARCHIVAL EVIDENCE)
+# ==============================================================================
+
+def synthesize_forensic_evidence_slate(
+    topic_title: str,
+    scene_idx: int,
+    total_scenes: int,
+    narration: str,
+    visual_prompt: str,
+    target_w: int = 1080,
+    target_h: int = 1920
+) -> Image.Image:
+    """
+    Renders an ultra-sleek, cinematic forensic evidence dossier slate tailored specifically to the scene.
+    Used to guarantee 100% inferential thematic relevance when no raw external camera feed is available.
+    """
+    im = Image.new("RGB", (target_w, target_h), (8, 11, 16))
+    draw = ImageDraw.Draw(im)
+
+    # 1. Subtle dark telemetry grid
+    grid_spacing = 60
+    for x in range(0, target_w, grid_spacing):
+        draw.line([(x, 0), (x, target_h)], fill=(15, 22, 32), width=1)
+    for y in range(0, target_h, grid_spacing):
+        draw.line([(0, y), (target_w, y)], fill=(15, 22, 32), width=1)
+
+    # 2. Outer technical viewfinder corners
+    pad = 40
+    cw = 50
+    draw.line([(pad, pad), (pad + cw, pad)], fill=(70, 90, 115), width=3)
+    draw.line([(pad, pad), (pad, pad + cw)], fill=(70, 90, 115), width=3)
+    draw.line([(target_w - pad - cw, pad), (target_w - pad, pad)], fill=(70, 90, 115), width=3)
+    draw.line([(target_w - pad, pad), (target_w - pad, pad + cw)], fill=(70, 90, 115), width=3)
+    draw.line([(pad, target_h - pad), (pad + cw, target_h - pad)], fill=(70, 90, 115), width=3)
+    draw.line([(pad, target_h - pad), (pad, target_h - pad - cw)], fill=(70, 90, 115), width=3)
+    draw.line([(target_w - pad - cw, target_h - pad), (target_w - pad, target_h - pad)], fill=(70, 90, 115), width=3)
+    draw.line([(target_w - pad, target_h - pad), (target_w - pad, target_h - pad - cw)], fill=(70, 90, 115), width=3)
+
+    try:
+        font_header = ImageFont.truetype("arialbd.ttf", 32)
+        font_title = ImageFont.truetype("arialbd.ttf", 38)
+        font_phase = ImageFont.truetype("arial.ttf", 26)
+        font_mono = ImageFont.truetype("cour.ttf", 24)
+        font_stamp = ImageFont.truetype("arialbd.ttf", 28)
+    except Exception:
+        font_header = font_title = font_phase = font_mono = font_stamp = ImageFont.load_default()
+
+    # 3. Header Classification & Incident
+    draw.text((pad + 20, pad + 25), "CLASSIFIED FORENSIC ARCHIVE // TOP SECRET", fill=(220, 50, 50), font=font_header)
+    clean_title = topic_title.replace("#Shorts", "").strip()[:50]
+    draw.text((pad + 20, pad + 75), f"FILE: {clean_title}", fill=(220, 230, 245), font=font_title)
+
+    time_sec = scene_idx * 5
+    phase_str = f"EVIDENCE PHASE 0{scene_idx + 1}/{total_scenes}  |  TIMECODE: 00:0{time_sec}:00  |  STATUS: ACTIVE"
+    draw.rectangle([(pad + 20, pad + 130), (target_w - pad - 20, pad + 175)], fill=(18, 28, 42), outline=(45, 65, 90))
+    draw.text((pad + 35, pad + 138), phase_str, fill=(90, 190, 255), font=font_phase)
+
+    # 4. Central Graphic Telemetry Box
+    box_t = 420
+    box_b = 1350
+    draw.rectangle([(pad + 20, box_t), (target_w - pad - 20, box_b)], fill=(11, 16, 24), outline=(35, 52, 75), width=2)
+
+    vp_lower = (visual_prompt + " " + topic_title).lower()
+
+    if any(k in vp_lower for k in ("chernobyl", "reactor", "nuclear", "radiation", "geiger", "az-5", "core")):
+        cx, cy = target_w // 2, (box_t + box_b) // 2
+        for r in [80, 160, 240, 320]:
+            draw.ellipse([(cx - r, cy - r), (cx + r, cy + r)], outline=(35, 75, 55), width=2)
+        draw.line([(cx - 350, cy), (cx + 350, cy)], fill=(35, 75, 55), width=2)
+        draw.line([(cx, cy - 350), (cx, cy + 350)], fill=(35, 75, 55), width=2)
+        draw.arc([(cx - 240, cy - 240), (cx + 240, cy + 240)], start=210, end=330, fill=(230, 50, 50), width=6)
+        angle_rad = math.radians(280 + (scene_idx * 8) % 40)
+        nx = cx + int(220 * math.cos(angle_rad))
+        ny = cy + int(220 * math.sin(angle_rad))
+        draw.line([(cx, cy), (nx, ny)], fill=(255, 60, 60), width=4)
+        draw.ellipse([(cx - 15, cy - 15), (cx + 15, cy + 15)], fill=(255, 60, 60))
+
+        draw.text((pad + 50, box_t + 40), "REACTOR 4 CORE TELEMETRY [UNIT RBMK-1000]", fill=(240, 70, 70), font=font_header)
+        draw.text((pad + 50, box_t + 90), "THERMAL POWER: 3200 MW (CRITICAL SURGE)", fill=(255, 200, 50), font=font_mono)
+        draw.text((pad + 50, box_t + 125), "CONTROL RODS: 211 EXTRACTED (MANUAL OVERRIDE)", fill=(200, 210, 225), font=font_mono)
+        draw.text((pad + 50, box_b - 80), "SCRAM SYSTEM: AZ-5 INITIATED AT 01:23:40", fill=(255, 60, 60), font=font_mono)
+
+    elif any(k in vp_lower for k in ("chess", "deep blue", "kasparov", "tournament")):
+        cx, cy = target_w // 2, (box_t + box_b) // 2
+        sq_size = 70
+        board_left = cx - (sq_size * 4)
+        board_top = cy - (sq_size * 4) - 50
+        for r in range(8):
+            for c in range(8):
+                bx = board_left + c * sq_size
+                by = board_top + r * sq_size
+                is_dark = (r + c) % 2 == 1
+                color = (25, 38, 55) if is_dark else (16, 24, 35)
+                draw.rectangle([(bx, by), (bx + sq_size, by + sq_size)], fill=color, outline=(40, 58, 80))
+        move_bx = board_left + 4 * sq_size
+        move_by = board_top + 3 * sq_size
+        draw.rectangle([(move_bx, move_by), (move_bx + sq_size, move_by + sq_size)], fill=(220, 60, 60), outline=(255, 80, 80), width=3)
+
+        draw.text((pad + 50, box_t + 40), "IBM DEEP BLUE NEURAL EVALUATION ENGINE", fill=(70, 180, 255), font=font_header)
+        draw.text((pad + 50, box_t + 90), "SEARCH RATE: 200,000,000 MOVES / SEC", fill=(200, 215, 235), font=font_mono)
+        draw.text((pad + 50, box_b - 120), "GAME 2 STATUS: PSYCHOLOGICAL BREAKDOWN DETECTED", fill=(255, 90, 90), font=font_mono)
+        draw.text((pad + 50, box_b - 80), "EVALUATION FLIP: +1.87 (HUMAN BLUNDER EXPLOITED)", fill=(90, 240, 140), font=font_mono)
+
+    elif any(k in vp_lower for k in ("rocket", "ariane", "space", "launch", "satellite", "orbit")):
+        curve_pts = [(pad + 60, box_b - 100)]
+        for i in range(1, 10):
+            qx = pad + 60 + i * 85
+            qy = (box_b - 100) - int(350 * math.sin(i * 0.15))
+            curve_pts.append((qx, qy))
+        draw.line(curve_pts, fill=(80, 180, 255), width=3)
+        dev_pt = curve_pts[min(scene_idx, len(curve_pts) - 1)]
+        draw.ellipse([(dev_pt[0] - 12, dev_pt[1] - 12), (dev_pt[0] + 12, dev_pt[1] + 12)], fill=(255, 60, 60), outline=(255, 255, 255), width=2)
+
+        draw.text((pad + 50, box_t + 40), "ARIANE 5 INERTIAL REFERENCE SYSTEM [SRI-64]", fill=(255, 180, 60), font=font_header)
+        draw.text((pad + 50, box_t + 90), "ALTITUDE: 3,700M | VELOCITY: 857 M/S | ANGLE: 84.2 DEG", fill=(200, 215, 235), font=font_mono)
+        draw.text((pad + 50, box_b - 120), "FATAL EXCEPTION: 64-BIT FLOAT -> 16-BIT INT OVERFLOW", fill=(255, 60, 60), font=font_mono)
+        draw.text((pad + 50, box_b - 80), "SELF-DESTRUCT FLIGHT TERMINATION AT T+37.2S", fill=(255, 80, 80), font=font_mono)
+
+    else:
+        draw.text((pad + 50, box_t + 40), "CYBERNETIC MEMORY BUFFER CORE DUMP", fill=(80, 240, 160), font=font_header)
+        hex_lines = [
+            "0x00401000  48 89 E5 48 83 EC 20 48  8D 05 D9 0E 00 00 48 89",
+            "0x00401010  C7 E8 2B FE FF FF B8 00  00 00 00 48 83 C4 20 5D",
+            "0x00401020  C3 90 90 90 90 90 90 90  55 48 89 E5 41 57 41 56",
+            "0x00401030  41 55 41 54 53 48 83 EC  28 48 8B 05 91 2F 00 00",
+            "0x00401040  48 85 C0 74 12 48 8D 3D  5D 0F 00 00 48 8D 35 48",
+            "0x00401050  0F 00 00 31 C0 E8 69 FE  FF FF B8 01 00 00 00 48",
+            "0x00401060  83 C4 28 5B 41 5C 41 5D  41 5E 41 5F 5D C3 0F 1F",
+            "0x00401070  44 00 00 55 48 89 E5 48  83 EC 10 89 7D FC 8B 45"
+        ]
+        for idx_l, hl in enumerate(hex_lines):
+            draw.text((pad + 50, box_t + 120 + idx_l * 40), hl, fill=(100, 200, 140), font=font_mono)
+        draw.text((pad + 50, box_b - 80), "ROOT CAUSE: ARBITRARY MEMORY FAULT / EXCEPTION OVERWRITE", fill=(255, 80, 80), font=font_mono)
+
+    # 5. Lower Evidence Annotation
+    draw.rectangle([(pad + 20, box_b + 40), (target_w - pad - 20, target_h - pad - 40)], fill=(16, 22, 30), outline=(40, 58, 80))
+    draw.text((pad + 40, box_b + 60), "VERIFIED FORENSIC EVIDENCE RECORD // DEPT OF RECONSTRUCTION", fill=(140, 160, 185), font=font_header)
+    draw.text((pad + 40, box_b + 110), f"TRANSCRIPT: \"{narration[:80]}\"", fill=(240, 245, 255), font=font_title)
+    draw.text((pad + 40, box_b + 170), f"VISUAL EVIDENCE: {visual_prompt[:70]}...", fill=(120, 150, 180), font=font_phase)
+
+    # 6. Red Declassified Stamp in Corner
+    stamp_x = target_w - pad - 320
+    stamp_y = box_b + 240
+    draw.rectangle([(stamp_x, stamp_y), (stamp_x + 280, stamp_y + 80)], outline=(220, 40, 40), width=4)
+    draw.text((stamp_x + 25, stamp_y + 22), "DECLASSIFIED", fill=(220, 40, 40), font=font_stamp)
+
+    # 7. Procedural Scanlines
+    for y in range(0, target_h, 4):
+        draw.line([(0, y), (target_w, y)], fill=(0, 0, 0), width=1)
+
+    return im
+
+
+def try_imagen3_generation(prompt: str, api_key: str, out_path: Path) -> Image.Image | None:
+    """Generates ultra-high resolution 9:16 vertical image using Google Imagen 3 API."""
+    if not api_key:
+        return None
+    try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key={api_key}"
+        payload = json.dumps({
+            "instances": [{
+                "prompt": f"{prompt}, 9:16 vertical ratio, authentic National Geographic documentary photography, photorealistic, 8k cinematic lighting"
+            }],
+            "parameters": {
+                "sampleCount": 1,
+                "aspectRatio": "9:16",
+                "outputMimeType": "image/jpeg"
+            }
+        }).encode("utf-8")
+        req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json", "User-Agent": "EmpireDocBot/1.0"})
+        with urllib.request.urlopen(req, timeout=25) as resp:
+            data = json.loads(resp.read().decode())
+        preds = data.get("predictions", [])
+        if preds and "bytesBase64Encoded" in preds[0]:
+            raw_b64 = preds[0]["bytesBase64Encoded"]
+            img_bytes = base64.b64decode(raw_b64)
+            im = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+            im.save(out_path, format="JPEG", quality=95)
+            return im
+    except Exception:
+        pass
+    return None
+
+
+def try_hf_flux_generation(prompt: str, hf_token: str, out_path: Path) -> Image.Image | None:
+    """Generates photorealistic 9:16 image using Hugging Face Serverless FLUX.1."""
+    if not hf_token:
+        return None
+    try:
+        url = "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell"
+        payload = json.dumps({"inputs": f"{prompt}, vertical 9:16 ratio, realistic documentary photo"}).encode("utf-8")
+        req = urllib.request.Request(url, data=payload, headers={
+            "Authorization": f"Bearer {hf_token}",
+            "Content-Type": "application/json",
+            "User-Agent": "EmpireDocBot/1.0"
+        })
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            img_bytes = resp.read()
+        im = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+        im.save(out_path, format="JPEG", quality=95)
+        return im
+    except Exception:
+        pass
+    return None
+
+
+def try_pexels_photo(query: str, pexels_key: str, out_path: Path) -> Image.Image | None:
+    """Fetches high-res vertical documentary photography via Pexels API."""
+    if not pexels_key or not query:
+        return None
+    try:
+        clean_q = urllib.parse.quote(query[:60])
+        url = f"https://api.pexels.com/v1/search?query={clean_q}&orientation=portrait&per_page=5"
+        req = urllib.request.Request(url, headers={"Authorization": pexels_key, "User-Agent": "EmpireDocBot/1.0"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode())
+        photos = data.get("photos", [])
+        for photo in photos:
+            src_url = photo.get("src", {}).get("large2x") or photo.get("src", {}).get("large")
+            if src_url:
+                d_req = urllib.request.Request(src_url, headers={"User-Agent": "EmpireDocBot/1.0"})
+                with urllib.request.urlopen(d_req, timeout=12) as d_resp:
+                    img_bytes = d_resp.read()
+                im = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+                if im.width >= 350 and im.height >= 350:
+                    im.save(out_path, format="JPEG", quality=95)
+                    return im
+    except Exception:
+        pass
+    return None
+
+
+def try_wikimedia_archival_photo(query: str, out_path: Path) -> Image.Image | None:
+    """Fetches public-domain historical photography from Wikimedia Commons with custom User-Agent."""
+    if not query:
+        return None
+    terms_to_try = [query, " ".join(query.split()[:3])]
+    for term in terms_to_try:
+        try:
+            clean_enc = urllib.parse.quote(term)
+            w_url = f"https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch={clean_enc}&gsrnamespace=6&prop=imageinfo&iiprop=url|size|mime&gsrlimit=5"
+            req = urllib.request.Request(w_url, headers={"User-Agent": "EmpireDocDirector/2.0 (mailto:admin@empire.tv)"})
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode())
+            pages = data.get("query", {}).get("pages", {})
+            for pid, p in pages.items():
+                info = p.get("imageinfo", [{}])[0]
+                img_url = info.get("url", "")
+                clean_url = img_url.split("?")[0].lower()
+                mime = info.get("mime", "")
+                size = info.get("size", 0)
+                if mime in ["image/jpeg", "image/png"] and not clean_url.endswith((".pdf", ".svg", ".tif")) and 15000 < size < 15*1024*1024:
+                    d_req = urllib.request.Request(img_url, headers={"User-Agent": "EmpireDocDirector/2.0 (mailto:admin@empire.tv)"})
+                    with urllib.request.urlopen(d_req, timeout=12) as d_resp:
+                        img_bytes = d_resp.read()
+                    im = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+                    if im.width >= 350 and im.height >= 350:
+                        im.save(out_path, format="JPEG", quality=95)
+                        return im
+        except Exception:
+            pass
+    return None
+
+
+def generate_or_fetch_inferential_scene_image(
+    narration: str,
+    broll_query: str | None,
+    visual_prompt: str | None,
+    topic_title: str,
+    scene_idx: int,
+    total_scenes: int,
+    work_dir: Path,
+    channel_key: str,
+    target_w: int = 1080,
+    target_h: int = 1920,
+    used_images: set[str] | None = None
+) -> Image.Image:
+    """
+    Guarantees 100% inferential evidence alignment per scene:
+    1. Tier 1: Google Imagen 3 API (imagen-3.0-generate-002) via GEMINI_API_KEY
+    2. Tier 2: Hugging Face Serverless FLUX.1 (FLUX.1-schnell) via HF_TOKEN
+    3. Tier 3: Pexels Professional Vertical Photography via PEXELS_API_KEY
+    4. Tier 4: Wikimedia Commons Authentic Archival Photos (with custom User-Agent)
+    5. Tier 5: Strict Semantic Match from Local Curated Archive (only if 100% match, zero random pool)
+    6. Tier 6: Bespoke Thematic Forensic Evidence Dossier Slate (Topic & Scene Specific)
+    """
+    clean_prompt = (visual_prompt or broll_query or narration).strip()
+    clean_query = (broll_query or narration).strip()
+    gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    hf_tok = os.environ.get("HF_TOKEN", "").strip()
+    pexels_k = os.environ.get("PEXELS_API_KEY", "").strip()
+
+    # Tier 1: Google Imagen 3
+    if gemini_key:
+        out_f = work_dir / f"scene_{scene_idx}_imagen3.jpg"
+        im = try_imagen3_generation(clean_prompt, gemini_key, out_f)
+        if im is not None:
+            print(f"  [Google Imagen 3] Scene {scene_idx + 1}/{total_scenes} AI image generated successfully!")
+            return im
+
+    # Tier 2: Hugging Face Serverless FLUX.1
+    if hf_tok:
+        out_f = work_dir / f"scene_{scene_idx}_flux.jpg"
+        im = try_hf_flux_generation(clean_prompt, hf_tok, out_f)
+        if im is not None:
+            print(f"  [HF FLUX.1 AI] Scene {scene_idx + 1}/{total_scenes} AI image generated successfully!")
+            return im
+
+    # Tier 3: Pexels Photography
+    if pexels_k:
+        out_f = work_dir / f"scene_{scene_idx}_pexels.jpg"
+        im = try_pexels_photo(clean_query, pexels_k, out_f)
+        if im is not None:
+            print(f"  [Pexels Photography] Scene {scene_idx + 1}/{total_scenes} authentic photo deployed!")
+            return im
+
+    # Tier 4: Wikimedia Commons Archival Photography
+    out_f = work_dir / f"scene_{scene_idx}_wiki.jpg"
+    im = try_wikimedia_archival_photo(clean_query, out_f)
+    if im is not None:
+        print(f"  [Archival Discovery] Scene {scene_idx + 1}/{total_scenes} authentic historical photo deployed: '{clean_query[:35]}'")
+        return im
+
+    # Tier 5: Strict Semantic Match from Local Curated Archive
+    local_p = resolve_scene_artwork(clean_prompt, "", channel_key=channel_key, scene_idx=scene_idx, used_images=used_images)
+    if local_p is not None:
+        try:
+            im = Image.open(local_p).convert("RGB")
+            print(f"  [Curated Archive] Scene {scene_idx + 1}/{total_scenes} matched verified asset: {local_p.name}")
+            return im
+        except Exception:
+            pass
+
+    # Tier 6: Bespoke Thematic Forensic Evidence Slate (Guaranteed Fallback)
+    im = synthesize_forensic_evidence_slate(
+        topic_title=topic_title,
+        scene_idx=scene_idx,
+        total_scenes=total_scenes,
+        narration=narration,
+        visual_prompt=clean_prompt,
+        target_w=target_w,
+        target_h=target_h
+    )
+    slate_f = work_dir / f"scene_{scene_idx}_slate.jpg"
+    im.save(slate_f, format="JPEG", quality=95)
+    print(f"  [Forensic Slate] Scene {scene_idx + 1}/{total_scenes} bespoke evidence slate synthesized for '{clean_prompt[:35]}'")
+    return im
+
+
 def fetch_or_synthesize_broll_clip(
     broll_query: str | None,
     style_hint: str,
@@ -848,84 +1186,36 @@ def fetch_or_synthesize_broll_clip(
     scene_idx: int = 0,
     channel_key: str = "ch02_ar_ai_tech",
     keyword_popup: str | None = None,
-    used_images: set[str] | None = None
+    used_images: set[str] | None = None,
+    narration: str = "",
+    topic_title: str = "",
+    total_scenes: int = 10
 ) -> bool:
     """
     Produces real full-motion vertical B-roll video:
     1. Zero text overlays on Arabic channels to eliminate reversed/broken text rendering.
-    2. Downloads public domain archival photography from Wikimedia Commons.
-    3. Curated local artwork with Hollywood multi-axis Ken Burns camera choreography (5 alternating modes).
+    2. Dynamic AI Image Generation & Archival Evidence specifically tailored to this second's narration.
+    3. Hollywood multi-axis Ken Burns camera choreography (5 alternating modes).
     4. 35mm procedural film grain on every frame.
     """
     if lang == "ar" or "ar" in channel_key:
         keyword_popup = None
         caption = ""
 
-    pexels_key = os.environ.get("PEXELS_API_KEY", "").strip()
-
-    # 0. Clean and infer search keywords
-    q_search = (broll_query or "").strip()
-    if not q_search or q_search.lower() in ("none", "null", ""):
-        raw_words = re.findall(r'[a-zA-Z0-9]+', f"{visual_prompt} {style_hint}".lower())
-        stopwords = {
-            "cinematic", "visual", "description", "vertical", "ultra", "realistic",
-            "studio", "leaning", "forward", "explaining", "passionately", "gesturing",
-            "host", "documentary", "anchor", "scene", "the", "and", "with", "for",
-            "shot", "lighting", "dramatic", "camera", "style", "dark", "in", "of",
-            "close", "up", "showing", "talking", "presentation"
-        }
-        kw = [w for w in raw_words if w not in stopwords and len(w) > 2]
-        q_search = " ".join(kw[:3]) if kw else "cinematic technology"
-
-    im = None
-
-    # 1. Public Archival Historical & Museum Photo Search (Zero API Key Required)
-    if im is None and q_search:
-        search_terms = [f"{q_search} filetype:bitmap", f"{' '.join(q_search.split()[:2])} filetype:bitmap"]
-        for term_variant in search_terms:
-            if im is not None:
-                break
-            try:
-                clean_enc = urllib.parse.quote(term_variant)
-                w_img_url = f"https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch={clean_enc}&gsrnamespace=6&prop=imageinfo&iiprop=url|size|mime&gsrlimit=5"
-                w_req = urllib.request.Request(w_img_url, headers={"User-Agent": "EmpireDocDirector/2.0 (mailto:admin@empire.tv)"})
-                with urllib.request.urlopen(w_req, timeout=8) as w_resp:
-                    w_data = json.loads(w_resp.read().decode())
-                    pages = w_data.get("query", {}).get("pages", {})
-                    for pid, p in pages.items():
-                        info = p.get("imageinfo", [{}])[0]
-                        img_url = info.get("url", "")
-                        clean_url = img_url.split("?")[0].lower()
-                        mime = info.get("mime", "")
-                        size_bytes = info.get("size", 0)
-                        if mime in ["image/jpeg", "image/png", "image/webp"] and not clean_url.endswith((".pdf", ".svg", ".tif")) and 20000 < size_bytes < 15 * 1024 * 1024:
-                            raw_wiki_img = work_dir / f"wiki_photo_{scene_idx}_{abs(hash(term_variant)) % 10000}.jpg"
-                            urllib.request.urlretrieve(img_url, str(raw_wiki_img))
-                            try:
-                                im_test = Image.open(raw_wiki_img).convert("RGB")
-                                if im_test.width >= 350 and im_test.height >= 350:
-                                    im = im_test
-                                    print(f"  [Archival Discovery] Deployed authentic photo for Scene {scene_idx + 1}: '{term_variant}' ({im.size})")
-                                    break
-                            except Exception:
-                                pass
-            except Exception:
-                pass
-
-    # 2. Master Cinematic Scene Artwork Selection (Guaranteed 100% Unique per Scene)
-    if im is None:
-        img_path = resolve_scene_artwork(
-            visual_prompt=visual_prompt or q_search,
-            style_hint=style_hint,
-            channel_key=channel_key,
-            scene_idx=scene_idx,
-            used_images=used_images
-        )
-        try:
-            im = Image.open(img_path).convert("RGB")
-            print(f"  [Curated Archive] Scene {scene_idx + 1}/10 using distinct artwork: {img_path.name}")
-        except Exception:
-            im = create_dark_cinematic_procedural_backdrop(style_hint, target_w, target_h)
+    # Acquire image with 100% inferential relevance guarantee
+    im = generate_or_fetch_inferential_scene_image(
+        narration=narration,
+        broll_query=broll_query,
+        visual_prompt=visual_prompt,
+        topic_title=topic_title,
+        scene_idx=scene_idx,
+        total_scenes=total_scenes,
+        work_dir=work_dir,
+        channel_key=channel_key,
+        target_w=target_w,
+        target_h=target_h,
+        used_images=used_images
+    )
 
     n_frames = max(15, int(round(duration * fps)))
 
@@ -1218,7 +1508,10 @@ def produce_v16_animated_episode(channel_key: str, cfg: dict, output_root: Path)
             scene_idx=s_idx,
             channel_key=channel_key,
             keyword_popup=keyword_popup,
-            used_images=used_images_in_episode
+            used_images=used_images_in_episode,
+            narration=scene.get("narration", ""),
+            topic_title=title,
+            total_scenes=len(scenes)
         )
 
         if ok and scene_mp4.exists():

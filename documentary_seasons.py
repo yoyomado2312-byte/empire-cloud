@@ -5,13 +5,14 @@ Engineered for 100M Monthly Views with:
 2. Seamless Infinite Loop Connector (Scene 10)
 3. Exactly 10 Punchy Scenes per Episode (45-50s)
 4. 100% Unique Visuals & SFX Scoring per Scene
+5. Strictly Inferential Evidence Sequencing (Every image directly matches the narration at that second)
 """
 
 import time
 import random
 
 VIRAL_TOPIC_SEEDS_AR = [
-    # Episode 1: Ariane 5 Rocket Bug
+    # Episode 1: Ariane 5 Rocket Software Overflow Bug
     {
         "id": "ariane5_bug",
         "title": "كارثة صاروخ أريان 5: عندما دمّر خطأ برمجي 370 مليون دولار في 37 ثانية! #Shorts",
@@ -22,82 +23,72 @@ VIRAL_TOPIC_SEEDS_AR = [
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "كود برمجي تافه فجّر 370 مليون دولار في 37 ثانية!",
-                "broll_search": "Titan IV rocket launch pad Cape Canaveral",
+                "broll_search": "Ariane 5 rocket launch pad liftoff fire",
                 "caption": "", "sfx_cue": "sfx_impact",
-                "visual_prompt": "Colossal space rocket lifting off launch pad engulfed in fire, 9:16 vertical",
-                "visual_style": "rocket_launch_pad"
+                "visual_prompt": "Colossal European Ariane 5 rocket lifting off launch pad engulfed in fire and smoke plume, 9:16 vertical ratio, National Geographic documentary photography"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "في 4 يونيو 1996 انطلق أحدث صاروخ فضاء أوروبي.",
-                "broll_search": "space rocket flying atmosphere smoke trail",
+                "broll_search": "space rocket flying ascending atmosphere smoke trail",
                 "caption": "", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Rocket ascending into blue upper atmosphere trailing smoke, 9:16 vertical",
-                "visual_style": "rocket_launch_pad"
+                "visual_prompt": "Rocket ascending into deep blue upper atmosphere leaving immense white smoke trail, 9:16 vertical ratio, photorealistic 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "كل شيء كان مثالياً حتى بلغت الرحلة الثانية السابعة والثلاثين.",
-                "broll_search": "cold war radar room operators tracking trajectory",
+                "broll_search": "space mission control room telemetry monitors",
                 "caption": "", "sfx_cue": "sfx_riser",
-                "visual_prompt": "Mission control telemetry displays glowing with velocity charts, 9:16 vertical",
-                "visual_style": "cold_war_radar_room"
+                "visual_prompt": "Mission control consoles and velocity telemetry monitors glowing with acceleration charts, 9:16 vertical ratio, cinematic lighting"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "فجأة انحرف الصاروخ عن مساره بزاوية حادة وانشطر!",
-                "broll_search": "catastrophic explosion shockwave fireball sky",
+                "broll_search": "catastrophic rocket explosion fireball high sky",
                 "caption": "", "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Explosion fireball high altitude destroying rocket fuselage, 9:16 vertical",
-                "visual_style": "rocket_launch_pad"
+                "visual_prompt": "Gigantic supersonic explosion fireball destroying rocket fuselage in cloudy sky, 9:16 vertical ratio, 8k cinematic"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "تحقيقات المهندسين كشفت مفاجأة صدمت العالم العلمي بأكمله.",
-                "broll_search": "scientists examining computer software printouts",
+                "broll_search": "aerospace engineers examining printed software code crash dump",
                 "caption": "", "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Engineers reviewing complex assembly code printouts under harsh light, 9:16 vertical",
-                "visual_style": "vintage_mainframe_1960"
+                "visual_prompt": "Forensic aerospace investigation desk with scattered assembly code printouts under cold light, 9:16 vertical ratio, photorealistic"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "حاسوب التوجيه حاول تحويل رقم 64-بت إلى 16-بت فقط.",
-                "broll_search": "integrated circuit die microchip macro",
+                "broll_search": "vintage computer processor silicon die circuit green laser",
                 "caption": "", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Silicon microchip wafer silicon core illuminated by blue laser, 9:16 vertical",
-                "visual_style": "microchip_die_wafer"
+                "visual_prompt": "Silicon core processor die illuminated by laser showing microcircuit traces and binary registers, 9:16 vertical ratio, macro 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "الرقم كان أكبر من سعة الذاكرة، فحدث خطأ طفحان الذاكرة!",
-                "broll_search": "supercomputer mainframe memory bank flashing",
+                "broll_search": "terminal computer screen overflow error fatal crash red text",
                 "caption": "", "sfx_cue": "sfx_riser",
-                "visual_prompt": "Vintage supercomputer core processor status indicators flashing red, 9:16 vertical",
-                "visual_style": "vintage_cray_supercomputer"
+                "visual_prompt": "Dark terminal screen glowing with flashing red memory buffer overflow alert and register panic, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "الكود القديم كان مأخوذاً من صاروخ أبطأ بدون اختبارات كافية.",
-                "broll_search": "apollo mission control room operators vintage",
+                "broll_search": "Ariane 4 legacy rocket blueprint technical drawing",
                 "caption": "", "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Apollo era flight controllers in panic at communication consoles, 9:16 vertical",
-                "visual_style": "apollo13_mission_control"
+                "visual_prompt": "Yellowed engineering blueprints of legacy rocket inertial guidance system spread on dark table, 9:16 vertical ratio, photorealistic"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "سطر كود واحد حوّل سنوات التطوير إلى غبار مشتعل.",
-                "broll_search": "satellite debris falling dark space",
+                "broll_search": "falling rocket metal debris smoking wreckage ocean",
                 "caption": "", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Satellite payload debris falling into darkness above earth curvature, 9:16 vertical",
-                "visual_style": "satellite_earth_orbit"
+                "visual_prompt": "Charred titanium rocket wreckage pieces falling through smoke clouds toward dark ocean horizon, 9:16 vertical ratio, documentary"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "وما زال تاريخ البرمجة يذكر هذه الكارثة، ولهذا السبب الصادم بالتحديد،",
-                "broll_search": "mission control room empty dark monitors",
+                "broll_search": "empty launch pad gantry smoke sunset dark",
                 "caption": "", "sfx_cue": "sfx_impact",
-                "visual_prompt": "Quiet mission control room monitors displaying final system crash dump, 9:16 vertical",
-                "visual_style": "apollo13_mission_control"
+                "visual_prompt": "Empty scorched launch pad gantry standing solitary under brooding sunset storm clouds, 9:16 vertical ratio, cinematic 8k"
             }
         ]
     },
@@ -113,87 +104,77 @@ VIRAL_TOPIC_SEEDS_AR = [
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "سلاح رقمي غير مرئي مزّق الفولاذ النووي في الظلام!",
-                "broll_search": "nuclear facility centrifuges uranium industrial plant",
+                "broll_search": "uranium enrichment centrifuges industrial hall gleaming steel",
                 "caption": "", "sfx_cue": "sfx_impact",
-                "visual_prompt": "High speed uranium enrichment centrifuges spinning in secret facility, 9:16 vertical",
-                "visual_style": "factory_production_floor"
+                "visual_prompt": "Long industrial hall of spinning uranium centrifuges illuminated by stark neon lights, 9:16 vertical ratio, 8k documentary"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "في 2010 بدأت أجهزة الطرد المركزي النووية تنفجر ذاتياً.",
-                "broll_search": "industrial machinery sparks catastrophic vibration",
+                "narration": "في 2010 بدأت مفاعلات نطنز النووية بالاهتزاز والانهيار الغامض.",
+                "broll_search": "industrial underground bunker heavy metal pipes vibrating",
                 "caption": "", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Industrial metal centrifuge vibrating violently with flying metal fragments, 9:16 vertical",
-                "visual_style": "factory_production_floor"
+                "visual_prompt": "Underground nuclear enrichment gallery showing heavy steel pipes with pressure vibration blur, 9:16 vertical ratio, photorealistic"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "شاشات المراقبة كانت تظهر قراءات خضراء وطبيعية بنسبة 100%!",
-                "broll_search": "industrial control room monitors green indicators fake",
+                "narration": "شاشات المراقبة كانت تظهر قراءات مثالية وسرعات طبيعية تماماً.",
+                "broll_search": "Siemens industrial SCADA control room monitors normal readouts",
                 "caption": "", "sfx_cue": "sfx_riser",
-                "visual_prompt": "Control room operators looking at deceptive green status monitors, 9:16 vertical",
-                "visual_style": "cold_war_radar_room"
+                "visual_prompt": "Siemens industrial SCADA operator consoles glowing with false green normal status indicators, 9:16 vertical ratio, documentary"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "العلماء ظنوا أن هناك عيباً تصنيعياً في المعادن.",
-                "broll_search": "scientists examining cracked metal components magnifying glass",
+                "narration": "لكن في الحقيقة، كانت أجهزة الطرد المركزي تدور حتى الانفجار!",
+                "broll_search": "centrifuge rotor shaft spinning high speed friction sparks",
                 "caption": "", "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Metallurgists examining fractured steel rotor components in lab, 9:16 vertical",
-                "visual_style": "vintage_mainframe_1960"
+                "visual_prompt": "High speed centrifuge rotor shaft warping and throwing fiery friction sparks inside steel casing, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "لكن الحقيقة كانت كوداً برمجياً استخباراتياً خبيثاً اسمه ستاكسنت.",
-                "broll_search": "hacker typing assembly malicious code glowing screen",
+                "narration": "الفيروس الخبيث ستاكسنت تسلل للمنشأة عبر فلاشة USB بسيطة.",
+                "broll_search": "black USB flash drive lying on top secret facility blueprint",
                 "caption": "", "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Cyber warfare code cascading down black CRT screen in dark vault, 9:16 vertical",
-                "visual_style": "autonomous_agent_matrix"
+                "visual_prompt": "Black industrial USB flash drive resting on technical schematic of uranium cascades, 9:16 vertical ratio, macro lighting"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "الفيروس تسلل عبر وحدة فلاش USB لأجهزة معزولة عن الإنترنت.",
-                "broll_search": "usb flash drive inserted into industrial computer terminal",
+                "narration": "استغل أربع ثغرات أمنية مجهولة في نظام ويندوز دفعة واحدة.",
+                "broll_search": "binary cyber code zero day exploit vulnerability glowing green",
                 "caption": "", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Close-up of USB stick inserted into sealed industrial controller, 9:16 vertical",
-                "visual_style": "microchip_die_wafer"
+                "visual_prompt": "Glowing matrix of zero-day exploit disassembly opcodes cascading over dark silicon wafer, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "قام برفع سرعة المحركات لسرعات جنونية حتى تفككت.",
-                "broll_search": "high voltage industrial motor spinning smoking hot",
+                "narration": "الفيروس أعاد برمجة أجهزة التحكم الصناعية للعبث بسرعة المحركات.",
+                "broll_search": "Siemens PLC controller industrial circuit board",
                 "caption": "", "sfx_cue": "sfx_riser",
-                "visual_prompt": "Industrial turbine spinning at supersonic speed glowing red hot, 9:16 vertical",
-                "visual_style": "factory_production_floor"
+                "visual_prompt": "Siemens S7-300 PLC industrial programmable logic controller module with wiring harness, 9:16 vertical ratio, photorealistic"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "دمر الفيروس أكثر من ألف جهاز دون إطلاق رصاصة واحدة.",
-                "broll_search": "abandoned damaged nuclear centrifuge hall dark",
+                "narration": "دمّر الفيروس خمس قدرات المنشأة دون إطلاق رصاصة واحدة.",
+                "broll_search": "damaged shattered centrifuge aluminum rotors pile scrap",
                 "caption": "", "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Darkened centrifuge gallery with destroyed machinery and emergency lights, 9:16 vertical",
-                "visual_style": "chernobyl_control_room"
+                "visual_prompt": "Pile of shattered centrifuge aluminum rotors and sheared steel parts under forensic light, 9:16 vertical ratio, documentary"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "كانت تلك اللحظة بداية عصر حروب الإنترنت المادية الحديثة.",
-                "broll_search": "world map global cyber warfare digital connections",
+                "broll_search": "global cyber warfare digital fiber optic lines world map",
                 "caption": "", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Global fiber optic network illuminated against dark earth horizon, 9:16 vertical",
-                "visual_style": "satellite_earth_orbit"
+                "visual_prompt": "Glowing global fiber optic network lines stretching across dark planet horizon, 9:16 vertical ratio, cinematic 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "ودخل السلاح الرقمي التاريخ إلى الأبد، ولهذا السبب الصادم بالتحديد،",
-                "broll_search": "classified top secret folder military cyber command",
+                "broll_search": "classified top secret military cyber command folder stamp",
                 "caption": "", "sfx_cue": "sfx_impact",
-                "visual_prompt": "Declassified military cyber warfare file on steel examination desk, 9:16 vertical",
-                "visual_style": "madison_boardroom_1952"
+                "visual_prompt": "Classified US Cyber Command forensic dossier stamped TOP SECRET on steel desk, 9:16 vertical ratio, 8k cinematic"
             }
         ]
     },
 
-    # Episode 3: Chernobyl AZ-5 Button
+    # Episode 3: Chernobyl AZ-5 Scram Button
     {
         "id": "chernobyl_az5",
         "title": "كارثة تشرنوبل: السر المظلم وراء زر الطوارئ AZ-5! #Shorts",
@@ -204,87 +185,77 @@ VIRAL_TOPIC_SEEDS_AR = [
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "زر الطوارئ في تشرنوبل كان هو القنبلة القاتلة!",
-                "broll_search": "Chernobyl reactor 4 control room flashing emergency red lights",
+                "broll_search": "Chernobyl Unit 4 control room flashing emergency red lights",
                 "caption": "", "sfx_cue": "sfx_impact",
-                "visual_prompt": "Chernobyl reactor control room consoles flashing intense red warning beacons, 9:16 vertical",
-                "visual_style": "chernobyl_control_room"
+                "visual_prompt": "Vintage Chernobyl Unit 4 control room alarm beacons flashing red over massive yellow dial panels, 9:16 vertical ratio, National Geographic documentary photography"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "في 26 أبريل 1986 بدأ اختبار كهربائي روتيني.",
-                "broll_search": "soviet electrical power plant dials analog meters",
+                "broll_search": "Soviet nuclear power plant analog gauges electrical dials",
                 "caption": "", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Vintage Soviet analog power meters vibrating with unstable voltage needles, 9:16 vertical",
-                "visual_style": "chernobyl_control_room"
+                "visual_prompt": "Soviet nuclear power station electrical test consoles with analog circular voltmeter dials and needles, 9:16 vertical ratio, dramatic documentary lighting"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "طاقة المفاعل انخفضت بشكل خطير وغير متوقع في الدقائق الأخيرة.",
-                "broll_search": "reactor core water steam bubbling pressure gauges",
+                "broll_search": "nuclear reactor power level indicator analog meter dropping",
                 "caption": "", "sfx_cue": "sfx_riser",
-                "visual_prompt": "Boiling heavy water reactor core illuminated by eerie Cherenkov radiation blue glow, 9:16 vertical",
-                "visual_style": "soviet_submarine_abyss"
+                "visual_prompt": "Analog reactor core thermal power indicator gauge dropping into critical red zone, 9:16 vertical ratio, photorealistic"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "سحب المشغلون قضبان التحكم لرفع القوة من جديد.",
-                "broll_search": "nuclear control rods steel mechanism rising",
+                "broll_search": "nuclear control rods mechanism reactor core lid",
                 "caption": "", "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Mechanical overhead crane extracting cadmium control rods from core lid, 9:16 vertical",
-                "visual_style": "factory_production_floor"
+                "visual_prompt": "Heavy industrial overhead crane mechanism pulling cadmium nuclear control rods out of reactor lid channels, 9:16 vertical ratio, photorealistic"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "عندما بدأت الحرارة تخرج عن السيطرة، ضغط المشغل زر AZ-5.",
-                "broll_search": "hand pressing big red emergency shutdown button",
+                "broll_search": "hand pressing red emergency shutdown button AZ-5 Soviet control panel",
                 "caption": "", "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Operator hand slamming circular red AZ-5 emergency shutdown button, 9:16 vertical",
-                "visual_style": "chernobyl_control_room"
+                "visual_prompt": "Operator hand slamming large circular red emergency scram button AZ-5 with Cyrillic label on Soviet control console, 9:16 vertical ratio, photorealistic"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "كان من المفترض أن يغلق الزر المفاعل فوراً وينقذهم.",
-                "broll_search": "control room schematic blueprints soviet nuclear",
+                "broll_search": "Soviet RBMK nuclear reactor engineering blueprints schematics",
                 "caption": "", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Soviet RBMK reactor engineering schematic blueprints spread on console, 9:16 vertical",
-                "visual_style": "vintage_mainframe_1960"
+                "visual_prompt": "Classified Soviet RBMK-1000 nuclear reactor architectural blueprints and cross-section schematics on control desk, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "لكن رؤوس القضبان كانت مصنوعة من مادة الغرافيت الرخيصة!",
-                "broll_search": "graphite core blocks burning nuclear fire",
+                "broll_search": "nuclear reactor fuel assembly graphite displacer tip blocks",
                 "caption": "", "sfx_cue": "sfx_riser",
-                "visual_prompt": "Graphite tip blocks entering reactor channel causing immediate steam surge, 9:16 vertical",
-                "visual_style": "microchip_die_wafer"
+                "visual_prompt": "Graphite tips of nuclear control rods entering cooling water channels displacing water and sparking steam bubbles, 9:16 vertical ratio, photorealistic"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "الغرافيت زاد التفاعل النووي بدلاً من إيقافه في ثوانٍ!",
-                "broll_search": "steam explosion destroying roof building sparks",
+                "broll_search": "superheated steam explosion catastrophic reactor core blast",
                 "caption": "", "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Massive steam explosion rupturing through reactor roof into night sky, 9:16 vertical",
-                "visual_style": "rocket_launch_pad"
+                "visual_prompt": "Superheated steam explosion blowing off thousand-ton reactor upper biological shield into night sky, 9:16 vertical ratio, cinematic documentary"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "انفجر قلب المفاعل وتحول الحادث لأكبر كارثة نووية.",
-                "broll_search": "Chernobyl destroyed reactor 4 ruins smoking aerial view",
+                "broll_search": "Chernobyl Unit 4 destroyed reactor ruins smoking night aerial",
                 "caption": "", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Smoking ruins of Chernobyl reactor 4 illuminated by emergency flares, 9:16 vertical",
-                "visual_style": "chernobyl_control_room"
+                "visual_prompt": "Smoldering destroyed ruins of Chernobyl reactor 4 illuminated by emergency spotlights and red graphite fires, 9:16 vertical ratio, authentic documentary"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "والسبب عيب هندسي أخفته الدولة، ولهذا السبب الصادم بالتحديد،",
-                "broll_search": "soviet classified report stamp top secret red",
+                "broll_search": "Soviet KGB classified secret dossier stamp top secret",
                 "caption": "", "sfx_cue": "sfx_impact",
-                "visual_prompt": "KGB classified folder stamped Top Secret on wooden cabinet desk, 9:16 vertical",
-                "visual_style": "madison_boardroom_1952"
+                "visual_prompt": "Declassified vintage Soviet KGB incident dossier stamped Top Secret in Cyrillic on steel desk, 9:16 vertical ratio, 8k"
             }
         ]
     },
 
-    # Episode 4: Deep Blue vs Kasparov
+    # Episode 4: Deep Blue vs Garry Kasparov 1997
     {
         "id": "deep_blue_1997",
         "title": "هزم الذكاء الاصطناعي أذكى عقل بشري في التاريخ! #Shorts",
@@ -295,82 +266,72 @@ VIRAL_TOPIC_SEEDS_AR = [
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "هزم الذكاء الاصطناعي أذكى عقل بشري تاريخياً في 1997!",
-                "broll_search": "Deep Blue chess IBM grandmaster match",
+                "broll_search": "Garry Kasparov Deep Blue chess match 1997",
                 "caption": "", "sfx_cue": "sfx_impact",
-                "visual_prompt": "Garry Kasparov clutching forehead across chess board from IBM machine, 9:16 vertical",
-                "visual_style": "deep_blue_kasparov"
+                "visual_prompt": "Garry Kasparov holding his head in deep concentration across wooden tournament chess board, 9:16 vertical ratio, documentary 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "غاري كاسباروف كان بطل العالم بلا منازع لسنوات طويلة.",
-                "broll_search": "chess board pieces spotlight dramatic grandmaster tournament",
+                "broll_search": "World chess championship trophy tournament grandmaster",
                 "caption": "", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Carved wooden chess pieces cast long dramatic shadows across tournament board, 9:16 vertical",
-                "visual_style": "deep_blue_kasparov"
+                "visual_prompt": "World Chess Championship trophy illuminated under tournament arena spotlights, 9:16 vertical ratio, cinematic"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "شركة آي بي إم صنعت حاسوباً عملاقاً اسمه ديب بلو.",
-                "broll_search": "IBM Deep Blue supercomputer black towers glowing blue LEDs",
+                "broll_search": "IBM Deep Blue supercomputer black server racks",
                 "caption": "", "sfx_cue": "sfx_riser",
-                "visual_prompt": "Towering black IBM supercomputer mainframe with blue diagnostic status lights, 9:16 vertical",
-                "visual_style": "vintage_cray_supercomputer"
+                "visual_prompt": "Towering black IBM Deep Blue supercomputer server cabinets with glowing status LEDs, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "الحاسوب كان يحلل 200 مليون نقلة شطرنج في الثانية الواحدة!",
-                "broll_search": "computer silicon processors microchips processing fast data",
+                "broll_search": "custom silicon VLSI microchip chess processor",
                 "caption": "", "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Specialized chess processor chips on motherboard pulsing with green current, 9:16 vertical",
-                "visual_style": "microchip_die_wafer"
+                "visual_prompt": "Close-up macro of custom VLSI chess coprocessor silicon die glowing with green electrical data traces, 9:16 vertical ratio, photorealistic"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "في الجولة الأولى لعبت الآلة حركة غريبة وغير متوقعة.",
-                "broll_search": "chess pawn moving forward slow motion hand grandmaster",
+                "narration": "في الجولة الثانية لعبت الآلة حركة غريبة وغير متوقعة.",
+                "broll_search": "chess piece moving board stage light grandmaster",
                 "caption": "", "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Chess rook slide move across board illuminated by stark stage spotlight, 9:16 vertical",
-                "visual_style": "deep_blue_kasparov"
+                "visual_prompt": "Wooden chess rook moved to unexpected empty square on tournament board under stark dramatic spotlight, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "كاسباروف أصيب بالذهول وظن أن الآلة تفكر بذكاء بشري!",
-                "broll_search": "intense grandmaster eyes sweat stress tournament",
+                "broll_search": "Garry Kasparov shocked expression chess tournament",
                 "caption": "", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Extreme close-up of human eyes reflecting chess grid with visible stress, 9:16 vertical",
-                "visual_style": "cold_war_radar_room"
+                "visual_prompt": "Intense close-up of Garry Kasparov staring in shock and paranoia at the chess board, 9:16 vertical ratio, documentary"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "الحقيقة الصادمة كُشفت لاحقاً: كانت الحركة مجرد خلل برمجي عشوائي!",
-                "broll_search": "software bug code glitch assembly language terminal",
+                "broll_search": "software bug debug terminal code assembly crash",
                 "caption": "", "sfx_cue": "sfx_riser",
-                "visual_prompt": "Terminal debugger showing random fail-safe fallback move execution, 9:16 vertical",
-                "visual_style": "vintage_mainframe_1960"
+                "visual_prompt": "Vintage CRT terminal displaying assembly language debugger showing random fallback bug execution, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "لكن الصدمة النفسية حطمت تركيز بطل العالم في الجولات التالية.",
-                "broll_search": "chess king falling toppled on wooden board defeat",
+                "broll_search": "defeated grandmaster chess king toppled",
                 "caption": "", "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Fallen black chess king lying defeated on checkered grid, 9:16 vertical",
-                "visual_style": "deep_blue_kasparov"
+                "visual_prompt": "Fallen black wooden chess king lying toppled across checkered board in dramatic shadow, 9:16 vertical ratio, photorealistic"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "استسلم كاسباروف في الجولة الأخيرة وأعلن العالم انتصار الآلة.",
-                "broll_search": "press conference flash cameras reporters cheering 1997",
+                "broll_search": "press conference flashbulbs reporters chess 1997",
                 "caption": "", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Flash cameras illuminating historic press conference announcing machine victory, 9:16 vertical",
-                "visual_style": "wall_street_trading_floor"
+                "visual_prompt": "Historic 1997 New York press conference with blinding flashbulbs announcing AI victory over humanity, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "ومنذ ذلك اليوم تفوقت الخوارزميات، ولهذا السبب الصادم بالتحديد،",
-                "broll_search": "futuristic neural network matrix nodes glowing dark",
+                "broll_search": "futuristic AI neural network matrix digital mind",
                 "caption": "", "sfx_cue": "sfx_impact",
-                "visual_prompt": "Vast neural network constellation connecting glowing nodes in infinity, 9:16 vertical",
-                "visual_style": "autonomous_agent_matrix"
+                "visual_prompt": "Cinematic digital neural network nodes pulsing in deep darkness connecting into infinity, 9:16 vertical ratio, 8k"
             }
         ]
     },
@@ -385,83 +346,73 @@ VIRAL_TOPIC_SEEDS_AR = [
         "scenes": [
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "كمبيوتر سوفيتي يملك صلاحية إشعال حرب نووية بمفرده!",
-                "broll_search": "Soviet underground nuclear command bunker steel blast doors",
+                "narration": "كمبيوتر سوفيتي يملك صلاحية إشعال حرب نووية شاملة بمفرده!",
+                "broll_search": "deep underground nuclear bunker blast doors Soviet",
                 "caption": "", "sfx_cue": "sfx_impact",
-                "visual_prompt": "Underground nuclear silo command bunker reinforced steel blast doors, 9:16 vertical",
-                "visual_style": "bank_vault_steel_door"
+                "visual_prompt": "Gigantic concrete underground nuclear bunker blast door sealed shut in subterranean shaft, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "في ذروة الحرب الباردة صمم السوفيت نظاماً سرياً اسمه بيريميتر.",
-                "broll_search": "cold war military officers maps operations room",
+                "narration": "في ذروة الحرب الباردة، بنى الاتحاد السوفيتي نظام اليد الميتة.",
+                "broll_search": "Soviet military command center cold war radar maps",
                 "caption": "", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Soviet military generals studying strategic strike maps in bunker, 9:16 vertical",
-                "visual_style": "cold_war_radar_room"
+                "visual_prompt": "Soviet Cold War subterranean command room with glowing radar projection maps and red emergency lights, 9:16 vertical ratio, documentary"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "الهدف كان ضمان الرد النووي حتى لو قُتلت القيادة بالكامل.",
-                "broll_search": "nuclear ballistic missile silo underground hatch opening",
+                "narration": "الهدف كان ضمان الرد حتى لو قُتلت القيادة في موسكو كلها.",
+                "broll_search": "nuclear missile silo hatch opening smoke",
                 "caption": "", "sfx_cue": "sfx_riser",
-                "visual_prompt": "Concrete missile silo lid sliding open in snowy desolate forest, 9:16 vertical",
-                "visual_style": "rocket_launch_pad"
+                "visual_prompt": "Reinforced steel missile silo door retracting in snowy wilderness with hydraulic steam, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "النظام يعتمد على شبكة مجسات تقيس الضغط الجوي والإشعاع والزلازل.",
-                "broll_search": "radiation sensor geiger counter needle scientific monitors",
+                "narration": "شبكة حساسة من مجسات الإشعاع والضغط والهزات الأرضية.",
+                "broll_search": "geiger counter radiation sensor needles analog meters",
                 "caption": "", "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Geiger counter needles jumping into red radioactive danger zone, 9:16 vertical",
-                "visual_style": "chernobyl_control_room"
+                "visual_prompt": "Seismic and radiation sensor telemetry console with analog needles jumping into alarm sector, 9:16 vertical ratio, photorealistic"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "إذا رصد الكمبيوتر انفجارات نووية مع انقطاع الاتصال بموسكو...",
-                "broll_search": "oscilloscope screen static severed communication lines",
+                "broll_search": "severed communications radio static oscilloscope screen",
                 "caption": "", "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Communication radio waveforms fading into dead flatline static, 9:16 vertical",
-                "visual_style": "vintage_mainframe_1960"
+                "visual_prompt": "Oscilloscope green waveform dying into flatline static signifying severed military communication cables, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "يفترض تلقائياً أن القيادة ماتت وينقل قرار الإطلاق لنفسه!",
-                "broll_search": "vintage supercomputer circuits relays activating lights",
+                "broll_search": "automated command electronic relay switch triggering spark",
                 "caption": "", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "High security automated command circuits closing relays with spark, 9:16 vertical",
-                "visual_style": "vintage_cray_supercomputer"
+                "visual_prompt": "Automated launch sequencer relays clicking into place with electric blue spark, 9:16 vertical ratio, macro 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "يطلق الصاروخ القائد الذي يبث أوامر الإطلاق لكل الصواريخ.",
-                "broll_search": "intercontinental ballistic missile launch fire smoke exhaust",
+                "narration": "يطلق صاروخ قيادة ينقل أوامر الإطلاق الذاتي لكل الصوامع.",
+                "broll_search": "intercontinental ballistic missile launch fire smoke sky",
                 "caption": "", "sfx_cue": "sfx_riser",
-                "visual_prompt": "Command missile erupting from subterranean silo into grey clouds, 9:16 vertical",
-                "visual_style": "rocket_launch_pad"
+                "visual_prompt": "Intercontinental ballistic missile erupting from subterranean silo enveloped in thunderous fire, 9:16 vertical ratio, cinematic"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "مئات الرؤوس النووية تنطلق تلقائياً نحو أهدافها بدون أي إنسان!",
-                "broll_search": "multiple missile trails rising into stratospheric space",
+                "narration": "المخيف في الأمر أن النظام لا يزال يعمل حتى اليوم في روسيا!",
+                "broll_search": "Kremlin red star night snow cold war modern",
                 "caption": "", "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Multiple ballistic contrails arcing into dark edge of space, 9:16 vertical",
-                "visual_style": "satellite_earth_orbit"
+                "visual_prompt": "Kremlin illuminated red star glowing through blizzard snow in Moscow night, 9:16 vertical ratio, 8k documentary"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "المرعب أن النظام لا يزال مفعلاً وجاهزاً للعمل حتى اليوم.",
-                "broll_search": "classified military bunker blinking status standby modern",
+                "narration": "آلة صامتة تحت الأرض تنتظر نهاية العالم لتنتقم.",
+                "broll_search": "dark subterranean server racks blinking red lights bunker",
                 "caption": "", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Unmanned military server racks humming in subterranean concrete vault, 9:16 vertical",
-                "visual_style": "bank_vault_steel_door"
+                "visual_prompt": "Silent deep bunker server racks with blinking red diagnostic LEDs stretching into dark tunnel, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "آلة قادرة على إنهاء العالم بكود قديم، ولهذا السبب الصادم بالتحديد،",
-                "broll_search": "planet earth seen from deep space dark void",
+                "narration": "سلاح القيامة الذي لا يرحم، ولهذا السبب الصادم بالتحديد،",
+                "broll_search": "Soviet military declassified file Perimetr stamp",
                 "caption": "", "sfx_cue": "sfx_impact",
-                "visual_prompt": "Planet Earth suspended peacefully against black abyss of cosmos, 9:16 vertical",
-                "visual_style": "satellite_earth_orbit"
+                "visual_prompt": "Declassified Soviet military dossier labeled PERIMETR stamped with red wax seal on steel desk, 9:16 vertical ratio, 8k"
             }
         ]
     },
@@ -469,90 +420,80 @@ VIRAL_TOPIC_SEEDS_AR = [
     # Episode 6: Morris Worm 1988
     {
         "id": "morris_worm",
-        "title": "دودة موريس 1988: طالب أسقط شبكة الإنترنت العالمية بالكامل! #Shorts",
-        "hook": "طالب جامعي أسقط شبكة الإنترنت بالكامل!",
+        "title": "دودة موريس 1988: طالب أسقط شبكة الإنترنت العالمية برمجياً! #Shorts",
+        "hook": "طالب جامعي أسقط 10% من الإنترنت في ليلة واحدة!",
         "loop": "...ولهذا السبب الصادم بالتحديد،",
-        "core_mystery": "In 1988, Cornell graduate student Robert Tappan Morris released the first internet worm to measure the size of the nascent internet, but an aggressive replication loop crashed 10% of all connected computers.",
+        "core_mystery": "In 1988, Cornell student Robert Morris released the first internet worm intended to gauge the size of ARPANET, but a coding flaw caused it to reinfect computers uncontrollably, crashing thousands of servers.",
         "scenes": [
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "طالب جامعي أسقط شبكة الإنترنت العالمية بالكامل في 1988!",
-                "broll_search": "vintage terminal crt green text cyber attack morris worm",
+                "narration": "طالب جامعي أسقط 10% من شبكة الإنترنت في ليلة واحدة!",
+                "broll_search": "ARPANET mainframe terminal 1988 vintage computer",
                 "caption": "", "sfx_cue": "sfx_impact",
-                "visual_prompt": "Vintage green phosphor terminal screen scrolling rapidly with memory dump, 9:16 vertical",
-                "visual_style": "vintage_mainframe_1960"
+                "visual_prompt": "Vintage 1988 university computer lab CRT monitor glowing in dim room with blinking cursor, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "روبرت موريس كان طالباً عبقرياً في جامعة كورنيل الأمريكية.",
-                "broll_search": "university computer laboratory 1980s students terminals",
+                "narration": "في 2 نوفمبر 1988، أطلق روبرت موريس كوداً لقياس حجم الإنترنت.",
+                "broll_search": "young programmer typing keyboard dark room 1980s",
                 "caption": "", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Quiet 1980s academic computer lab with glowing mainframe terminals, 9:16 vertical",
-                "visual_style": "dartmouth_conference_1956"
+                "visual_prompt": "Young computer science student typing intently at mechanical keyboard illuminated by amber screen, 9:16 vertical ratio, documentary"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "أراد فقط قياس حجم شبكة الإنترنت وعدد الأجهزة المتصلة بها.",
-                "broll_search": "early arpanet internet map connections nodes 1980",
+                "narration": "كانت الشبكة آنذاك تضم حوالي 60 ألف جهاز فقط حول العالم.",
+                "broll_search": "early internet ARPANET map servers connection nodes",
                 "caption": "", "sfx_cue": "sfx_riser",
-                "visual_prompt": "Early ARPANET node connection diagram glowing on drafting table, 9:16 vertical",
-                "visual_style": "autonomous_agent_matrix"
+                "visual_prompt": "Hand-drawn 1980s ARPANET network topology map showing interconnected university nodes, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "كتب برنامجاً صغيراً يتنقل بين الأجهزة بهدوء تام دون إتلافها.",
-                "broll_search": "c programming language source code vintage editor",
+                "narration": "لكن موريس كتب خطأ قاتلاً في آلية انتشار الدودة البرمجية.",
+                "broll_search": "C code terminal sendmail fingerd buffer overflow glitch",
                 "caption": "", "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Clean C programming code scrolling across monochrome CRT screen, 9:16 vertical",
-                "visual_style": "vintage_mainframe_1960"
+                "visual_prompt": "Monochrome green CRT terminal showing C programming source code with fingerd buffer overflow exploit, 9:16 vertical ratio, photorealistic"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "لكنه وضع خطأ فادحاً في آلية تكرار النسخ داخل الكود.",
-                "broll_search": "microprocessor overloaded heat thermal imaging",
+                "narration": "الدودة لم تكتفِ بالدخول مرة واحدة، بل أعادت إصابة الأجهزة مراراً!",
+                "broll_search": "server rack processor CPU overload overheating smoke",
                 "caption": "", "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Computer CPU chip glowing with intense heat from processing overload, 9:16 vertical",
-                "visual_style": "microchip_die_wafer"
+                "visual_prompt": "Vintage VAX minicomputer CPU load indicator meters pegged at 100% capacity in overheated server closet, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "الدودة أصبحت تنسخ نفسها مئات المرات في الجهاز الواحد!",
-                "broll_search": "server rack cooling fans spinning red alert lights",
+                "narration": "الخوادم اختنقت بالعمليات الزائدة وتوقفت الجامعات والمراكز العسكرية.",
+                "broll_search": "panicked computer scientists unplugging network ethernet cables",
                 "caption": "", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Data center server racks halting with emergency error indicator LEDs, 9:16 vertical",
-                "visual_style": "vintage_cray_supercomputer"
+                "visual_prompt": "Panicked computer system administrators yanking thick yellow Ethernet cables from wall patch panels, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "خلال ساعات تجمدت حواسيب البنتاغون والجامعات ومراكز الأبحاث.",
-                "broll_search": "nasa apollo control room scientists panicked",
+                "narration": "خلال ساعات تجمدت آلاف الأجهزة في هارفارد وستانفورد والجيش الأمريكي.",
+                "broll_search": "empty university computer lab glowing frozen crash screens",
                 "caption": "", "sfx_cue": "sfx_riser",
-                "visual_prompt": "Research lab scientists unplugging network ethernet cables in panic, 9:16 vertical",
-                "visual_style": "apollo13_mission_control"
+                "visual_prompt": "Eerie dark university computer laboratory with dozens of terminals displaying frozen crash logs, 9:16 vertical ratio, cinematic"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "توقفت 10% من شبكة الإنترنت بالكامل عن العمل في لحظة.",
-                "broll_search": "disconnected internet cables black screen terminal frozen",
+                "narration": "موريس حاول إرسال رسالة تحذير وإصلاح لكن الإنترنت كان معطلاً تماماً!",
+                "broll_search": "vintage telephone payphone receiver hanging wire dark",
                 "caption": "", "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Severed network cables lying on server room floor with dark terminals, 9:16 vertical",
-                "visual_style": "cold_war_radar_room"
+                "visual_prompt": "Vintage telephone receiver hanging by coiled cord beside dark terminal in silent university hallway, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "أصبح موريس أول شخص يُحاكم بموجب قانون الاحتيال الحاسوبي.",
-                "broll_search": "gavel slamming wooden desk courtroom judgment",
+                "narration": "أصبح موريس أول شخص يُدان قانونياً بموجب قانون الاحتيال الإلكتروني.",
+                "broll_search": "federal courthouse steps gavel legal document cybercrime",
                 "caption": "", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Judicial wooden gavel resting on legal case file in courtroom, 9:16 vertical",
-                "visual_style": "madison_boardroom_1952"
+                "visual_prompt": "Federal court docket folder labeled Computer Fraud and Abuse Act with wooden gavel, 9:16 vertical ratio, photorealistic"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "ومن ركام تلك الدودة وُلد الأمن السيبراني، ولهذا السبب الصادم بالتحديد،",
-                "broll_search": "modern cyber defense security room blue screens glowing",
+                "narration": "وولدت صناعة الأمن السيبراني الحديثة، ولهذا السبب الصادم بالتحديد،",
+                "broll_search": "modern cyber security defense center glowing blue screens",
                 "caption": "", "sfx_cue": "sfx_impact",
-                "visual_prompt": "Modern cyber operations command center tracking live global threats, 9:16 vertical",
-                "visual_style": "autonomous_agent_matrix"
+                "visual_prompt": "Modern high-tech cybersecurity operations center with glowing curved threat defense monitors, 9:16 vertical ratio, 8k"
             }
         ]
     }
@@ -562,181 +503,161 @@ VIRAL_TOPIC_SEEDS_EN = [
     # Episode 1: Project Azorian Submarine Heist
     {
         "id": "project_azorian",
-        "title": "Project Azorian: The $4 Billion Cold War Submarine Heist #Shorts",
-        "hook": "The CIA spent billions stealing a nuclear submarine!",
-        "loop": "...which brings us right back to the shocking reality that:",
-        "core_mystery": "In 1974, billionaire Howard Hughes built the Glomar Explorer under the cover story of mining manganese nodules, secretly executing a CIA plan to lift sunken Soviet submarine K-129 from three miles deep.",
+        "title": "The $4 Billion Cold War Submarine Heist That Stole Soviet Nuclear Secrets! #Shorts",
+        "hook": "The CIA built a fake mining ship to steal a Soviet nuclear sub!",
+        "loop": "...and that is the exact reason why,",
+        "core_mystery": "In 1974, the CIA secretly spent $4 billion building the Hughes Glomar Explorer, a giant ship disguised as a deep-sea mining vessel, to lift sunken Soviet submarine K-129 from 16,000 feet beneath the Pacific.",
         "scenes": [
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "The CIA spent billions stealing a sunken nuclear submarine!",
-                "broll_search": "Soviet submarine abyss ocean depth underwater",
-                "caption": "The CIA spent billions stealing a nuclear submarine!", "sfx_cue": "sfx_impact",
-                "visual_prompt": "Soviet nuclear submarine resting on abyssal ocean floor illuminated by searchlights, 9:16 vertical",
-                "visual_style": "soviet_submarine_abyss"
+                "narration": "The CIA built a fake deep-sea mining ship to steal a Soviet nuclear sub!",
+                "broll_search": "Hughes Glomar Explorer massive claw deep ocean ship",
+                "caption": "The CIA spent billions building a fake ship to steal a Soviet submarine.", "sfx_cue": "sfx_impact",
+                "visual_prompt": "Colossal Hughes Glomar Explorer ship in stormy Pacific ocean with hidden derrick gantry, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "In 1968 Soviet submarine K-129 sank with nuclear warheads.",
-                "broll_search": "ocean dark storm waves naval submarine",
-                "caption": "K-129 sank three miles deep with nuclear missiles.", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Dark storm waves crashing over conning tower of Soviet submarine, 9:16 vertical",
-                "visual_style": "soviet_submarine_abyss"
+                "narration": "In 1968, Soviet submarine K-129 vanished into the Pacific abyss.",
+                "broll_search": "Soviet submarine submerged dark ocean deep water",
+                "caption": "In 1968, Soviet submarine K-129 mysteriously vanished.", "sfx_cue": "sfx_whoosh",
+                "visual_prompt": "Dark Soviet Golf-II ballistic submarine descending into deep abyss waters, 9:16 vertical ratio, documentary"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "Moscow searched for months across the Pacific and found nothing.",
-                "broll_search": "naval fleet search sonar radar screens vintage",
-                "caption": "Moscow searched the Pacific and found nothing.", "sfx_cue": "sfx_riser",
-                "visual_prompt": "Soviet naval search ships navigating dark foggy waters with searchlights, 9:16 vertical",
-                "visual_style": "cold_war_radar_room"
+                "narration": "Moscow searched frantically for months, but never found the wreckage.",
+                "broll_search": "Soviet naval officers binoculars search radar stormy sea",
+                "caption": "Moscow searched for months, finding zero traces.", "sfx_cue": "sfx_riser",
+                "visual_prompt": "Soviet naval officers scanning freezing ocean waves through giant binoculars from bridge, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "American deep hydrophones recorded the exact explosion coordinates.",
-                "broll_search": "underwater acoustic hydrophone sensor audio waveforms",
-                "caption": "US acoustic hydrophones pinpointed the exact wreck coordinates.", "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Acoustic hydrophone waveform spikes displayed on submarine telemetry screen, 9:16 vertical",
-                "visual_style": "cold_war_radar_room"
+                "narration": "US acoustic listening stations triangulated the exact underwater implosion.",
+                "broll_search": "sonar hydrophone acoustic sound wave graph underwater",
+                "caption": "Secret US hydrophones pinpointed the exact underwater implosion.", "sfx_cue": "sfx_subdrop",
+                "visual_prompt": "SOSUS underwater acoustic hydrophone terminal tracing jagged sound waves of hull implosion, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "Lifting 3,000 tons of steel from three miles was deemed impossible.",
-                "broll_search": "deep sea robotic submersible mechanical claw hydraulic",
-                "caption": "Lifting 3,000 tons from 16,000 feet was an engineering impossibility.", "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Colossal mechanical steel claw hovering above dark ocean trench floor, 9:16 vertical",
-                "visual_style": "factory_production_floor"
+                "narration": "Three miles deep lay ballistic nuclear missiles and crypto codebooks.",
+                "broll_search": "submarine wreckage resting on deep sea floor sand mud",
+                "caption": "Three miles deep lay nuclear warheads and crypto codebooks.", "sfx_cue": "sfx_heartbeat",
+                "visual_prompt": "Crushed steel submarine conning tower illuminated by underwater submersible searchlight at 16,000 feet, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "Billionaire Howard Hughes built a colossal fake mining ship.",
-                "broll_search": "huge industrial recovery vessel derrick ocean",
-                "caption": "Billionaire Howard Hughes built a colossal mining cover ship.", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Massive deep sea salvage vessel Glomar Explorer with center derrick tower, 9:16 vertical",
-                "visual_style": "factory_production_floor"
+                "narration": "The CIA hired eccentric billionaire Howard Hughes as the ultimate cover story.",
+                "broll_search": "Howard Hughes vintage press conference luxury 1970s",
+                "caption": "The CIA hired Howard Hughes for the ultimate billionaire cover story.", "sfx_cue": "sfx_whoosh",
+                "visual_prompt": "Vintage 1970s CIA director briefing room showing Howard Hughes mining contract dossier, 9:16 vertical ratio, photorealistic"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "Soviet spy ships watched from meters away, completely oblivious.",
-                "broll_search": "soviet spy ship binoculars observing foreign vessel",
-                "caption": "Soviet spy ships circled nearby, completely oblivious.", "sfx_cue": "sfx_riser",
-                "visual_prompt": "Soviet naval officer peering through binoculars at recovery vessel on high seas, 9:16 vertical",
-                "visual_style": "cold_war_radar_room"
+                "narration": "They built a secret mechanical claw capable of lifting thousands of tons.",
+                "broll_search": "giant mechanical steel claw underwater salvage Hughes",
+                "caption": "They engineered a colossal steel claw to lift the entire hull.", "sfx_cue": "sfx_riser",
+                "visual_prompt": "Massive steel hydraulic claw known as Clementine descending through center moon pool of salvage ship, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "As the claw lifted the hull, the metal fractured in half!",
-                "broll_search": "hydraulic mechanical claw breaking metal falling",
-                "caption": "Halfway up, the mechanical claw snapped under ocean pressure!", "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Massive steel claw arm snapping under extreme hydraulic pressure underwater, 9:16 vertical",
-                "visual_style": "soviet_submarine_abyss"
+                "narration": "Midway up, the sub fractured under immense tension and snapped in two!",
+                "broll_search": "metal hull snapping underwater deep sea debris falling",
+                "caption": "Midway up, the submarine hull snapped under catastrophic tension!", "sfx_cue": "sfx_subdrop",
+                "visual_prompt": "Submarine hull breaking in half underwater shedding nuclear missile tubes into the dark abyss, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "Two thirds of the submarine plunged right back to the abyss.",
-                "broll_search": "heavy steel hull sinking into dark ocean depth",
-                "caption": "Two thirds of the submarine fell back to the abyss.", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Submarine hull section tumbling down into darkness of ocean trench, 9:16 vertical",
-                "visual_style": "soviet_submarine_abyss"
+                "narration": "Only the forward section was recovered, but the mission made history.",
+                "broll_search": "recovered submarine steel hull inside secret ship hangar",
+                "caption": "Only the forward section was salvaged, but history was made.", "sfx_cue": "sfx_whoosh",
+                "visual_prompt": "Recovered mangled titanium submarine nose cone dripping inside colossal hidden ship hangar, 9:16 vertical ratio, documentary"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "The costliest heist in history remained classified for decades,",
-                "broll_search": "top secret cia declassified folder stamped vault",
-                "caption": "The most expensive heist in history was locked in a vault,", "sfx_cue": "sfx_impact",
-                "visual_prompt": "Declassified CIA Project Azorian folder locked inside heavy steel bank vault, 9:16 vertical",
-                "visual_style": "bank_vault_steel_door"
+                "narration": "The most audacious underwater heist ever conceived,",
+                "broll_search": "declassified CIA project azorian folder stamp red",
+                "caption": "The most audacious underwater heist in human history,", "sfx_cue": "sfx_impact",
+                "visual_prompt": "Declassified CIA Project Azorian intelligence folder stamped TOP SECRET with red ribbon on mahogany desk, 9:16 vertical ratio, 8k"
             }
         ]
     },
 
-    # Episode 2: The 2010 Flash Crash
+    # Episode 2: Wall Street Flash Crash
     {
         "id": "wall_street_flash_crash",
         "title": "The 2010 Flash Crash: One Trader Erased $1 Trillion in 36 Minutes! #Shorts",
-        "hook": "One trader erased a trillion dollars in minutes!",
-        "loop": "...which brings us right back to the shocking reality that:",
-        "core_mystery": "On May 6, 2010, the US stock market crashed nearly 1,000 points in 36 minutes, later traced to British trader Navinder Sarao who manipulated automated algorithm spoofing from his childhood bedroom.",
+        "hook": "A lone trader in his bedroom wiped out $1 trillion!",
+        "loop": "...and that is the exact reason why,",
+        "core_mystery": "On May 6, 2010, the US stock market crashed 9% in minutes because algorithmic high-frequency traders panicked over massive spoofed orders placed by a lone trader working from his parents' home in London.",
         "scenes": [
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "One trader erased a trillion dollars in 36 minutes!",
-                "broll_search": "wall street stock ticker crashing red numbers trading floor",
-                "caption": "One trader erased a trillion dollars in 36 minutes!", "sfx_cue": "sfx_impact",
-                "visual_prompt": "Wall street electronic ticker board tumbling with steep cascading red percentages, 9:16 vertical",
-                "visual_style": "wall_street_trading_floor"
+                "narration": "A lone trader working from his bedroom erased $1 trillion in minutes!",
+                "broll_search": "Wall Street stock market crash red numbers plunging trading floor",
+                "caption": "A lone trader in his bedroom erased $1 trillion in 36 minutes!", "sfx_cue": "sfx_impact",
+                "visual_prompt": "Wall Street electronic stock ticker boards flashing blood-red negative percentage plunges, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "May 6, 2010 started like any regular financial trading day.",
-                "broll_search": "wall street traders busy shouting paper trading floor",
-                "caption": "May 6, 2010 started like any normal trading day.", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Chicago Board of Trade floor crowded with frantic brokers shouting orders, 9:16 vertical",
-                "visual_style": "wall_street_trading_floor"
+                "narration": "On May 6, 2010, the Dow Jones plunged nearly 1,000 points instantly.",
+                "broll_search": "panicked stock brokers shouting trading floor Wall Street",
+                "caption": "On May 6, 2010, the Dow plunged 1,000 points in seconds.", "sfx_cue": "sfx_whoosh",
+                "visual_prompt": "Panicked Wall Street exchange floor brokers clutching their heads in horror before red screens, 9:16 vertical ratio, documentary"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "At 2:42 PM the Dow Jones suddenly went into freefall.",
-                "broll_search": "financial stock market chart plunge steep drop",
-                "caption": "At 2:42 PM the Dow Jones entered a catastrophic freefall.", "sfx_cue": "sfx_riser",
-                "visual_prompt": "Digital stock index line graph plunging straight downward into negative territory, 9:16 vertical",
-                "visual_style": "wall_street_trading_floor"
+                "narration": "High-frequency trading algorithms entered an uncontrollable feedback loop.",
+                "broll_search": "high frequency trading server rack fiber optic cables fast LEDs",
+                "caption": "Automated algorithms entered an uncontrollable death spiral.", "sfx_cue": "sfx_riser",
+                "visual_prompt": "High frequency trading server rack with ultra-fast blinking yellow fiber optic patch cables, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "Blue chip stocks like Procter & Gamble plunged by 37 percent!",
-                "broll_search": "stock brokers hands on head panic trading desk",
-                "caption": "Blue chip giants like P&G dropped 37 percent in seconds!", "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Wall Street brokers staring in pure panic at red plunging terminal monitors, 9:16 vertical",
-                "visual_style": "wall_street_trading_floor"
-            },
-            {
-                "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "Automated algorithmic trading bots began panic selling across the globe.",
-                "broll_search": "high frequency trading server rack fiber optic flashing",
-                "caption": "High-frequency trading algorithms triggered instant automated selloffs.", "sfx_cue": "sfx_heartbeat",
-                "visual_prompt": "Wall Street high frequency trading server racks blinking with rapid fiber optic pulses, 9:16 vertical",
-                "visual_style": "vintage_cray_supercomputer"
+                "narration": "Shares of blue-chip giants like Procter & Gamble traded for one penny!",
+                "broll_search": "stock price falling to one penny chart electronic screen",
+                "caption": "Trillion-dollar companies traded for literally one penny!", "sfx_cue": "sfx_subdrop",
+                "visual_prompt": "Candlestick chart of multinational corporation dropping vertically to 0.01 dollars on black terminal, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "One trillion dollars in market value evaporated into thin air.",
-                "broll_search": "dollar bills burning smoke ash currency destruction",
-                "caption": "One trillion dollars of wealth evaporated into thin air.", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Bank vault floor strewn with dollar notes dissolving into digital smoke, 9:16 vertical",
-                "visual_style": "bank_vault_steel_door"
+                "broll_search": "dollar bills dissolving digital smoke currency destruction",
+                "caption": "One trillion dollars of wealth evaporated into thin air.", "sfx_cue": "sfx_heartbeat",
+                "visual_prompt": "Stacks of hundred-dollar bills burning and dissolving into glowing green digital matrix particles, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "Investigators spent five years searching for the mysterious culprit.",
-                "broll_search": "fbi financial crime investigators documents evidence wall",
-                "caption": "Federal investigators spent five years hunting the mastermind.", "sfx_cue": "sfx_riser",
-                "visual_prompt": "Federal financial crime investigators analyzing algorithmic order book data prints, 9:16 vertical",
-                "visual_style": "cold_war_radar_room"
+                "broll_search": "FBI financial crime investigators documents evidence wall",
+                "caption": "Federal investigators spent five years hunting the mastermind.", "sfx_cue": "sfx_whoosh",
+                "visual_prompt": "Federal financial crime war room with timeline charts and printed electronic order book logs, 9:16 vertical ratio, photorealistic"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "It was not a hedge fund, but a lone trader working from his bedroom!",
                 "broll_search": "suburban bedroom computer monitors trading setup humble",
-                "caption": "It was not a bank, but a lone trader in his bedroom!", "sfx_cue": "sfx_subdrop",
-                "visual_prompt": "Modest suburban bedroom desk with multiple monitors running custom trading software, 9:16 vertical",
-                "visual_style": "vintage_mainframe_1960"
+                "caption": "It was not a bank, but a lone trader in his London bedroom!", "sfx_cue": "sfx_riser",
+                "visual_prompt": "Modest suburban bedroom desk with multiple monitors running custom financial order book software, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
                 "narration": "He spoofed massive fake orders, tricking the algorithms into collapsing.",
                 "broll_search": "code algorithmic trading terminal fast numbers scrolling",
-                "caption": "He tricked billion-dollar algorithms with automated spoof orders.", "sfx_cue": "sfx_whoosh",
-                "visual_prompt": "Custom spoofing software terminal placing and canceling thousands of futures contracts, 9:16 vertical",
-                "visual_style": "autonomous_agent_matrix"
+                "caption": "He tricked billion-dollar algorithms with automated spoof orders.", "sfx_cue": "sfx_subdrop",
+                "visual_prompt": "Custom spoofing software terminal placing and canceling thousands of futures contracts per second, 9:16 vertical ratio, 8k"
             },
             {
                 "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
-                "narration": "Exposing the fragility of global finance,",
+                "narration": "Exposing the hidden fragility of modern automated finance,",
                 "broll_search": "empty wall street exchange floor after hours dim lights",
-                "caption": "Exposing the hidden fragility of modern finance,", "sfx_cue": "sfx_impact",
-                "visual_prompt": "Quiet Wall Street trading floor after hours with lone security light reflections, 9:16 vertical",
-                "visual_style": "wall_street_trading_floor"
+                "caption": "Exposing the hidden fragility of modern finance,", "sfx_cue": "sfx_whoosh",
+                "visual_prompt": "Quiet Wall Street trading floor after hours with lone security light reflections on empty desks, 9:16 vertical ratio, cinematic"
+            },
+            {
+                "speaker": "narrator", "scene_type": "b_roll", "character_focus": "broll_evidence",
+                "narration": "The day one man broke the global economy, and that is why,",
+                "broll_search": "Commodity Futures Trading Commission declassified report gavel",
+                "caption": "The day one man broke the global market,", "sfx_cue": "sfx_impact",
+                "visual_prompt": "CFTC official investigation report labeled FLASH CRASH with wooden gavel on mahogany desk, 9:16 vertical ratio, 8k"
             }
         ]
     }
