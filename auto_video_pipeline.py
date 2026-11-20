@@ -934,12 +934,12 @@ CRITICAL PRODUCTION FORMAT (100% CINEMATIC B-ROLL DOCUMENTARY):
 1. Pacing: 130 to 150 words per minute.
 2. ALL scenes are 100% visual B-Roll evidence, real archival footage, diagrams, maps, or dramatic reenactments.
    The host speaks ONLY as an authoritative Voiceover (VO) narrator. There is NEVER an on-camera presenter speaking to camera.
-3. Structure: EXACTLY 10 to 12 sequential dramatic scenes (each ~4.0 to 5.5 seconds long, total duration ~50-55 seconds).
+3. Structure: EXACTLY 10 sequential dramatic scenes (target total video duration 45 to 50 seconds to STRICTLY stay within the 60-second YouTube Shorts limit).
    EVERY single scene MUST have its own unique, script-specific visual evidence:
    - "speaker": "narrator"
    - "scene_type": "b_roll"
    - "character_focus": "broll_evidence"
-   - "narration": Spoken voiceover text here (short, punchy, 10-18 words per scene)...
+   - "narration": Spoken voiceover text here (short, punchy, 8 to 12 words per scene, TOTAL SCRIPT UNDER 110 WORDS)...
    - "broll_search": A specific, short English search query for real video/archival footage (e.g. "supercomputer server room", "deep sea submarine", "microchip wafer fabrication", "vault security laser", "redacted classified documents", "satellite earth night").
    - "visual_prompt": A highly specific, photographic prompt for AI image generation illustrating this exact moment in the story (e.g. "1962 IBM 7090 magnetic tape computer with Arthur Samuel inspecting punch cards, 9:16 vertical", "declassified top secret telegram with redacted ink and CIA seal").
    - "visual_style": Short descriptor (e.g. "cyber_matrix", "submarine_abyss", "bank_vault", "quantum_silicon", "vintage_archive").
@@ -1300,19 +1300,30 @@ def synthesize_dual_voice_scene(
 
     raw_voice_mp3 = work_dir / f"raw_{out_mp3.name}"
 
-    try:
-        cmd = [
-            sys.executable, "-m", "edge_tts",
-            "--voice", voice,
-            f"--rate={rate}",
-            "--text", text,
-            "--write-media", str(raw_voice_mp3),
-        ]
-        subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=35)
-    except Exception as e:
-        print(f"  [TTS Notice] edge-tts error ({e}); using gTTS fallback...")
-        from gtts import gTTS
-        gTTS(text=text, lang=lang, slow=False).save(str(raw_voice_mp3))
+    clean_text = text.replace('"', '').replace("'", '').replace("\n", " ").strip()
+    ok_voice = False
+    for attempt in range(3):
+        try:
+            cmd = [
+                sys.executable, "-m", "edge_tts",
+                "--voice", voice,
+                f"--rate={rate}",
+                "--text", clean_text,
+                "--write-media", str(raw_voice_mp3),
+            ]
+            subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=25)
+            if raw_voice_mp3.exists() and raw_voice_mp3.stat().st_size > 2500:
+                ok_voice = True
+                break
+        except Exception:
+            time.sleep(1.0)
+
+    if not ok_voice:
+        try:
+            from gtts import gTTS
+            gTTS(text=clean_text, lang=lang, slow=False).save(str(raw_voice_mp3))
+        except Exception as e:
+            print(f"  [TTS Critical Error] Both edge-tts and gTTS failed: {e}")
 
     if sfx_cue:
         sfx_wav = work_dir / f"{sfx_cue}.wav"
@@ -1381,66 +1392,107 @@ def create_dark_cinematic_procedural_backdrop(style_hint: str, target_w: int = 1
     return Image.alpha_composite(img.convert("RGBA"), overlay).convert("RGB")
 
 
-def resolve_scene_artwork(visual_prompt: str, style_hint: str) -> Path:
-    """Finds best matching high-resolution scene artwork from assets/scenes/."""
+def resolve_scene_artwork(visual_prompt: str, style_hint: str, channel_key: str = "ch02_ar_ai_tech", scene_idx: int = 0) -> Path:
+    """Finds best matching high-resolution scene artwork from assets/scenes/ with zero unrelated fallbacks."""
     repo_root = Path(__file__).resolve().parent
     scenes_dir = repo_root / "assets" / "scenes"
     vp = visual_prompt.lower()
     sh = style_hint.lower()
 
-    if any(k in vp or k in sh for k in ("sub", "submarine", "ocean", "abyss", "naval", "k-129", "k129")):
-        p = scenes_dir / "soviet_submarine_abyss.jpg"
+    # Early computing / Mainframes / MIT / Chatbots / ELIZA / Code
+    if any(k in vp or k in sh for k in ("eliza", "weizenbaum", "chatbot", "chat", "computer", "mainframe", "terminal", "1966", "1960", "vintage", "tape", "ibm", "mit", "program")):
+        p = scenes_dir / "vintage_mainframe_1960.jpg"
         if p.exists(): return p
 
-    if any(k in vp or k in sh for k in ("vault", "antwerp", "heist", "laser", "safe")):
-        p = scenes_dir / "antwerp_bank_vault.jpg"
+    # AI Pioneers / Dartmouth Conference / Scientists
+    if any(k in vp or k in sh for k in ("dartmouth", "conference", "scientist", "pioneer", "1956", "research", "samuel", "turing", "father of ai")):
+        p = scenes_dir / "dartmouth_conference_1956.jpg"
         if p.exists(): return p
 
-    if any(k in vp or k in sh for k in ("diamond", "gem", "de beers", "carat")):
-        p = scenes_dir / "diamond_debeers_vault.jpg"
-        if p.exists(): return p
-
-    if any(k in vp or k in sh for k in ("bci", "neuralink", "implant", "chip", "electrode")):
-        p = scenes_dir / "neuralink_bci_chip.jpg"
-        if p.exists(): return p
-
-    if any(k in vp or k in sh for k in ("gpu", "nvidia", "silicon", "cuda", "h100")):
-        p = scenes_dir / "nvidia_gpu_silicon.jpg"
-        if p.exists(): return p
-
-    if any(k in vp or k in sh for k in ("matrix", "agent", "autonomous", "network")):
-        p = scenes_dir / "autonomous_agent_matrix.jpg"
-        if p.exists(): return p
-
-    if any(k in vp or k in sh for k in ("neural", "synapse", "brain")):
+    # Neural networks / Machine learning / Synapses / Brain
+    if any(k in vp or k in sh for k in ("neural", "synapse", "brain", "learning", "weights", "deep learning")):
         p = scenes_dir / "neural_network_synapse.jpg"
         if p.exists(): return p
 
-    if any(k in vp or k in sh for k in ("turing", "bombe", "enigma", "code")):
+    # Turing Bombe / Cryptography / Codebreaking
+    if any(k in vp or k in sh for k in ("turing", "bombe", "enigma", "code", "cipher", "decrypt")):
         p = scenes_dir / "turing_bombe_1940.jpg"
         if p.exists(): return p
 
+    # Autonomous agents / Cyber network / Matrix
+    if any(k in vp or k in sh for k in ("matrix", "agent", "autonomous", "network", "bot", "swarm", "cyber")):
+        p = scenes_dir / "autonomous_agent_matrix.jpg"
+        if p.exists(): return p
+
+    # Microchips / GPU / Silicon / Hardware
+    if any(k in vp or k in sh for k in ("gpu", "nvidia", "silicon", "cuda", "h100", "wafer", "hardware")):
+        p = scenes_dir / "nvidia_gpu_silicon.jpg"
+        if p.exists(): return p
+
+    # Brain computer interface / Neuralink / Biochips
+    if any(k in vp or k in sh for k in ("bci", "neuralink", "implant", "chip", "electrode", "cyborg")):
+        p = scenes_dir / "neuralink_bci_chip.jpg"
+        if p.exists(): return p
+
+    # Bank vaults / Heists / Safes / Security
+    if any(k in vp or k in sh for k in ("vault", "antwerp", "heist", "laser", "safe", "lock", "alarm", "security")):
+        p = scenes_dir / "antwerp_bank_vault.jpg"
+        if p.exists(): return p
+
+    # Diamonds / De Beers / Gold / Wealth
+    if any(k in vp or k in sh for k in ("diamond", "gem", "de beers", "carat", "gold", "bullion", "faberge", "treasure")):
+        p = scenes_dir / "diamond_debeers_vault.jpg"
+        if p.exists(): return p
+
+    # Submarines / Naval / Ocean depths / K-129
+    if any(k in vp or k in sh for k in ("sub", "submarine", "ocean", "abyss", "naval", "k-129", "k129", "torpedo", "sonar")):
+        p = scenes_dir / "soviet_submarine_abyss.jpg"
+        if p.exists(): return p
+
+    # Corporate boardrooms / CIA / Government / Documents
+    if any(k in vp or k in sh for k in ("boardroom", "madison", "cia", "kgb", "government", "meeting", "executive", "office")):
+        p = scenes_dir / "madison_boardroom_1952.jpg"
+        if p.exists(): return p
+
+    # Industrial factory / Machinery / Production
+    if any(k in vp or k in sh for k in ("factory", "production", "machine", "gear", "assembly", "manufacture", "titanium")):
+        p = scenes_dir / "factory_production_floor.jpg"
+        if p.exists(): return p
+
+    # Water tap / Bottled water heist
     if any(k in vp or k in sh for k in ("water", "bottle", "bottled", "tap")):
         p = scenes_dir / "bottled_water_tap_heist.jpg"
         if p.exists(): return p
 
-    if any(k in vp or k in sh for k in ("boardroom", "madison", "1952")):
-        p = scenes_dir / "madison_boardroom_1952.jpg"
-        if p.exists(): return p
-
-    if any(k in vp or k in sh for k in ("factory", "production", "machine", "gear")):
-        p = scenes_dir / "factory_production_floor.jpg"
-        if p.exists(): return p
-
-    if any(k in vp or k in sh for k in ("luxury", "cafe", "pricing", "cost")):
+    # Luxury pricing / Consumer psychology
+    if any(k in vp or k in sh for k in ("luxury", "cafe", "pricing", "cost", "consumer", "starbucks")):
         p = scenes_dir / "luxury_cafe_pricing.jpg"
         if p.exists(): return p
 
-    p = scenes_dir / "soviet_submarine_abyss.jpg"
-    if p.exists(): return p
-    p = scenes_dir / "autonomous_agent_matrix.jpg"
-    if p.exists(): return p
-    return scenes_dir / "neuralink_bci_chip.jpg"
+    # Channel-specific intelligent cycling fallback (NO unrelated cross-overs!):
+    if "ar" in channel_key or "tech" in channel_key:
+        tech_pool = [
+            scenes_dir / "vintage_mainframe_1960.jpg",
+            scenes_dir / "dartmouth_conference_1956.jpg",
+            scenes_dir / "autonomous_agent_matrix.jpg",
+            scenes_dir / "neural_network_synapse.jpg",
+            scenes_dir / "turing_bombe_1940.jpg",
+            scenes_dir / "nvidia_gpu_silicon.jpg",
+            scenes_dir / "neuralink_bci_chip.jpg",
+        ]
+        available = [p for p in tech_pool if p.exists()]
+        return available[scene_idx % len(available)] if available else scenes_dir / "vintage_mainframe_1960.jpg"
+    else:
+        wealth_pool = [
+            scenes_dir / "antwerp_bank_vault.jpg",
+            scenes_dir / "diamond_debeers_vault.jpg",
+            scenes_dir / "madison_boardroom_1952.jpg",
+            scenes_dir / "factory_production_floor.jpg",
+            scenes_dir / "soviet_submarine_abyss.jpg",
+            scenes_dir / "luxury_cafe_pricing.jpg",
+        ]
+        available = [p for p in wealth_pool if p.exists()]
+        return available[scene_idx % len(available)] if available else scenes_dir / "antwerp_bank_vault.jpg"
 
 
 def fetch_or_synthesize_broll_clip(
@@ -1456,7 +1508,8 @@ def fetch_or_synthesize_broll_clip(
     target_w: int = 1080,
     target_h: int = 1920,
     fps: int = 30,
-    scene_idx: int = 0
+    scene_idx: int = 0,
+    channel_key: str = "ch02_ar_ai_tech"
 ) -> bool:
     """
     Produces real full-motion vertical B-roll video:
@@ -1607,8 +1660,8 @@ def fetch_or_synthesize_broll_clip(
             if im is not None:
                 break
             try:
-                clean_enc = urllib.parse.quote(f"{term_variant} filetype:bitmap")
-                w_img_url = f"https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch={clean_enc}&gsrnamespace=6&prop=imageinfo&iiprop=url|size|mime&gsrlimit=3"
+                clean_enc = urllib.parse.quote(term_variant)
+                w_img_url = f"https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch={clean_enc}&gsrnamespace=6&prop=imageinfo&iiprop=url|size|mime&gsrlimit=4"
                 w_req = urllib.request.Request(w_img_url, headers={"User-Agent": "EmpireDocDirector/2.0 (mailto:admin@empire.tv)"})
                 with urllib.request.urlopen(w_req, timeout=8) as w_resp:
                     w_data = json.loads(w_resp.read().decode())
@@ -1616,8 +1669,9 @@ def fetch_or_synthesize_broll_clip(
                     for pid, p in pages.items():
                         info = p.get("imageinfo", [{}])[0]
                         img_url = info.get("url", "")
+                        clean_url = img_url.split("?")[0].lower()
                         size_bytes = info.get("size", 0)
-                        if img_url.endswith((".jpg", ".jpeg", ".png")) and 20000 < size_bytes < 15 * 1024 * 1024:
+                        if clean_url.endswith((".jpg", ".jpeg", ".png", ".webp")) and 20000 < size_bytes < 15 * 1024 * 1024:
                             raw_wiki_img = work_dir / f"wiki_photo_{abs(hash(term_variant)) % 10000}.jpg"
                             urllib.request.urlretrieve(img_url, str(raw_wiki_img))
                             try:
@@ -1633,7 +1687,7 @@ def fetch_or_synthesize_broll_clip(
 
     # 2. Master Cinematic Camera Movement Synthesis (Guaranteed High-Motion Cinema)
     if im is None:
-        img_path = resolve_scene_artwork(visual_prompt or q_search, style_hint)
+        img_path = resolve_scene_artwork(visual_prompt or q_search, style_hint, channel_key=channel_key, scene_idx=scene_idx)
         try:
             im = Image.open(img_path).convert("RGB")
         except Exception:
@@ -1908,7 +1962,8 @@ def produce_v16_animated_episode(channel_key: str, cfg: dict, output_root: Path)
             target_w=W,
             target_h=H,
             fps=FPS,
-            scene_idx=s_idx
+            scene_idx=s_idx,
+            channel_key=channel_key
         )
 
         if ok and scene_mp4.exists():
@@ -1954,6 +2009,26 @@ def produce_v16_animated_episode(channel_key: str, cfg: dict, output_root: Path)
         str(final_mp4)
     ]
     subprocess.run(final_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    # Ensure Shorts duration constraint (strictly <= 55s for YouTube Shorts shelf)
+    if total_duration > 56.0:
+        speed_factor = total_duration / 50.0
+        print(f"  [Shorts Optimizer] Duration ({total_duration:.1f}s) exceeds 56s. Speeding up by {speed_factor:.2f}x to guarantee Shorts shelf...")
+        optimized_mp4 = work_dir / "optimized_short.mp4"
+        opt_cmd = [
+            "ffmpeg", "-y",
+            "-i", str(final_mp4),
+            "-filter_complex", f"[0:v]setpts={1.0 / speed_factor}*PTS[v];[0:a]atempo={speed_factor}[a]",
+            "-map", "[v]",
+            "-map", "[a]",
+            "-c:v", "libx264", "-preset", "veryfast",
+            "-c:a", "aac", "-b:a", "192k",
+            str(optimized_mp4)
+        ]
+        subprocess.run(opt_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if optimized_mp4.exists() and optimized_mp4.stat().st_size > 10000:
+            shutil.move(str(optimized_mp4), str(final_mp4))
+            total_duration = 50.0
 
     # 5. Autonomous Quality Assurance & Forensic Certification
     audit_results = audit_and_certify_episode(final_mp4, script_data, cfg)
